@@ -1,0 +1,18 @@
+{
+  "name": "Vigía — Análisis de amenazas",
+  "short_name": "Vigía",
+  "description": "Analiza URLs, correos, apps móviles y SMS en busca de señales de riesgo.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0A0F1A",
+  "theme_color": "#0A0F1A",
+  "icons": [
+    { "src": "vigia-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "vigia-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "share_target": {
+    "action": ".",
+    "method": "GET",
+    "params": { "title": "share_title", "text": "share_text", "url": "share_url" }
+  }
+}
