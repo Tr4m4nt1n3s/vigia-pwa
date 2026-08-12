@@ -300,9 +300,11 @@ footer{max-width:1040px;margin:0 auto;padding:10px 20px 30px;color:var(--text-di
 footer .credits{
   margin-top:14px;padding-top:12px;border-top:1px solid var(--line);
   font-size:10.5px;color:var(--text-dim);opacity:0.75;
+  display:flex;flex-direction:column;gap:5px;
 }
 footer .credits a{color:var(--text-dim);text-decoration:underline;text-underline-offset:2px;}
 footer .credits a:hover{color:var(--signal);}
+footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
 
 .spinner{
   width:14px;height:14px;border-radius:50%;border:2px solid rgba(70,224,198,0.25);
@@ -365,19 +367,23 @@ footer .credits a:hover{color:var(--signal);}
   animation:install-rise .25s ease;
 }
 @media(min-width:640px){.install-modal{border-radius:var(--radius);}}
-.install-modal .im-head{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
-.install-modal .im-icon{font-size:22px;}
-.install-modal h3{font-family:var(--mono);font-size:14.5px;color:var(--text);margin:0;}
-.install-modal .im-sub{color:var(--text-dim);font-size:12.5px;margin:4px 0 18px;line-height:1.5;}
-.install-modal .im-step{display:flex;gap:12px;margin-bottom:16px;align-items:flex-start;}
-.install-modal .im-num{
+/* Estos estilos de "pasos de instalación" son compartidos: se usan tanto dentro
+   de la modal (.install-modal) como en la sección permanente de Guía
+   (#guia-install-content) — sin el prefijo .install-modal, esta última se
+   quedaba con la tipografía por defecto del navegador en vez de la de Vigía. */
+.im-head{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
+.im-icon{font-size:22px;}
+.im-head h3{font-family:var(--mono);font-size:14.5px;color:var(--text);margin:0;}
+.im-sub{color:var(--text-dim);font-size:12.5px;margin:4px 0 18px;line-height:1.5;font-family:var(--sans);}
+.im-step{display:flex;gap:12px;margin-bottom:16px;align-items:flex-start;}
+.im-num{
   flex:none;width:26px;height:26px;border-radius:50%;background:rgba(70,224,198,0.12);
   border:1px solid var(--signal-dim);color:var(--signal);font-family:var(--mono);font-size:12px;
   display:flex;align-items:center;justify-content:center;font-weight:600;
 }
-.install-modal .im-step-text{font-size:13px;color:var(--text);line-height:1.5;padding-top:3px;}
-.install-modal .im-step-text b{color:var(--signal);}
-.install-modal .im-close{width:100%;margin-top:6px;}
+.im-step-text{font-size:13px;color:var(--text);line-height:1.5;padding-top:3px;font-family:var(--sans);}
+.im-step-text b{color:var(--signal);}
+.im-close{width:100%;margin-top:6px;}
 </style>
 </head>
 <body>
@@ -408,7 +414,7 @@ footer .credits a:hover{color:var(--signal);}
   </svg>
 </div>
 
-<p class="intro"><strong>Compruébalo antes de abrirlo, hacer clic o instalarlo.</strong> Pega una URL, importa un correo, sube un archivo o describe una app, y Vigía la analiza al momento en busca de señales de phishing, malware y fraude — todo en tu propio navegador, sin que nada salga de tu dispositivo. Solo si tú lo pides expresamente (por ejemplo, para ver a dónde lleva realmente un enlace acortado) se consulta algún servicio externo, y siempre de forma puntual.</p>
+<p class="intro"><strong>Compruébalo antes de abrirlo, hacer clic o instalarlo.</strong> Pega una URL, importa un correo, sube un archivo o describe una app, y Vigía la analiza al momento en busca de señales de phishing, malware y fraude, todo en tu propio navegador, sin que nada salga de tu dispositivo. Solo si tú lo pides expresamente (por ejemplo, para ver a dónde lleva realmente un enlace acortado) se consulta algún servicio externo, y siempre de forma puntual.</p>
 
 <div class="nav-wrap">
   <button class="nav-scroll-btn left" id="nav-scroll-left" aria-label="Desplazar pestañas a la izquierda" type="button">‹</button>
@@ -431,7 +437,7 @@ footer .credits a:hover{color:var(--signal);}
 
   <section class="panel active" id="panel-dashboard">
     <h2 class="panel-title">Panel de control</h2>
-    <p class="panel-sub">Resumen de tu actividad en Vigía. Todo se calcula localmente a partir del historial guardado en este navegador — nada de esto sale de tu dispositivo.</p>
+    <p class="panel-sub">Resumen de tu actividad en Vigía. Todo se calcula localmente a partir del historial guardado en este navegador. Nada de esto sale de tu dispositivo.</p>
 
     <div class="card">
       <h3 style="font-family:var(--mono);font-size:12.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin:0 0 4px;">Hoy</h3>
@@ -448,7 +454,7 @@ footer .credits a:hover{color:var(--signal);}
         <h3 style="font-family:var(--mono);font-size:13px;color:var(--text);text-transform:uppercase;letter-spacing:.06em;margin:0;">🧠 Centro de Inteligencia</h3>
         <span class="hint" style="font-size:11px;">INTEL</span>
       </div>
-      <p class="hint" style="font-size:12px;margin-bottom:12px;">Patrones agregados de tus análisis guardados (hasta las últimas 300 entradas), recalculados con los mismos motores que el resto de Vigía — nada de esto se envía a ningún sitio.</p>
+      <p class="hint" style="font-size:12px;margin-bottom:12px;">Patrones agregados de tus análisis guardados (hasta las últimas 300 entradas), recalculados con los mismos motores que el resto de Vigía. Nada de esto se envía a ningún sitio.</p>
       <div class="subgrid" id="dash-intel-grid" style="gap:10px;"></div>
     </div>
 
@@ -500,21 +506,21 @@ footer .credits a:hover{color:var(--signal);}
         <div class="stat-row"><span>⚠ Hallazgo leve</span><span class="stat-value">+6 puntos</span></div>
         <div class="stat-row"><span>✓ Comprobado sin problemas</span><span class="stat-value">+0 puntos</span></div>
       </div>
-      <p class="hint mt">Se suman porque <b style="color:var(--text);">varias señales flojas juntas pueden ser tan preocupantes como una señal grave sola</b>. Por ejemplo: un dominio con extensión sospechosa (+16) que además contiene palabras de banca (+16) suma 32 puntos — riesgo medio — aunque ninguno de los dos factores por separado sea crítico.</p>
+      <p class="hint mt">Se suman porque <b style="color:var(--text);">varias señales flojas juntas pueden ser tan preocupantes como una señal grave sola</b>. Por ejemplo: un dominio con extensión sospechosa (+16) que además contiene palabras de banca (+16) suma 32 puntos (riesgo medio), aunque ninguno de los dos factores por separado sea crítico.</p>
 
       <h3 style="font-family:var(--mono);font-size:12.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 10px;">Los 5 niveles</h3>
       <div id="niveles-list"></div>
 
-      <p class="hint mt" style="border-top:1px dashed var(--line);padding-top:12px;">⚠️ Importante: un resultado de "sin señales relevantes" (0 puntos) <b style="color:var(--text);">no es una garantía de seguridad absoluta</b>. Solo significa que no se ha detectado ninguno de los patrones que Vigía sabe reconocer — sigue aplicando el sentido común.</p>
+      <p class="hint mt" style="border-top:1px dashed var(--line);padding-top:12px;">⚠️ Importante: un resultado de "sin señales relevantes" (0 puntos) <b style="color:var(--text);">no es una garantía de seguridad absoluta</b>. Solo significa que no se ha detectado ninguno de los patrones que Vigía sabe reconocer. Sigue aplicando el sentido común.</p>
     </div>
 
     <div class="card" id="guia-faq-block" style="display:none;">
       <h3 style="font-family:var(--mono);font-size:12.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin:0 0 10px;">🛡️ Hábitos básicos de protección</h3>
       <ul class="hint" style="padding-left:18px;line-height:1.8;margin:0 0 18px;">
         <li>Nunca compartas un código de verificación (OTP), aunque te lo pida alguien que dice ser tu banco.</li>
-        <li>Antes de hacer clic, mira bien el dominio real del enlace — no solo el texto que lo acompaña.</li>
+        <li>Antes de hacer clic, mira bien el dominio real del enlace, no solo el texto que lo acompaña.</li>
         <li>Desconfía de cualquier mensaje que te meta prisa, te asuste o te prometa un premio.</li>
-        <li>Si dudas de un remitente, contacta con la entidad por un canal oficial que busques tú mismo — nunca por el que te ha contactado a ti.</li>
+        <li>Si dudas de un remitente, contacta con la entidad por un canal oficial que busques tú mismo, nunca por el que te ha contactado a ti.</li>
         <li>Mantén tus apps y sistema operativo actualizados: muchas amenazas explotan fallos ya corregidos.</li>
         <li>Usa contraseñas distintas para cada servicio y, si puedes, activa la verificación en dos pasos.</li>
       </ul>
@@ -527,7 +533,7 @@ footer .credits a:hover{color:var(--signal);}
 
     <div class="card" id="guia-contacto-block" style="display:none;">
       <h3 style="font-family:var(--mono);font-size:12.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin:0 0 4px;">📩 Contacto y sugerencias</h3>
-      <p class="hint" style="margin:0 0 16px;">¿Tienes una duda, has encontrado un error, o se te ocurre algo que Vigía debería tener? Este mensaje llega directamente al autor — no es un buzón automático ni una IA respondiendo.</p>
+      <p class="hint" style="margin:0 0 16px;">¿Tienes una duda, has encontrado un error, o se te ocurre algo que Vigía debería tener? Este mensaje llega directamente al autor. No es un buzón automático ni una IA respondiendo.</p>
 
       <form id="contact-form">
         <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">
@@ -543,7 +549,7 @@ footer .credits a:hover{color:var(--signal);}
         <input type="text" id="contact-email" name="email" placeholder="tucorreo@ejemplo.com">
         <label class="field-label mt" for="contact-message">Mensaje</label>
         <textarea id="contact-message" name="Mensaje" rows="5" placeholder="Cuéntame qué se te ocurre…" required></textarea>
-        <p class="hint mt" style="font-size:11px;">Al enviarlo, tu mensaje sale de este navegador hacia Formspree (el servicio que usa Vigía para recibir el correo) — es la única parte de la app que envía datos sin que tú controles el destino exacto del contenido. Evita incluir contraseñas o datos personales de otras personas si no es imprescindible para explicar tu caso.</p>
+        <p class="hint mt" style="font-size:11px;">Al enviarlo, tu mensaje sale de este navegador hacia Formspree (el servicio que usa Vigía para recibir el correo). Es la única parte de la app que envía datos sin que tú controles el destino exacto del contenido. Evita incluir contraseñas o datos personales de otras personas si no es imprescindible para explicar tu caso.</p>
         <div class="row mt">
           <button class="btn" type="submit" id="contact-submit-btn">Enviar mensaje</button>
         </div>
@@ -553,7 +559,7 @@ footer .credits a:hover{color:var(--signal);}
       <div style="border-top:1px dashed var(--line);margin:22px 0 18px;"></div>
 
       <h3 style="font-family:var(--mono);font-size:12.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin:0 0 8px;">🛠️ ¿Quieres reportar algo técnico o colaborar?</h3>
-      <p class="hint" style="margin:0 0 12px;">El código de Vigía es público en GitHub. Si prefieres dejar constancia abierta de un error, proponer una mejora, o participar en el desarrollo, ábrelo directamente ahí — cualquiera puede verlo y seguir su evolución.</p>
+      <p class="hint" style="margin:0 0 12px;">El código de Vigía es público en GitHub. Si prefieres dejar constancia abierta de un error, proponer una mejora, o participar en el desarrollo, ábrelo directamente ahí. Cualquiera puede verlo y seguir su evolución.</p>
       <a class="btn ghost" href="https://github.com/Tr4m4nt1n3s/vigia-pwa/issues/new" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:inline-block;">Abrir una incidencia en GitHub ↗</a>
       <a class="btn ghost" href="https://github.com/Tr4m4nt1n3s/vigia-pwa" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:inline-block;">Ver el repositorio ↗</a>
     </div>
@@ -561,7 +567,7 @@ footer .credits a:hover{color:var(--signal);}
 
   <section class="panel" id="panel-url">
     <h2 class="panel-title">Análisis de URLs, dominios e IPs</h2>
-    <p class="panel-sub">Pega una o varias URLs/dominios, comprueba una dirección IP pública, o revisa si tu conexión filtra tu IP real. Vigía revisa la estructura y patrones típicos de phishing y typosquatting — sin visitar el enlace. Incluye entropía y punycode decodificado, y consulta opcional de DNS, ASN y WHOIS (RDAP).</p>
+    <p class="panel-sub">Pega una o varias URLs/dominios, comprueba una dirección IP pública, o revisa si tu conexión filtra tu IP real. Vigía revisa la estructura y patrones típicos de phishing y typosquatting, sin visitar el enlace. Incluye entropía y punycode decodificado, y consulta opcional de DNS, ASN y WHOIS (RDAP).</p>
 
     <div class="tabbtn-inline" role="tablist">
       <button class="active" data-mode="urls">URLs y dominios</button>
@@ -581,7 +587,7 @@ footer .credits a:hover{color:var(--signal);}
 
     <div class="card" id="url-ip-block" style="display:none;">
       <div class="f-title" style="margin-bottom:4px;">📡 Una aclaración importante antes de empezar</div>
-      <p class="hint">El Servicio AntiBotnet de INCIBE/Telefónica <b>solo comprueba la IP pública desde la que te estás conectando en ese momento</b> — no permite consultar una IP arbitraria de un tercero, y su API para empresas exige registro formal y aceptar condiciones de uso. Por eso Vigía separa esto en dos herramientas distintas:</p>
+      <p class="hint">El Servicio AntiBotnet de INCIBE/Telefónica <b>solo comprueba la IP pública desde la que te estás conectando en ese momento</b>. No permite consultar una IP arbitraria de un tercero, y su API para empresas exige registro formal y aceptar condiciones de uso. Por eso Vigía separa esto en dos herramientas distintas:</p>
 
       <div class="mt">
         <b style="color:var(--text);font-size:13px;">1. Comprobar mi propia conexión</b>
@@ -597,7 +603,7 @@ footer .credits a:hover{color:var(--signal);}
 
       <div class="mt" style="border-top:1px dashed var(--line);padding-top:14px;">
         <b style="color:var(--text);font-size:13px;">2. Analizar cualquier IP pública</b>
-        <p class="hint mt">Para una IP que hayas visto en un correo, un registro de conexiones, etc. Vigía comprueba heurísticas propias (formato, rangos privados/reservados) y, si lo pides, consulta geolocalización/organización en un servicio externo — más enlaces para contrastarla en bases de datos de reputación reales.</p>
+        <p class="hint mt">Para una IP que hayas visto en un correo, un registro de conexiones, etc. Vigía comprueba heurísticas propias (formato, rangos privados/reservados) y, si lo pides, consulta geolocalización/organización en un servicio externo, más enlaces para contrastarla en bases de datos de reputación reales.</p>
         <label class="field-label mt" for="ip-input">Dirección IP (una o varias, una por línea)</label>
         <textarea id="ip-input" rows="3" placeholder="203.0.113.55&#10;2001:db8::1"></textarea>
         <div class="row mt">
@@ -609,7 +615,7 @@ footer .credits a:hover{color:var(--signal);}
 
     <div class="card" id="url-dns-block" style="display:none;">
       <div class="f-title" style="margin-bottom:4px;">🌐 Una aclaración importante antes de empezar</div>
-      <p class="hint">Un "test de fugas DNS" como el de dnsleaktest.com funciona así: te asigna un subdominio único, tu sistema lo resuelve a través de quien sea que uses como DNS (a veces no es tu VPN, sino tu operador — eso es la fuga), y <b style="color:var(--text);">un servidor propio bajo su control registra qué resolvers le llegaron la consulta</b>. Eso requiere un backend con un DNS autoritativo propio — algo que una página sin servidor, como Vigía, no puede replicar de forma honesta ni fiable. Por eso aquí tienes dos herramientas complementarias:</p>
+      <p class="hint">Un "test de fugas DNS" como el de dnsleaktest.com funciona así: te asigna un subdominio único, tu sistema lo resuelve a través de quien sea que uses como DNS (a veces no es tu VPN, sino tu operador, eso es la fuga), y <b style="color:var(--text);">un servidor propio bajo su control registra qué resolvers le llegaron la consulta</b>. Eso requiere un backend con un DNS autoritativo propio, algo que una página sin servidor, como Vigía, no puede replicar de forma honesta ni fiable. Por eso aquí tienes dos herramientas complementarias:</p>
 
       <div class="mt">
         <b style="color:var(--text);font-size:13px;">1. Comprobar fuga de IP por WebRTC</b>
@@ -622,7 +628,7 @@ footer .credits a:hover{color:var(--signal);}
 
       <div class="mt" style="border-top:1px dashed var(--line);padding-top:14px;">
         <b style="color:var(--text);font-size:13px;">2. Test de fugas DNS completo (servicio externo especializado)</b>
-        <p class="hint mt">Para saber de verdad qué resolvers DNS ven tu tráfico —el objetivo real de un test de fugas DNS— hace falta un servicio con su propio backend registrando consultas. dnsleaktest.com es la referencia habitual: una vez dentro, pulsa "Standard test" o "Extended test".</p>
+        <p class="hint mt">Para saber de verdad qué resolvers DNS ven tu tráfico (el objetivo real de un test de fugas DNS) hace falta un servicio con su propio backend registrando consultas. dnsleaktest.com es la referencia habitual: una vez dentro, pulsa "Standard test" o "Extended test".</p>
         <div class="row mt">
           <a class="btn ghost" href="https://dnsleaktest.com/" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:inline-block;">Abrir dnsleaktest.com ↗</a>
           <a class="btn ghost" href="https://browserleaks.com/dns" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:inline-block;">Abrir BrowserLeaks (DNS) ↗</a>
@@ -696,7 +702,7 @@ footer .credits a:hover{color:var(--signal);}
 
     <div class="card" id="apps-netlog-block" style="display:none;">
       <div class="f-title" style="margin-bottom:4px;">📡 Por qué Vigía no puede "escuchar" la red en directo</div>
-      <p class="hint">Un navegador o una PWA se ejecutan en una caja aislada (sandbox): el sistema operativo no permite que una página web vea el tráfico de red de <i>otra</i> aplicación. Ninguna app web —de Vigía o de cualquier otro fabricante— puede hacerlo sin convertirse en una app nativa con permisos especiales de VPN/firewall. Lo que sí puedes hacer es obtener tú mismo ese registro con una herramienta del sistema, y pegarlo aquí para analizarlo.</p>
+      <p class="hint">Un navegador o una PWA se ejecutan en una caja aislada (sandbox): el sistema operativo no permite que una página web vea el tráfico de red de <i>otra</i> aplicación. Ninguna app web (de Vigía o de cualquier otro fabricante) puede hacerlo sin convertirse en una app nativa con permisos especiales de VPN/firewall. Lo que sí puedes hacer es obtener tú mismo ese registro con una herramienta del sistema, y pegarlo aquí para analizarlo.</p>
 
       <div class="subgrid mt">
         <div class="card" style="margin:0;">
@@ -707,7 +713,7 @@ footer .credits a:hover{color:var(--signal);}
         <div class="card" style="margin:0;">
           <b style="color:var(--text);">Android</b>
           <p class="hint mt">No hay un informe nativo equivalente; usa un firewall/monitor de código abierto sin root:</p>
-          <p class="hint"><b>NetGuard</b> (F-Droid/GitHub) o <b>PCAPdroid</b> (F-Droid/GitHub) — ambos crean una VPN local en tu propio dispositivo (el tráfico no sale a ningún servidor externo) y muestran cada dominio/IP contactado por cada app.</p>
+          <p class="hint"><b>NetGuard</b> (F-Droid/GitHub) o <b>PCAPdroid</b> (F-Droid/GitHub). Ambos crean una VPN local en tu propio dispositivo (el tráfico no sale a ningún servidor externo) y muestran cada dominio/IP contactado por cada app.</p>
         </div>
       </div>
 
@@ -726,7 +732,7 @@ footer .credits a:hover{color:var(--signal);}
     </div>
 
     <div class="card" id="apps-store-block" style="display:none;">
-      <p class="hint">Vigía no puede descargar ni escanear el binario real de una app de la tienda (ni Google ni Apple lo permiten desde un navegador). Lo que sí hace: <b>verificar la identidad real del editor</b> mediante la API pública de Apple, y ayudarte a encontrar el informe real de <b>rastreadores y permisos</b> en fuentes independientes fiables — para completar después el formulario manual con lo que veas ahí.</p>
+      <p class="hint">Vigía no puede descargar ni escanear el binario real de una app de la tienda (ni Google ni Apple lo permiten desde un navegador). Lo que sí hace: <b>verificar la identidad real del editor</b> mediante la API pública de Apple, y ayudarte a encontrar el informe real de <b>rastreadores y permisos</b> en fuentes independientes fiables, para completar después el formulario manual con lo que veas ahí.</p>
       <div class="row mt">
         <label class="chip active" style="cursor:pointer;"><input type="radio" name="store-platform" value="ios" checked style="display:none;"> App Store (iOS)</label>
         <label class="chip" style="cursor:pointer;"><input type="radio" name="store-platform" value="android" style="display:none;"> Google Play (Android)</label>
@@ -822,11 +828,11 @@ footer .credits a:hover{color:var(--signal);}
 
   <section class="panel" id="panel-sms">
     <h2 class="panel-title">Análisis de SMS y números de teléfono</h2>
-    <p class="panel-sub">Revisa un mensaje de texto en busca de patrones de smishing: lenguaje de presión, suplantación del remitente, enlaces acortados u ocultos, números de tarificación especial y datos de tarjeta con formato válido — o comprueba de forma aislada si un número de teléfono coincide con patrones de fraude conocidos (tarificación especial, "wangiri", formato falsificado…).</p>
+    <p class="panel-sub">Revisa un mensaje de texto en busca de patrones de smishing: lenguaje de presión, suplantación del remitente, enlaces acortados u ocultos, números de tarificación especial y datos de tarjeta con formato válido; o comprueba de forma aislada si un número de teléfono coincide con patrones de fraude conocidos (tarificación especial, "wangiri", formato falsificado…).</p>
 
     <div class="card" style="border-color:var(--line);">
       <div class="f-title" style="margin-bottom:4px;">📵 Por qué no hay lectura automática de tu bandeja de SMS</div>
-      <p class="hint">Permitir que cualquier página web lea en segundo plano los SMS o el registro de llamadas de tu teléfono sería, en sí mismo, un enorme riesgo de seguridad — por eso ni Android ni iOS lo permiten a apps web. Vigía usa en su lugar vías manuales:</p>
+      <p class="hint">Permitir que cualquier página web lea en segundo plano los SMS o el registro de llamadas de tu teléfono sería, en sí mismo, un enorme riesgo de seguridad. Por eso ni Android ni iOS lo permiten a apps web. Vigía usa en su lugar vías manuales:</p>
       <ol class="hint" style="padding-left:18px;line-height:1.7;margin:8px 0 0;">
         <li><b>Copiar y pegar</b> el texto del SMS o el número recibido (funciona siempre, incluso abriendo este archivo localmente).</li>
         <li><b>Compartir con un toque:</b> si alojas este archivo en un servidor propio con HTTPS y lo instalas como app, tu teléfono podrá ofrecer "Vigía" en el menú Compartir de la app de Mensajes/Teléfono. Abierto como archivo local, esta vía no estará disponible, pero el resto de la app funciona igual.</li>
@@ -911,7 +917,7 @@ footer .credits a:hover{color:var(--signal);}
     </div>
 
     <div class="card" id="archivos-qr-block" style="display:none;">
-      <p class="hint">Los códigos QR ocultan su contenido real hasta que se escanean — es la base del "quishing" (phishing por QR). Vigía decodifica el código <b>sin abrir ni seguir</b> lo que contiene, y analiza el resultado antes de que decidas hacer nada con él.</p>
+      <p class="hint">Los códigos QR ocultan su contenido real hasta que se escanean. Es la base del "quishing" (phishing por QR). Vigía decodifica el código <b>sin abrir ni seguir</b> lo que contiene, y analiza el resultado antes de que decidas hacer nada con él.</p>
       <div class="subgrid mt">
         <div>
           <label class="field-label" for="qr-file">Subir imagen con un QR</label>
@@ -939,7 +945,7 @@ footer .credits a:hover{color:var(--signal);}
     <div class="card" id="archivos-exe-block" style="display:none;">
       <label class="field-label" for="exe-file">Selecciona un ejecutable o script</label>
       <input type="file" id="exe-file" accept=".exe,.dll,.scr,.com,.msi,.bat,.cmd,.vbs,.vbe,.js,.jse,.wsf,.ps1,.psm1,.sh,.py,.jar,.hta,.elf,.bin">
-      <p class="hint mt">Windows (.exe/.dll/.scr), scripts (.bat/.vbs/.js/.ps1/.sh/.py/.hta…) y binarios Linux/macOS. Se analiza la cabecera real del binario, señales de empaquetado/ofuscación (entropía, secciones de packers conocidos), firma digital declarada, y patrones de código peligroso en scripts — sin ejecutar nada en ningún momento.</p>
+      <p class="hint mt">Windows (.exe/.dll/.scr), scripts (.bat/.vbs/.js/.ps1/.sh/.py/.hta…) y binarios Linux/macOS. Se analiza la cabecera real del binario, señales de empaquetado/ofuscación (entropía, secciones de packers conocidos), firma digital declarada, y patrones de código peligroso en scripts, sin ejecutar nada en ningún momento.</p>
       <div class="row mt">
         <button class="btn" id="exe-analyze-btn">Analizar archivo</button>
         <button class="btn ghost" id="exe-clear-btn">Limpiar</button>
@@ -980,7 +986,7 @@ footer .credits a:hover{color:var(--signal);}
         <input type="checkbox" id="private-mode-toggle" style="width:16px;height:16px;accent-color:var(--signal);cursor:pointer;">
         🕶️ Modo privado: no guardar nuevos análisis en el historial
       </label>
-      <p class="hint" style="margin:6px 0 0 24px;">Los resultados se te siguen mostrando en pantalla igual que siempre — solo se deja de escribir aquí. Útil si estás investigando algo que prefieres que no quede ni siquiera en este navegador.</p>
+      <p class="hint" style="margin:6px 0 0 24px;">Los resultados se te siguen mostrando en pantalla igual que siempre, solo se deja de escribir aquí. Útil si estás investigando algo que prefieres que no quede ni siquiera en este navegador.</p>
     </div>
     <div class="card mt">
       <div class="row" style="justify-content:space-between;">
@@ -995,7 +1001,9 @@ footer .credits a:hover{color:var(--signal);}
 </main>
 
 <footer>Vigía analiza todo localmente en tu navegador. Algunas comprobaciones opcionales (ver dirección final de un enlace acortado, comprobar registros MX de un dominio, OCR de capturas, buscar una app en la tienda) solo se ejecutan cuando tú pulsas el botón correspondiente, y en ese momento consultan un servicio externo de terceros con el dato mínimo necesario. Instálala como app (PWA) desde el menú de tu navegador.
-<div class="credits">Vigía es un proyecto personal de <a href="https://jorgebayanescobar.es" target="_blank" rel="noopener noreferrer">Jorge Bayán Escobar</a>, creado con ayuda de IA. · <a href="#" id="footer-contact-link">📩 Contacto y sugerencias</a></div>
+<div class="credits">
+  <div class="license-line">© 2026 <a href="https://jorgebayanescobar.es" target="_blank" rel="noopener noreferrer">Jorge Bayán Escobar</a> · Todos los derechos reservados · <a href="#" id="footer-contact-link">📩 Contacto y sugerencias</a></div>
+</div>
 </footer>
 
 <script>
@@ -1270,7 +1278,7 @@ function renderHistory(){
     const {label,color} = scoreLabel(h.score);
     const d = new Date(h.ts);
     return `<div class="history-item">
-      <div><b>${kindLabel[h.kind]||h.kind}</b> — ${escapeHtml(h.subject)}
+      <div><b>${kindLabel[h.kind]||h.kind}</b>: ${escapeHtml(h.subject)}
         <div class="h-meta">${d.toLocaleString('es-ES')}</div>
       </div>
       <div style="color:${color};font-family:var(--mono);font-size:12px;white-space:nowrap;">${label} (${h.score})</div>
@@ -1348,7 +1356,7 @@ function renderDashboard(){
       const {label,color} = scoreLabel(h.score);
       const d = new Date(h.ts);
       return `<div class="history-item">
-        <div><b>${kindLabel[h.kind]||h.kind}</b> — ${escapeHtml(h.subject)}
+        <div><b>${kindLabel[h.kind]||h.kind}</b>: ${escapeHtml(h.subject)}
           <div class="h-meta">${d.toLocaleString('es-ES')}</div>
         </div>
         <div style="color:${color};font-family:var(--mono);font-size:12px;white-space:nowrap;">${label} (${h.score})</div>
@@ -1497,9 +1505,9 @@ function renderIntelCenter(hist){
     renderIntelWidget('Marcas más imitadas / typosquatting', '🎭', intel.brands, {emptyText:'Sin coincidencias todavía.', truncate:26}),
     renderIntelWidget('Patrones repetidos (URLs)', '🔁', intel.patterns, {truncate:34, emptyText:'Aún no hay suficientes análisis de URL para detectar patrones repetidos.'}),
     renderIntelWidget('IPs repetidas', '📍', intel.ips, {emptyText:'Ninguna IP analizada más de una vez todavía.'}),
-    renderIntelWidget('Hashes de archivo repetidos', '#️⃣', intel.hashes.map(([h,c])=>[h.slice(0,14)+'…', c]), {emptyText:'Sin archivos repetidos todavía — se compara el SHA-256 de lo que analices en el módulo Archivos.'}),
+    renderIntelWidget('Hashes de archivo repetidos', '#️⃣', intel.hashes.map(([h,c])=>[h.slice(0,14)+'…', c]), {emptyText:'Sin archivos repetidos todavía. Se compara el SHA-256 de lo que analices en el módulo Archivos.'}),
     renderIntelWidget('Correo: dominios de remitente repetidos', '✉️', intel.emailDomains, {truncate:26, emptyText:'Ningún dominio de remitente repetido todavía.'}),
-    renderIntelWidget('Correo: fallos de SPF/DKIM/DMARC', '🔏', intel.emailAuthFails, {emptyText:'Sin verificaciones de autenticación con fallos todavía — usa "Verificar SPF/DKIM/DMARC" dentro de un análisis de correo para que este dato se recoja.'}),
+    renderIntelWidget('Correo: fallos de SPF/DKIM/DMARC', '🔏', intel.emailAuthFails, {emptyText:'Sin verificaciones de autenticación con fallos todavía. Usa "Verificar SPF/DKIM/DMARC" dentro de un análisis de correo para que este dato se recoja.'}),
     renderIntelWidget('Apps: editores/desarrolladores sospechosos', '🕵️', intel.editors, {truncate:26, emptyText:'Sin editores marcados como sospechosos todavía.'}),
     renderIntelWidget('Apps: trackers/SDKs más comunes', '📡', intel.trackers, {truncate:26, emptyText:'Analiza un .apk/.ipa o un registro de conexiones para poblar este dato.'}),
     renderIntelWidget('SMS: remitentes con nombre repetidos', '🏷️', intel.smsSenders, {truncate:26, emptyText:'Ningún remitente de SMS repetido todavía.'}),
@@ -1543,9 +1551,7 @@ async function ensureJsPDF(){
     const s = document.createElement('script');
     s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/3.0.3/jspdf.umd.min.js';
     s.crossOrigin = 'anonymous';
-    // TODO (Subresource Integrity pendiente): generar con
-    //   curl -s <URL de arriba> | openssl dgst -sha384 -binary | openssl base64 -A
-    // y añadir aquí:  s.integrity = 'sha384-...';
+    s.integrity = 'sha384-GwHhSt8QjC7J+v0zZ0Flfho/T76YHEcCL9w4rvjTIUHauh6gWJeBSIi3vWXxNhtA';
     s.onload = resolve; s.onerror = reject;
     document.head.appendChild(s);
   });
@@ -1573,7 +1579,7 @@ async function computeFileHash(file){
 }
 function renderHashBlock(hash){
   if(!hash){
-    return `<div class="result-block"><h3>Hash SHA-256</h3><p class="hint">No se pudo calcular en este navegador (requiere un contexto seguro: https:// o localhost — algunos navegadores lo bloquean si el archivo se abre en local con file://).</p></div>`;
+    return `<div class="result-block"><h3>Hash SHA-256</h3><p class="hint">No se pudo calcular en este navegador (requiere un contexto seguro: https:// o localhost, algunos navegadores lo bloquean si el archivo se abre en local con file://).</p></div>`;
   }
   return `<div class="result-block"><h3>Hash SHA-256</h3>
     <div class="hint" style="font-family:var(--mono);word-break:break-all;background:#0C1424;padding:8px;border-radius:6px;">${escapeHtml(hash)}</div>
@@ -1816,12 +1822,12 @@ const GLOSARIO = [
   { t:'CGNAT', i:'🏢', cat:'Técnico', d:'Técnica con la que un operador de internet comparte una misma IP pública entre varios clientes a la vez.' },
   { t:'DNS', i:'📖', cat:'Técnico', d:'El "listín telefónico" de internet: traduce nombres de dominio (ejemplo.com) a direcciones IP.' },
   { t:'Registro MX', i:'📮', cat:'Técnico', d:'La entrada DNS que indica qué servidores gestionan el correo de un dominio. Un dominio sin registros MX no puede recibir email de forma legítima.' },
-  { t:'HTTPS / Certificado SSL', i:'🔐', cat:'Técnico', d:'El candado que ves en el navegador. Indica que la conexión va cifrada, pero no que el sitio sea de confianza — un sitio de phishing también puede tener HTTPS.' },
+  { t:'HTTPS / Certificado SSL', i:'🔐', cat:'Técnico', d:'El candado que ves en el navegador. Indica que la conexión va cifrada, pero no que el sitio sea de confianza. Un sitio de phishing también puede tener HTTPS.' },
   { t:'Firma digital', i:'✍️', cat:'Técnico', d:'Un sello que certifica quién publicó un programa y que no se ha modificado desde entonces. Un ejecutable sin firmar no es necesariamente malicioso, pero merece más precaución.' },
   { t:'Hash (SHA-256)', i:'#️⃣', cat:'Técnico', d:'Una "huella digital" única de un archivo: si cambia un solo byte, el hash cambia por completo. Sirve para comprobar si dos archivos son exactamente el mismo, aunque tengan nombres distintos.' },
   { t:'Rastreador (tracker)', i:'📡', cat:'Técnico', d:'Código dentro de una app o web que recopila datos de uso (a veces también de tu dispositivo) y los envía a empresas de publicidad o analítica.' },
   { t:'Metadatos EXIF', i:'🗂️', cat:'Técnico', d:'Información oculta dentro de una foto: modelo de cámara, fecha, y a veces la ubicación GPS exacta donde se tomó.' },
-  { t:'Entropía (de un archivo)', i:'🎲', cat:'Técnico', d:'Una medida de lo "aleatorio" que parece el contenido de un archivo. Un valor muy alto suele indicar que está comprimido o cifrado — habitual tanto en software legítimo como en malware que intenta ocultarse.' },
+  { t:'Entropía (de un archivo)', i:'🎲', cat:'Técnico', d:'Una medida de lo "aleatorio" que parece el contenido de un archivo. Un valor muy alto suele indicar que está comprimido o cifrado, habitual tanto en software legítimo como en malware que intenta ocultarse.' },
   { t:'OTP / Código de verificación', i:'🔑', cat:'General', d:'Un código de un solo uso que te envían por SMS o app para confirmar que eres tú. Nunca debes compartirlo con nadie, ni siquiera con quien dice ser tu banco.' },
   { t:'VPN', i:'🛡️', cat:'General', d:'Una conexión que cifra tu tráfico y oculta tu IP real, normalmente para mayor privacidad al navegar.' },
   { t:'Antivirus / MTD', i:'🧯', cat:'General', d:'Software que analiza y bloquea amenazas en tu dispositivo. "MTD" (Mobile Threat Defense) es la versión pensada para móviles. Vigía es un complemento a estas herramientas, no un sustituto.' },
@@ -1829,7 +1835,7 @@ const GLOSARIO = [
 
   // --- Términos añadidos tras las ampliaciones de correo, SMS, apps móviles, URLs y fugas de IP/DNS ---
   { t:'SPF (Sender Policy Framework)', i:'📤', cat:'Técnico', d:'Lista publicada por un dominio con los servidores autorizados a enviar correo en su nombre. Si un email dice venir de "tubanco.com" pero no sale de uno de esos servidores, el SPF debería marcarlo como sospechoso.' },
-  { t:'DKIM (DomainKeys Identified Mail)', i:'🔏', cat:'Técnico', d:'Una firma criptográfica invisible añadida a un correo por el servidor que lo envía. Permite comprobar que el contenido no se ha modificado por el camino — parecido a un lacre digital en un sobre.' },
+  { t:'DKIM (DomainKeys Identified Mail)', i:'🔏', cat:'Técnico', d:'Una firma criptográfica invisible añadida a un correo por el servidor que lo envía. Permite comprobar que el contenido no se ha modificado por el camino, parecido a un lacre digital en un sobre.' },
   { t:'DMARC', i:'📋', cat:'Técnico', d:'La política que le dice a los servidores receptores qué hacer con un correo que falla las comprobaciones de SPF o DKIM: dejarlo pasar, mandarlo a spam, o rechazarlo directamente.' },
   { t:'Cabecera "Received" (ruta del mensaje)', i:'🛤️', cat:'Técnico', d:'Cada servidor por el que pasa un correo añade una línea invisible con la fecha y el servidor anterior. Juntas forman el recorrido completo del mensaje, del origen al buzón final.' },
   { t:'BIN (Bank Identification Number)', i:'💳', cat:'Técnico', d:'Los primeros dígitos de una tarjeta de pago, que identifican el banco emisor y la red (Visa, Mastercard…). Ningún banco legítimo te pedirá nunca tu número de tarjeta completo por SMS o correo.' },
@@ -1842,18 +1848,18 @@ const GLOSARIO = [
   { t:'ASN (Sistema Autónomo)', i:'🏭', cat:'Técnico', d:'El número que identifica a la organización (operador, empresa de hosting…) dueña de un bloque de direcciones IP en internet. Ayuda a saber quién aloja realmente un sitio, más allá del nombre de dominio.' },
   { t:'Punycode', i:'🔤', cat:'Técnico', d:'La forma de escribir un dominio con letras no latinas (como "ñ", o alfabeto cirílico o chino) usando solo caracteres ASCII, con el prefijo "xn--". Es una técnica legítima de internacionalización, pero también la base técnica del ataque de homógrafos.' },
   { t:'DGA (dominio generado algorítmicamente)', i:'🎰', cat:'Amenazas', d:'Técnica de malware que genera automáticamente miles de nombres de dominio con aspecto aleatorio, para que sea casi imposible bloquearlos todos por adelantado.' },
-  { t:'Transparencia de certificados (CT Logs)', i:'📜', cat:'Técnico', d:'Un registro público e inmutable de todos los certificados HTTPS emitidos en internet. Permite comprobar exactamente cuándo se emitió el certificado de un dominio — muy útil para detectar sitios de phishing recién montados.' },
-  { t:'Huella digital (fingerprint) de un sitio o archivo', i:'🧬', cat:'Técnico', d:'Un identificador compacto calculado a partir de varias características de algo (una web, una app, un archivo) que permite reconocer si ese mismo patrón vuelve a aparecer en otro sitio distinto — muy usado para rastrear kits de phishing reutilizados.' },
-  { t:'Fuga de DNS (DNS leak)', i:'🕳️', cat:'General', d:'Cuando, a pesar de usar una VPN, las peticiones para "traducir" nombres de dominio a IP siguen saliendo por tu operador de internet real en vez de por el túnel cifrado — revelando qué webs visitas aunque el resto del tráfico esté protegido.' },
+  { t:'Transparencia de certificados (CT Logs)', i:'📜', cat:'Técnico', d:'Un registro público e inmutable de todos los certificados HTTPS emitidos en internet. Permite comprobar exactamente cuándo se emitió el certificado de un dominio, muy útil para detectar sitios de phishing recién montados.' },
+  { t:'Huella digital (fingerprint) de un sitio o archivo', i:'🧬', cat:'Técnico', d:'Un identificador compacto calculado a partir de varias características de algo (una web, una app, un archivo) que permite reconocer si ese mismo patrón vuelve a aparecer en otro sitio distinto, muy usado para rastrear kits de phishing reutilizados.' },
+  { t:'Fuga de DNS (DNS leak)', i:'🕳️', cat:'General', d:'Cuando, a pesar de usar una VPN, las peticiones para "traducir" nombres de dominio a IP siguen saliendo por tu operador de internet real en vez de por el túnel cifrado, revelando qué webs visitas aunque el resto del tráfico esté protegido.' },
   { t:'WebRTC', i:'📹', cat:'Técnico', d:'Tecnología integrada en los navegadores para videollamadas y conexiones directas entre dispositivos sin pasar por un servidor intermedio. Como necesita conocer tu IP real para funcionar, es una vía conocida de fuga de IP incluso con VPN activa.' },
 
   // --- Términos generales de cultura de seguridad, no ligados a ninguna función concreta de Vigía,
   //     añadidos porque tienen alto valor práctico para el usuario objetivo (protección cotidiana) ---
   { t:'Verificación en dos pasos (2FA / MFA)', i:'🔐', cat:'General', d:'Exigir un segundo dato además de la contraseña para iniciar sesión (un código, tu huella, una app autenticadora). Es la medida individual más eficaz contra el robo de cuentas, incluso si tu contraseña llega a filtrarse.' },
   { t:'Filtración de datos (data breach)', i:'💥', cat:'Amenazas', d:'Cuando una empresa sufre un robo o fuga de su base de datos de usuarios (contraseñas, correos, tarjetas…). Si tu contraseña apareció en una filtración antigua, cualquiera puede probarla en otras webs donde la hayas reutilizado.' },
-  { t:'Zero-day (vulnerabilidad de día cero)', i:'💣', cat:'Amenazas', d:'Un fallo de seguridad que los atacantes ya conocen y explotan antes de que el fabricante del software haya tenido tiempo de arreglarlo — de ahí el nombre, "día cero" de protección disponible.' },
-  { t:'Gestor de contraseñas', i:'🗝️', cat:'General', d:'Una app que genera y guarda contraseñas únicas y complejas para cada sitio, para que no tengas que memorizarlas ni reutilizar la misma en todas partes — reutilizar contraseñas es una de las causas más comunes de que una sola filtración afecte a varias cuentas tuyas.' },
-  { t:'Cifrado de extremo a extremo (E2EE)', i:'🔗', cat:'General', d:'Un mensaje se cifra en tu propio dispositivo y solo se descifra en el del destinatario — ni siquiera la empresa que gestiona la app (WhatsApp, Signal…) puede leerlo por el camino.' },
+  { t:'Zero-day (vulnerabilidad de día cero)', i:'💣', cat:'Amenazas', d:'Un fallo de seguridad que los atacantes ya conocen y explotan antes de que el fabricante del software haya tenido tiempo de arreglarlo, de ahí el nombre, "día cero" de protección disponible.' },
+  { t:'Gestor de contraseñas', i:'🗝️', cat:'General', d:'Una app que genera y guarda contraseñas únicas y complejas para cada sitio, para que no tengas que memorizarlas ni reutilizar la misma en todas partes. Reutilizar contraseñas es una de las causas más comunes de que una sola filtración afecte a varias cuentas tuyas.' },
+  { t:'Cifrado de extremo a extremo (E2EE)', i:'🔗', cat:'General', d:'Un mensaje se cifra en tu propio dispositivo y solo se descifra en el del destinatario. Ni siquiera la empresa que gestiona la app (WhatsApp, Signal…) puede leerlo por el camino.' },
 ];
 
 function renderGlosario(filter){
@@ -1871,10 +1877,11 @@ function renderGlosario(filter){
 document.getElementById('glosario-search').addEventListener('input', (e)=>renderGlosario(e.target.value));
 
 const FAQ = [
-  { q:'¿Qué es Vigía exactamente?', a:'Una app que analiza URLs, correos, SMS, apps, imágenes, documentos y más, en busca de señales conocidas de phishing, malware y fraude. Funciona como apoyo antes de abrir algo que te genera dudas — no como un antivirus completo.' },
+  { q:'¿Quién ha hecho Vigía? ¿Está creado por Inteligencia Artificial?', a:'Vigía es un proyecto personal de Jorge Bayán Escobar, creado conjuntamente con ayuda de IA. No es una herramienta generada de forma automática ni sin supervisión. La IA ha asistido a escribir e iterar el código, pero cada decisión de fondo la toma el autor: qué se construye y qué se descarta, cómo se valida cada función antes de incluirse, y la propia filosofía de la app (local-first, sin dependencias frágiles, sin simular resultados que no se puedan garantizar de verdad). Buena parte de las funciones se han validado con pruebas reales antes de entregarse, por ejemplo, certificados X.509 generados a mano para probar el analizador de apps, o los hashes de integridad (SRI) de las librerías externas, que el propio autor generó y verificó con sus propias herramientas. Es, en resumen, un desarrollo asistido por IA pero dirigido, revisado y decidido por una persona, no una app "hecha sola".' },
+  { q:'¿Qué es Vigía exactamente?', a:'Una app que analiza URLs, correos, SMS, apps, imágenes, documentos y más, en busca de señales conocidas de phishing, malware y fraude. Funciona como apoyo antes de abrir algo que te genera dudas, no como un antivirus completo.' },
   { q:'¿Vigía sustituye a un antivirus o a mi banco avisándome de fraudes?', a:'No. Vigía es un complemento heurístico: te ayuda a detectar señales de riesgo con la información que le das, pero no analiza el comportamiento en tiempo real de tu dispositivo ni tiene una base de datos oficial de amenazas conocidas como sí tienen los antivirus.' },
-  { q:'¿Qué tipo de amenazas NO puede detectar Vigía?', a:'Al analizar solo la estructura de lo que le das (sin ejecutar nada ni observar comportamiento en tiempo real), a Vigía se le escapan por diseño cosas como: malware polimórfico que cambia de forma para evadir cada análisis; payloads que se descargan después de superar la primera comprobación; vulnerabilidades de día cero (zero-day) aún desconocidas; campañas de phishing dirigido (spear-phishing) muy elaboradas y personalizadas sin los patrones típicos; o una amenaza ya activa en internet hoy mismo pero con una estructura "limpia" (sin typosquatting, sin TLD sospechoso). Es una capa de detección temprana de patrones conocidos, no un motor antivirus con inteligencia de amenazas en tiempo real — combínalo siempre con tu propio criterio y con un antivirus/MTD real en tu dispositivo.' },
-  { q:'¿Vigía funciona sin conexión a internet? ¿Y para instalarla o llegar a ella?', a:'Para abrir Vigía por primera vez, o para instalarla como app, siempre hace falta conexión — igual que para entrar en cualquier página web. Una vez que la has cargado al menos una vez, la app "recuerda" su propia interfaz y el motor de análisis básico (URLs, SMS, cálculo de hashes, heurísticas de texto…), así que muchos análisis pueden seguir funcionando después sin conexión. Pero ojo: eso NO incluye las consultas a servicios de terceros (comprobar un WHOIS, resolver un DNS, geolocalizar una IP, consultar VirusTotal) ni las herramientas que se cargan bajo demanda la primera vez que las usas (exportar a PDF, leer un QR desde imagen, descomprimir un ZIP, hacer OCR en una captura) — todo eso sigue necesitando conexión cada vez, esté o no instalada la app.' },
+  { q:'¿Qué tipo de amenazas NO puede detectar Vigía?', a:'Al analizar solo la estructura de lo que le das (sin ejecutar nada ni observar comportamiento en tiempo real), a Vigía se le escapan por diseño cosas como: malware polimórfico que cambia de forma para evadir cada análisis; payloads que se descargan después de superar la primera comprobación; vulnerabilidades de día cero (zero-day) aún desconocidas; campañas de phishing dirigido (spear-phishing) muy elaboradas y personalizadas sin los patrones típicos; o una amenaza ya activa en internet hoy mismo pero con una estructura "limpia" (sin typosquatting, sin TLD sospechoso). Es una capa de detección temprana de patrones conocidos, no un motor antivirus con inteligencia de amenazas en tiempo real. Combínalo siempre con tu propio criterio y con un antivirus/MTD real en tu dispositivo.' },
+  { q:'¿Vigía funciona sin conexión a internet? ¿Y para instalarla o llegar a ella?', a:'Para abrir Vigía por primera vez, o para instalarla como app, siempre hace falta conexión, igual que para entrar en cualquier página web. Una vez que la has cargado al menos una vez, la app "recuerda" su propia interfaz y el motor de análisis básico (URLs, SMS, cálculo de hashes, heurísticas de texto…), así que muchos análisis pueden seguir funcionando después sin conexión. Pero ojo: eso NO incluye las consultas a servicios de terceros (comprobar un WHOIS, resolver un DNS, geolocalizar una IP, consultar VirusTotal) ni las herramientas que se cargan bajo demanda la primera vez que las usas (exportar a PDF, leer un QR desde imagen, descomprimir un ZIP, hacer OCR en una captura). Todo eso sigue necesitando conexión cada vez, esté o no instalada la app.' },
   { q:'¿Mis datos se guardan en algún servidor?', a:'No. El historial de tus análisis se guarda únicamente en este navegador (localStorage), en tu propio dispositivo. Puedes borrarlo cuando quieras desde la pestaña Historial, o activar ahí mismo el "modo privado" para que los análisis dejen de guardarse desde ese momento.' },
   { q:'Un análisis me ha dado "sin señales relevantes", ¿significa que es 100% seguro?', a:'No. Significa que no se ha detectado ninguno de los patrones que Vigía sabe reconocer, pero ningún analizador automático puede garantizar seguridad absoluta. Sigue aplicando el sentido común.' },
   { q:'¿Qué hago si un análisis me da un riesgo alto o crítico?', a:'No abras el enlace, no descargues el archivo, ni introduzcas datos personales. Si ya lo hiciste antes de analizarlo, cambia tus contraseñas y contacta con tu banco o la entidad implicada si compartiste datos sensibles.' },
@@ -1882,7 +1889,7 @@ const FAQ = [
   { q:'¿Puedo instalar Vigía como si fuera una app?', a:'Sí, desde el menú de tu navegador ("Añadir a pantalla de inicio" o "Instalar app"). Al ser un único archivo HTML, algunas funciones (como recibir contenido compartido desde otra app) solo funcionan completamente si alojas el archivo en un servidor propio con HTTPS.' },
   { q:'¿Por qué el mismo enlace o archivo puede dar puntuaciones distintas si lo repito?', a:'No debería, salvo que uses una comprobación que consulta un servicio externo (por ejemplo, ver a dónde redirige un enlace) y ese servicio dé una respuesta distinta en ese momento. El análisis heurístico local siempre es el mismo para el mismo contenido.' },
   { q:'¿Vigía puede eliminar un virus o limpiar mi dispositivo?', a:'No. Vigía solo analiza e informa; no puede desinfectar, poner en cuarentena ni eliminar nada de tu dispositivo. Para eso necesitas un antivirus real.' },
-  { q:'¿Qué hago si recibo algo sospechoso que Vigía no sabe analizar?', a:'Desconfía igualmente si algo te genera dudas: pide prisa, dinero, datos personales, o viene de alguien que no esperabas. Ante la duda, contacta directamente con la entidad implicada por un canal oficial que tú mismo busques — nunca por el que te ha contactado a ti.' },
+  { q:'¿Qué hago si recibo algo sospechoso que Vigía no sabe analizar?', a:'Desconfía igualmente si algo te genera dudas: pide prisa, dinero, datos personales, o viene de alguien que no esperabas. Ante la duda, contacta directamente con la entidad implicada por un canal oficial que tú mismo busques, nunca por el que te ha contactado a ti.' },
 ];
 function renderFaq(){
   document.getElementById('faq-list').innerHTML = FAQ.map(f => `<details class="finding-bullet">
@@ -2082,26 +2089,34 @@ document.addEventListener('click', async (e)=>{
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span> consultando DNS y RDAP…';
   const findings = [];
+  let nxdomain = false, notRegistered = false;
   try{
     const [aRes, nsRes, txtRes] = await Promise.all([
       lookupDnsRecordType(domain,'A').catch(()=>null),
       lookupDnsRecordType(domain,'NS').catch(()=>null),
       lookupDnsRecordType(domain,'TXT').catch(()=>null),
     ]);
+    // Status es el código de respuesta DNS estándar (RFC 1035): 0 = NOERROR, 3 = NXDOMAIN
+    // ("este nombre no existe", la respuesta más inequívoca posible). Antes solo se miraba si
+    // había registros A o no, lo cual no distinguía "no existe" de "existe pero sin IPv4" o de
+    // un simple fallo de red — con Status sí queda claro cuál de los tres es.
+    nxdomain = (aRes && aRes.Status === 3) || (nsRes && nsRes.Status === 3);
     const aAnswers = aRes ? (aRes.Answer||[]).filter(a=>a.type===1).map(a=>a.data) : [];
     const nsAnswers = nsRes ? (nsRes.Answer||[]).filter(a=>a.type===2).map(a=>a.data) : [];
     const txtAnswers = txtRes ? (txtRes.Answer||[]).filter(a=>a.type===16).map(a=>a.data.replace(/^"|"$/g,'')) : [];
-    if(aAnswers.length){
+    if(nxdomain){
+      findings.push({sev:'high', title:'🚫 Este dominio no existe (NXDOMAIN)', desc:`El propio DNS responde que "${domain}" no está registrado o no resuelve. No es que Vigía no haya podido comprobarlo: es la respuesta oficial de "este nombre no existe". El análisis de patrones de más arriba se basa solo en el texto de la URL, así que sigue siendo válido, pero conviene saber que este dominio en concreto no parece estar activo ahora mismo.`});
+    } else if(aAnswers.length){
       findings.push({sev:'ok', title:`Registros A: ${aAnswers.join(', ')}`, desc:'Direcciones IPv4 a las que resuelve el dominio en este momento.'});
       try{
         const geo = await lookupIpGeoInfo(aAnswers[0]);
-        findings.push({sev:'ok', title:`ASN / organización: ${geo.asn||'desconocido'}`, desc:`${geo.org||'Organización desconocida'}${(geo.city||geo.country_name) ? ` — ${[geo.city,geo.country_name].filter(Boolean).join(', ')}` : ''}.`});
+        findings.push({sev:'ok', title:`ASN / organización: ${geo.asn||'desconocido'}`, desc:`${geo.org||'Organización desconocida'}${(geo.city||geo.country_name) ? `, ${[geo.city,geo.country_name].filter(Boolean).join(', ')}` : ''}.`});
       }catch(err){}
     } else {
-      findings.push({sev:'med', title:'Sin registros A', desc:'El dominio no resuelve a ninguna IPv4 en este momento (o el DoH no ha podido consultarlo).'});
+      findings.push({sev:'med', title:'El dominio existe pero no tiene registros A', desc:'El DNS confirma que el dominio está registrado (no es NXDOMAIN), pero no resuelve a ninguna IPv4 en este momento — puede depender solo de otros tipos de registro, o estar mal configurado.'});
     }
-    if(nsAnswers.length) findings.push({sev:'ok', title:`Servidores de nombres (${nsAnswers.length})`, desc: nsAnswers.join(', ')});
-    if(txtAnswers.length) findings.push({sev:'low', title:`${txtAnswers.length} registro(s) TXT`, desc: txtAnswers.slice(0,5).join(' | ')});
+    if(!nxdomain && nsAnswers.length) findings.push({sev:'ok', title:`Servidores de nombres (${nsAnswers.length})`, desc: nsAnswers.join(', ')});
+    if(!nxdomain && txtAnswers.length) findings.push({sev:'low', title:`${txtAnswers.length} registro(s) TXT`, desc: txtAnswers.slice(0,5).join(' | ')});
   }catch(err){
     findings.push({sev:'low', title:'No se pudieron consultar los registros DNS', desc: err.message||'error de red'});
   }
@@ -2116,12 +2131,20 @@ document.addEventListener('click', async (e)=>{
       else if(days<30){ sev='high'; label=`registrado hace ${days} días`; }
       else if(days<180){ sev='med'; label=`registrado hace ${Math.floor(days/30)} mes(es)`; }
       else { sev='ok'; label=`registrado hace ${Math.floor(days/365)} año(s)`; }
-      findings.push({sev, title:`Antigüedad del dominio: ${label}`, desc:`Fecha de registro (RDAP): ${rdap.registrationDate}. Los dominios recién registrados se usan desproporcionadamente en campañas de phishing de corta duración — cuanto más reciente, mayor la sospecha combinada con otras señales.`});
+      findings.push({sev, title:`Antigüedad del dominio: ${label}`, desc:`Fecha de registro (RDAP): ${rdap.registrationDate}. Los dominios recién registrados se usan desproporcionadamente en campañas de phishing de corta duración, cuanto más reciente, mayor la sospecha combinada con otras señales.`});
     }
     if(rdap.registrar) findings.push({sev:'ok', title:`Registrador: ${rdap.registrar}`, desc: rdap.status.length ? `Estado: ${rdap.status.join(', ')}` : ''});
     if(rdap.nameservers.length) findings.push({sev:'low', title:`Servidores de nombres (RDAP): ${rdap.nameservers.length}`, desc: rdap.nameservers.join(', ')});
   }catch(err){
-    findings.push({sev:'low', title:'No se pudo consultar RDAP (WHOIS)', desc:'El registro de este dominio puede no exponer RDAP públicamente, o bloquear peticiones directas desde el navegador (' + (err.message||'error') + ').'});
+    // rdap.org devuelve 404 cuando el dominio sencillamente no está registrado — antes se
+    // trataba igual que cualquier otro fallo de red, dando la falsa sensación de que Vigía
+    // "no pudo" comprobarlo, cuando en realidad la respuesta (ausencia de registro) es clara.
+    notRegistered = /404/.test(err.message||'');
+    if(notRegistered){
+      findings.push({sev:'high', title:'🚫 Este dominio no aparece registrado (RDAP)', desc:`La base pública de dominios no tiene ningún registro para "${domain}". Es una respuesta clara, no un fallo de conexión: este dominio no está actualmente registrado por nadie.`});
+    } else {
+      findings.push({sev:'low', title:'No se pudo consultar RDAP (WHOIS)', desc:'El registro de este dominio puede no exponer RDAP públicamente, o bloquear peticiones directas desde el navegador (' + (err.message||'error') + ').'});
+    }
   }
   box.innerHTML = renderFindings(findings);
   btn.disabled = false;
@@ -2163,7 +2186,7 @@ function analyzeSingleUrl(raw){
   if(u.protocol === 'http:'){
     findings.push({sev:'med', title:'Conexión sin cifrar (HTTP)', desc:'El sitio no usa HTTPS, por lo que los datos viajarían sin cifrar. Legítimo en muy pocos casos hoy en día.'});
   } else if(u.protocol === 'https:'){
-    findings.push({sev:'ok', title:'HTTPS válido', desc:'La conexión con este dominio va cifrada. Esto protege los datos en tránsito, pero no dice nada sobre si el propio sitio es de confianza — un sitio de phishing también puede tener HTTPS.'});
+    findings.push({sev:'ok', title:'HTTPS válido', desc:'La conexión con este dominio va cifrada. Esto protege los datos en tránsito, pero no dice nada sobre si el propio sitio es de confianza. Un sitio de phishing también puede tener HTTPS.'});
   }
 
   // 2. Host como dirección IP literal
@@ -2180,13 +2203,13 @@ function analyzeSingleUrl(raw){
   if(hasPunycode){
     let decodedHost = host;
     try{ decodedHost = decodePunycodeHost(host); }catch(e){}
-    findings.push({sev:'high', title:'Dominio internacionalizado (punycode)', desc:`El dominio usa codificación punycode (xn--), habitual en ataques de homógrafos donde letras de otros alfabetos imitan visualmente a un dominio conocido.${decodedHost!==host?`\nTexto visual real: "${decodedHost}" — compáralo con la marca que crees reconocer.`:''}`});
+    findings.push({sev:'high', title:'Dominio internacionalizado (punycode)', desc:`El dominio usa codificación punycode (xn--), habitual en ataques de homógrafos donde letras de otros alfabetos imitan visualmente a un dominio conocido.${decodedHost!==host?`\nTexto visual real: "${decodedHost}". Compáralo con la marca que crees reconocer.`:''}`});
   }
   if(hasMixed){
     findings.push({sev:'high', title:'Mezcla de alfabetos en el dominio', desc:'El nombre de dominio combina caracteres de distintos sistemas de escritura, un patrón típico de suplantación visual (homógrafos).'});
   }
   if(!hasPunycode && !hasMixed){
-    findings.push({sev:'ok', title:'Sin homógrafos ni codificación punycode', desc:'El dominio no combina alfabetos distintos ni usa codificación internacionalizada — descarta la técnica de suplantación visual más habitual.'});
+    findings.push({sev:'ok', title:'Sin homógrafos ni codificación punycode', desc:'El dominio no combina alfabetos distintos ni usa codificación internacionalizada. Descarta la técnica de suplantación visual más habitual.'});
   }
 
   // 5. Arroba en la URL
@@ -2301,7 +2324,7 @@ function analyzeSingleUrl(raw){
   const digitRatio = (hostNoTld.match(/\d/g)||[]).length / Math.max(hostNoTld.length,1);
   const fingerprintInput = [tld, subCount, hyphens, Math.round(domainEntropy*10), brandMismatchFound?1:0, Math.round(digitRatio*10), Math.min(host.length,60)].join('|');
   const structuralFingerprint = fnv1aHash(fingerprintInput);
-  findings.push({sev:'ok', title:`Huella estructural: ${structuralFingerprint}`, desc:'Combina TLD, nº de subdominios, guiones, entropía, coincidencia de marca y longitud en un identificador compacto — no es un hash de seguridad, sino una forma de detectar si el mismo patrón de dominio sospechoso reaparece en distintos análisis de tu Historial, típico de kits de phishing reutilizados en muchos dominios distintos.'});
+  findings.push({sev:'ok', title:`Huella estructural: ${structuralFingerprint}`, desc:'Combina TLD, nº de subdominios, guiones, entropía, coincidencia de marca y longitud en un identificador compacto. No es un hash de seguridad, sino una forma de detectar si el mismo patrón de dominio sospechoso reaparece en distintos análisis de tu Historial, típico de kits de phishing reutilizados en muchos dominios distintos.'});
 
   return { raw, url:u, host, findings, error:false };
 }
@@ -2335,13 +2358,13 @@ function renderUrlResult(res){
       <div class="hint" style="font-family:var(--mono);margin-bottom:10px;word-break:break-all;flex:1;min-width:200px;">${escapeHtml(res.raw)}</div>
       ${exportButtonHtml(uid)}
     </div>
-    ${renderVerdict(score)}
+    ${renderVerdict(score, 'Basado en el patrón del texto de la URL, no en si el dominio está activo ahora mismo — para confirmarlo, usa "Consultar DNS, ASN, WHOIS y si existe" más abajo.')}
     <div class="result-block">
       <h3>Hallazgos (${res.findings.length})</h3>
       ${renderFindings(res.findings)}
     </div>
     <div class="result-block">
-      <h3>${isShortener ? '⚠ Enlace acortado — dirección final' : 'Dirección final y saltos de redirección'}</h3>
+      <h3>${isShortener ? '⚠ Enlace acortado: dirección final' : 'Dirección final y saltos de redirección'}</h3>
       <p class="hint">Vigía no sigue el enlace por sí sola. Con tu permiso explícito, puede pedirle a un servicio externo (<span style="font-family:var(--mono);">redirectcheck.org</span>) que trace la cadena de redirecciones y te devuelva la URL final real.</p>
       <div class="row mt">
         <button class="btn ghost resolve-chain-btn" data-uid="${uid}" data-rawurl="${encodeURIComponent(res.url.href)}">Ver dirección final y saltos ↴</button>
@@ -2350,8 +2373,8 @@ function renderUrlResult(res){
     </div>
     <div class="result-block">
       <h3>DNS, ASN y WHOIS (RDAP)</h3>
-      <p class="hint">Con tu permiso, se consulta el DNS público (Cloudflare) para ver a qué IP resuelve el dominio y su organización (ASN), y el registro RDAP —el sustituto moderno de WHOIS, accesible por HTTPS— para ver cuándo se registró y quién es el registrador.</p>
-      <div class="row mt"><button class="btn ghost url-intel-btn" data-domain="${encodeURIComponent(res.host)}" data-target="intel-${intelUid}">Consultar DNS, ASN y WHOIS</button></div>
+      <p class="hint">Con tu permiso, se consulta el DNS público (Cloudflare) para ver a qué IP resuelve el dominio y su organización (ASN), y el registro RDAP (el sustituto moderno de WHOIS, accesible por HTTPS) para ver cuándo se registró y quién es el registrador. <b style="color:var(--text);">También es la forma de confirmar si el dominio existe de verdad ahora mismo</b> — el análisis de arriba solo mira el patrón del texto de la URL, no si está activa.</p>
+      <div class="row mt"><button class="btn ghost url-intel-btn" data-domain="${encodeURIComponent(res.host)}" data-target="intel-${intelUid}">Consultar DNS, ASN, WHOIS y si existe</button></div>
       <div id="intel-${intelUid}" class="mt"></div>
     </div>
     <div class="result-block">
@@ -2413,7 +2436,7 @@ function renderChainHops(data){
     chainHtml += `<span class="hint">Sin redirecciones: el enlace ya apunta directamente a su destino.</span>`;
   } else {
     hops.forEach((h,i)=>{
-      chainHtml += `<div>${i+1}. ${escapeHtml(h.from)} <span style="color:var(--warn);">— ${h.status_code||'?'} (${h.type||'http'}) →</span></div>`;
+      chainHtml += `<div>${i+1}. ${escapeHtml(h.from)} <span style="color:var(--warn);">: ${h.status_code||'?'} (${h.type||'http'}) →</span></div>`;
     });
   }
   chainHtml += `<div class="mt" style="color:var(--signal);font-weight:600;">➜ Destino final: ${escapeHtml(finalUrl||'desconocido')} ${data.final_result?`(HTTP ${data.final_result.status_code})`:''}</div>`;
@@ -2525,9 +2548,9 @@ function analyzeIpAddress(raw){
   if(isV4){
     const match = PRIVATE_IP_RANGES.find(r => inCidr(ip, r.cidr));
     if(match){
-      findings.push({sev:'low', title:`Rango ${match.name}`, desc:`${ip} pertenece a un rango ${match.name}, reservado por los estándares de Internet — no es una IP pública real circulando por Internet. Si esperabas ver aquí una IP pública genuina, revisa de dónde procede el dato.`});
+      findings.push({sev:'low', title:`Rango ${match.name}`, desc:`${ip} pertenece a un rango ${match.name}, reservado por los estándares de Internet. No es una IP pública real circulando por Internet. Si esperabas ver aquí una IP pública genuina, revisa de dónde procede el dato.`});
     } else {
-      findings.push({sev:'ok', title:'Formato de IP pública válido', desc:'No pertenece a ningún rango privado o reservado conocido. Su reputación (si está asociada a botnets, spam, escaneos, etc.) solo puede comprobarse en las fuentes externas de abajo — Vigía no tiene una base de datos propia de IPs maliciosas.'});
+      findings.push({sev:'ok', title:'Formato de IP pública válido', desc:'No pertenece a ningún rango privado o reservado conocido. Su reputación (si está asociada a botnets, spam, escaneos, etc.) solo puede comprobarse en las fuentes externas de abajo. Vigía no tiene una base de datos propia de IPs maliciosas.'});
     }
   } else {
     findings.push({sev:'ok', title:'Formato IPv6 reconocido', desc:'Vigía no aplica heurísticas de rangos reservados a IPv6 en esta versión; consulta directamente las fuentes externas.'});
@@ -2592,7 +2615,7 @@ document.addEventListener('click', async (e)=>{
   try{
     const geo = await lookupIpGeoInfo(ip);
     const parts = [geo.city, geo.region, geo.country_name].filter(Boolean).join(', ');
-    box.innerHTML = renderFinding({sev:'ok', title: parts || 'Datos de geolocalización obtenidos', desc:`Organización/ISP: ${geo.org || 'desconocida'}. ${geo.asn ? 'ASN: '+geo.asn+'. ' : ''}Esta información describe quién opera la IP, no si está comprometida — sigue siendo necesario comprobar su reputación en las fuentes externas.`});
+    box.innerHTML = renderFinding({sev:'ok', title: parts || 'Datos de geolocalización obtenidos', desc:`Organización/ISP: ${geo.org || 'desconocida'}. ${geo.asn ? 'ASN: '+geo.asn+'. ' : ''}Esta información describe quién opera la IP, no si está comprometida. Sigue siendo necesario comprobar su reputación en las fuentes externas.`});
   }catch(err){
     box.innerHTML = `<p class="hint">No se pudo obtener geolocalización (${escapeHtml(err.message||'error de red')}). El servicio externo puede estar limitando peticiones o no reconocer esta IP.</p>`;
   } finally {
@@ -2679,7 +2702,7 @@ document.getElementById('webrtc-leak-btn').addEventListener('click', async ()=>{
     const findings = [];
 
     if(!webrtc.supported){
-      findings.push({sev:'ok', title:'WebRTC no disponible en este navegador', desc:'Sin WebRTC no existe este vector de fuga concreto — no hay nada que comprobar por esta vía.'});
+      findings.push({sev:'ok', title:'WebRTC no disponible en este navegador', desc:'Sin WebRTC no existe este vector de fuga concreto. No hay nada que comprobar por esta vía.'});
     } else {
       const classified = webrtc.candidates.map(c=>({...c, ...classifyWebrtcAddress(c.raw)}));
       const publicIps = [...new Set(classified.filter(c=>c.kind==='public').map(c=>c.raw))];
@@ -2687,7 +2710,7 @@ document.getElementById('webrtc-leak-btn').addEventListener('click', async ()=>{
       const mdnsCount = classified.filter(c=>c.kind==='mdns').length;
 
       if(classified.length===0){
-        findings.push({sev:'ok', title:'No se recogió ningún candidato ICE', desc:'Puede deberse a que una extensión o ajuste del navegador ya bloquea la recogida de candidatos WebRTC — es una señal positiva, no un fallo del test.'});
+        findings.push({sev:'ok', title:'No se recogió ningún candidato ICE', desc:'Puede deberse a que una extensión o ajuste del navegador ya bloquea la recogida de candidatos WebRTC. Es una señal positiva, no un fallo del test.'});
       }
       if(publicIps.length){
         const httpMismatch = httpIp && !publicIps.includes(httpIp);
@@ -2697,12 +2720,12 @@ document.getElementById('webrtc-leak-btn').addEventListener('click', async ()=>{
           desc: `WebRTC revela: ${publicIps.join(', ')}.${httpIp ? ` Tu IP pública por HTTP es: ${httpIp}.` : ''}${httpMismatch ? ' Esto es típico de una fuga: si usas VPN, significa que el tráfico UDP de WebRTC está saliendo fuera del túnel y muestra tu IP real (o la de otro proveedor) aunque tu tráfico web normal parezca protegido.' : ' No hay indicios de fuga por esta vía: ambas coinciden.'}`
         });
       } else if(httpIp) {
-        findings.push({sev:'ok', title:'WebRTC no expone ninguna IP pública propia', desc:`Tu IP pública por HTTP es: ${httpIp}. WebRTC solo mostró información local o ninguna — no hay indicios de fuga de IP pública por esta vía.`});
+        findings.push({sev:'ok', title:'WebRTC no expone ninguna IP pública propia', desc:`Tu IP pública por HTTP es: ${httpIp}. WebRTC solo mostró información local o ninguna. No hay indicios de fuga de IP pública por esta vía.`});
       }
       if(privateIps.length){
-        findings.push({sev:'low', title:`WebRTC expone ${privateIps.length} IP(s) local(es) sin ofuscar`, desc:`${privateIps.join(', ')}. Revela tu topología de red local (útil para un atacante en la misma red o para huella digital). Los navegadores modernos suelen ofuscar esto con nombres mDNS aleatorios — si ves aquí una IP real, prueba a actualizar el navegador o revisar su configuración de privacidad de WebRTC.`});
+        findings.push({sev:'low', title:`WebRTC expone ${privateIps.length} IP(s) local(es) sin ofuscar`, desc:`${privateIps.join(', ')}. Revela tu topología de red local (útil para un atacante en la misma red o para huella digital). Los navegadores modernos suelen ofuscar esto con nombres mDNS aleatorios. Si ves aquí una IP real, prueba a actualizar el navegador o revisar su configuración de privacidad de WebRTC.`});
       } else if(mdnsCount>0){
-        findings.push({sev:'ok', title:'IPs locales protegidas por mDNS', desc:'Tu navegador oculta las direcciones locales tras identificadores aleatorios en vez de exponerlas directamente — comportamiento moderno y recomendado.'});
+        findings.push({sev:'ok', title:'IPs locales protegidas por mDNS', desc:'Tu navegador oculta las direcciones locales tras identificadores aleatorios en vez de exponerlas directamente, comportamiento moderno y recomendado.'});
       }
     }
 
@@ -2711,13 +2734,13 @@ document.getElementById('webrtc-leak-btn').addEventListener('click', async ()=>{
     const uid = 'wrtc' + Math.random().toString(36).slice(2,10);
     registerReport(uid, {
       kind:'dns-leak', title:'Informe de comprobación de fugas de IP (WebRTC)', subject: httpIp || 'IP pública desconocida', score, findings,
-      disclaimer:'Comprobación real de fugas de IP vía WebRTC, ejecutada enteramente en tu navegador. No sustituye a un test de fugas DNS completo (que requiere un servidor especializado como dnsleaktest.com) — úsalos como complementarios.'
+      disclaimer:'Comprobación real de fugas de IP vía WebRTC, ejecutada enteramente en tu navegador. No sustituye a un test de fugas DNS completo (que requiere un servidor especializado como dnsleaktest.com). Úsalos como complementarios.'
     });
     box.innerHTML = `<div class="card">
       <div class="row" style="justify-content:flex-end;margin-bottom:4px;">${exportButtonHtml(uid)}</div>
       ${renderVerdict(score)}
       <div class="result-block"><h3>Hallazgos (${findings.length})</h3>${renderFindings(findings)}</div>
-      <p class="disclaimer"><b>Alcance:</b> comprueba fugas de IP por WebRTC en este navegador y las compara con tu IP pública vista por HTTP. No mide qué servidores DNS usa tu sistema — para eso, usa la herramienta especializada de arriba.</p>
+      <p class="disclaimer"><b>Alcance:</b> comprueba fugas de IP por WebRTC en este navegador y las compara con tu IP pública vista por HTTP. No mide qué servidores DNS usa tu sistema. Para eso, usa la herramienta especializada de arriba.</p>
     </div>`;
     pulseSignal(score);
   }catch(err){
@@ -2827,7 +2850,7 @@ function parseReceivedChain(headers){
 }
 function renderReceivedTimeline(hops){
   if(!hops.length){
-    return '<p class="hint">No se encontraron cabeceras "Received" en el texto — probablemente solo se pegó el cuerpo del mensaje, sin encabezados técnicos completos.</p>';
+    return '<p class="hint">No se encontraron cabeceras "Received" en el texto. Probablemente solo se pegó el cuerpo del mensaje, sin encabezados técnicos completos.</p>';
   }
   let prevDate = null;
   const rows = hops.map((hop, i)=>{
@@ -3018,7 +3041,7 @@ async function runFullEmailAuthCheck(uid){
     const map = { pass:'ok', neutral:'low', softfail:'med', fail:'high', permerror:'med', temperror:'low', none:'low' };
     for(const [mech, val] of [['SPF',ar.spf],['DKIM',ar.dkim],['DMARC',ar.dmarc]]){
       if(!val) continue;
-      out.findings.push({sev: map[val]||'low', title:`${mech} (según el servidor receptor): ${val}`, desc:`Extraído de la cabecera "Authentication-Results" que añadió el propio servidor de correo al recibir el mensaje — es el resultado más fiable posible, ya que solo el servidor que aceptó la conexión SMTP conoce la IP real de origen.`});
+      out.findings.push({sev: map[val]||'low', title:`${mech} (según el servidor receptor): ${val}`, desc:`Extraído de la cabecera "Authentication-Results" que añadió el propio servidor de correo al recibir el mensaje. Es el resultado más fiable posible, ya que solo el servidor que aceptó la conexión SMTP conoce la IP real de origen.`});
     }
   } else {
     out.findings.push({sev:'low', title:'Sin cabecera "Authentication-Results"', desc:'El mensaje no incluye el resultado de verificación de su propio servidor receptor (puede haberse eliminado al exportar/reenviar el correo). Se recurre a una comprobación propia, mejor-esfuerzo, a continuación.'});
@@ -3027,17 +3050,17 @@ async function runFullEmailAuthCheck(uid){
   if(fromDomain){
     const spf = await verifySpfRecord(fromDomain);
     if(spf.found){
-      const strength = spf.all==='-all' ? 'estricta (-all, rechaza todo lo no listado)' : spf.all==='~all' ? 'permisiva (~all, marca como sospechoso lo no listado)' : spf.all==='?all' ? 'neutra (?all, no toma postura)' : spf.all==='+all' ? 'sin restricción (+all, permite cualquier origen — muy inusual y arriesgado)' : 'sin mecanismo "all" explícito';
-      out.findings.push({sev: spf.all==='+all'?'high':'ok', title:`Registro SPF publicado por "${fromDomain}"`, desc:`Política: ${strength}. Esto confirma que el dominio ha definido qué servidores pueden enviar en su nombre — no confirma por sí solo que este mensaje concreto proceda de uno de ellos (para eso hace falta la IP real de conexión, normalmente solo visible para el servidor receptor).`});
+      const strength = spf.all==='-all' ? 'estricta (-all, rechaza todo lo no listado)' : spf.all==='~all' ? 'permisiva (~all, marca como sospechoso lo no listado)' : spf.all==='?all' ? 'neutra (?all, no toma postura)' : spf.all==='+all' ? 'sin restricción (+all, permite cualquier origen, muy inusual y arriesgado)' : 'sin mecanismo "all" explícito';
+      out.findings.push({sev: spf.all==='+all'?'high':'ok', title:`Registro SPF publicado por "${fromDomain}"`, desc:`Política: ${strength}. Esto confirma que el dominio ha definido qué servidores pueden enviar en su nombre. No confirma por sí solo que este mensaje concreto proceda de uno de ellos (para eso hace falta la IP real de conexión, normalmente solo visible para el servidor receptor).`});
     } else if(!spf.error){
       out.findings.push({sev:'med', title:`"${fromDomain}" no publica ningún registro SPF`, desc:'Sin SPF, cualquiera puede enviar correo alegando ser este dominio sin que los servidores receptores puedan contrastarlo. No es necesariamente malicioso (muchos dominios pequeños no lo configuran), pero es una ausencia notable si se trata de una marca grande.'});
     }
     const dmarc = await verifyDmarcRecord(fromDomain);
     if(dmarc.found){
       const policyLabel = {reject:'reject (rechazar)', quarantine:'quarantine (cuarentena/spam)', none:'none (solo monitorización, no bloquea nada)'}[dmarc.policy] || dmarc.policy || 'desconocida';
-      out.findings.push({sev: dmarc.policy==='none'?'low':'ok', title:`Registro DMARC publicado — política: ${policyLabel}`, desc:'DMARC exige que el dominio del "From" esté alineado con el que validó SPF o DKIM. Una política "none" solo monitoriza sin bloquear correo falsificado, así que ofrece poca protección real.'});
+      out.findings.push({sev: dmarc.policy==='none'?'low':'ok', title:`Registro DMARC publicado (política: ${policyLabel})`, desc:'DMARC exige que el dominio del "From" esté alineado con el que validó SPF o DKIM. Una política "none" solo monitoriza sin bloquear correo falsificado, así que ofrece poca protección real.'});
     } else if(!dmarc.error){
-      out.findings.push({sev:'med', title:`"${fromDomain}" no publica ningún registro DMARC`, desc:'Sin DMARC, aunque SPF o DKIM existan, no hay una política clara sobre qué hacer con el correo que no los cumple — queda a criterio de cada servidor receptor.'});
+      out.findings.push({sev:'med', title:`"${fromDomain}" no publica ningún registro DMARC`, desc:'Sin DMARC, aunque SPF o DKIM existan, no hay una política clara sobre qué hacer con el correo que no los cumple. Queda a criterio de cada servidor receptor.'});
     }
   }
 
@@ -3048,11 +3071,11 @@ async function runFullEmailAuthCheck(uid){
     for(const dkimVal of dkimHeaders.slice(0,3)){
       const dk = await verifyDkimSignature(headers, bodyText, dkimVal);
       if(!dk.supported){
-        out.findings.push({sev:'low', title:`Firma DKIM (d=${dk.tags.d||'?'}): no se pudo verificar aquí`, desc: dk.reason + ' Esto no significa que sea inválida — solo que esta comprobación concreta no cubre ese caso.'});
+        out.findings.push({sev:'low', title:`Firma DKIM (d=${dk.tags.d||'?'}): no se pudo verificar aquí`, desc: dk.reason + ' Esto no significa que sea inválida, solo que esta comprobación concreta no cubre ese caso.'});
       } else if(dk.pass && dk.bodyHashMatch){
         out.findings.push({sev:'ok', title:`Firma DKIM válida (d=${dk.domain}, selector ${dk.selector})`, desc:'La firma criptográfica se ha verificado contra la clave pública publicada en el DNS del dominio firmante, y el hash del cuerpo coincide: el contenido firmado no se ha modificado desde que se firmó.'});
       } else {
-        out.findings.push({sev:'high', title:`La firma DKIM no es válida (d=${dk.tags.d||'?'})`, desc: !dk.bodyHashMatch ? 'El hash del cuerpo no coincide con el firmado — el contenido pudo modificarse después de firmarse. Nota: si copiaste/pegaste el correo, esto también puede deberse a cambios en los saltos de línea al exportar; contrástalo con el original si es posible.' : 'La firma criptográfica no coincide con la clave pública publicada por el dominio — indicio de manipulación o de una cabecera copiada/incompleta.'});
+        out.findings.push({sev:'high', title:`La firma DKIM no es válida (d=${dk.tags.d||'?'})`, desc: !dk.bodyHashMatch ? 'El hash del cuerpo no coincide con el firmado. El contenido pudo modificarse después de firmarse. Nota: si copiaste/pegaste el correo, esto también puede deberse a cambios en los saltos de línea al exportar; contrástalo con el original si es posible.' : 'La firma criptográfica no coincide con la clave pública publicada por el dominio, indicio de manipulación o de una cabecera copiada/incompleta.'});
       }
     }
   }
@@ -3100,9 +3123,9 @@ document.addEventListener('click', async (e)=>{
     try{
       const geo = await lookupIpGeoInfo(ip);
       const parts = [geo.city, geo.region, geo.country_name].filter(Boolean).join(', ');
-      box.innerHTML = ` — ${escapeHtml(parts || 'ubicación desconocida')}${geo.org?' · '+escapeHtml(geo.org):''}`;
+      box.innerHTML = `${escapeHtml(parts || 'ubicación desconocida')}${geo.org?' · '+escapeHtml(geo.org):''}`;
     }catch(err){
-      box.innerHTML = ` — no se pudo geolocalizar (${escapeHtml(err.message||'error')})`;
+      box.innerHTML = `No se pudo geolocalizar (${escapeHtml(err.message||'error')})`;
     } finally {
       hopBtn.disabled = false;
       hopBtn.style.display = 'none';
@@ -3172,7 +3195,7 @@ function analyzeEmailSource(source){
   const emotionLabels = {miedo:'Miedo / amenaza', autoridad:'Autoridad / suplantación de organismo', codicia:'Codicia / premio', escasez:'Escasez / plazo artificial', curiosidad:'Curiosidad / gancho social'};
   const emotionCats = Object.keys(emotionHits);
   if(emotionCats.length){
-    findings.push({sev: emotionCats.length>=2?'high':'med', title:`Técnicas de manipulación emocional detectadas (${emotionCats.length})`, desc: emotionCats.map(c=>`${emotionLabels[c]}: ${emotionHits[c].slice(0,3).join(', ')}`).join('\n') + '\nEstas categorías son las palancas de persuasión más usadas en ingeniería social — su presencia es un patrón de texto, no una prueba definitiva de fraude.'});
+    findings.push({sev: emotionCats.length>=2?'high':'med', title:`Técnicas de manipulación emocional detectadas (${emotionCats.length})`, desc: emotionCats.map(c=>`${emotionLabels[c]}: ${emotionHits[c].slice(0,3).join(', ')}`).join('\n') + '\nEstas categorías son las palancas de persuasión más usadas en ingeniería social. Su presencia es un patrón de texto, no una prueba definitiva de fraude.'});
   }
 
   // Saludo genérico
@@ -3207,7 +3230,7 @@ function analyzeEmailSource(source){
   /* Cliente de correo declarado */
   const mailClient = classifyMailClient(headers);
   if(mailClient){
-    findings.push({sev:'low', title: mailClient.label ? `Enviado aparentemente con: ${mailClient.label}` : 'Cliente de correo no reconocido declarado', desc:`Cabecera detectada: "${mailClient.raw}". Es un dato fácilmente falsificable por quien envía el correo — úsalo solo como contexto adicional, nunca como prueba por sí solo.`});
+    findings.push({sev:'low', title: mailClient.label ? `Enviado aparentemente con: ${mailClient.label}` : 'Cliente de correo no reconocido declarado', desc:`Cabecera detectada: "${mailClient.raw}". Es un dato fácilmente falsificable por quien envía el correo. Úsalo solo como contexto adicional, nunca como prueba por sí solo.`});
   }
 
   /* Cadena de saltos (Received) + línea de tiempo */
@@ -3218,7 +3241,7 @@ function analyzeEmailSource(source){
   const importantHeaderNames = ['From','To','Reply-To','Return-Path','Subject','Date','Message-ID','X-Mailer','User-Agent','Content-Type'];
   const missingHeaders = importantHeaderNames.filter(n=>!getHeaderValue(headers, n));
   if(headers.length && (missingHeaders.includes('Message-ID') || missingHeaders.includes('Date'))){
-    findings.push({sev:'low', title:'Faltan cabeceras técnicas habituales', desc:`Ausentes: ${missingHeaders.filter(n=>n==='Message-ID'||n==='Date').join(', ')}. Casi todo correo legítimo generado por un servidor real las incluye — su ausencia es una señal débil pero digna de nota.`});
+    findings.push({sev:'low', title:'Faltan cabeceras técnicas habituales', desc:`Ausentes: ${missingHeaders.filter(n=>n==='Message-ID'||n==='Date').join(', ')}. Casi todo correo legítimo generado por un servidor real las incluye. Su ausencia es una señal débil pero digna de nota.`});
   }
   const headersTable = headers.length ? `<div class="result-block"><h3>Todas las cabeceras detectadas (${headers.length})</h3><div class="headers-table">${headers.map(h=>`<div class="hdr-row"><span class="hdr-name">${escapeHtml(h.name)}</span><span class="hdr-val">${escapeHtml(h.value.length>300?h.value.slice(0,300)+'…':h.value)}</span></div>`).join('')}</div></div>` : '';
 
@@ -3442,7 +3465,7 @@ document.getElementById('eml-file').addEventListener('change', async (e)=>{
       document.getElementById('eml-text').value = msg.source;
       status.textContent = msg.hadTransportHeaders
         ? '.msg leído correctamente (con cabeceras SMTP originales).'
-        : '.msg leído correctamente (sin cabeceras SMTP originales — análisis basado en asunto, remitente y cuerpo).';
+        : '.msg leído correctamente (sin cabeceras SMTP originales, análisis basado en asunto, remitente y cuerpo).';
     }catch(err){
       status.textContent = '';
       document.getElementById('eml-text').value = '';
@@ -3512,7 +3535,7 @@ function analyzeSenderAddress(addr){
   }
 
   if(DISPOSABLE_DOMAINS.includes(domain)){
-    findings.push({sev:'med', title:'Dominio de correo desechable/temporal', desc:`"${domain}" es un proveedor de correos de usar-y-tirar. Muy común en cuentas creadas para fraude, registros falsos o para evitar ser rastreado — no es señal definitiva, pero conviene desconfiar si dice representar a una empresa.`});
+    findings.push({sev:'med', title:'Dominio de correo desechable/temporal', desc:`"${domain}" es un proveedor de correos de usar-y-tirar. Muy común en cuentas creadas para fraude, registros falsos o para evitar ser rastreado. No es señal definitiva, pero conviene desconfiar si dice representar a una empresa.`});
   }
 
   if(FREE_WEBMAIL_DOMAINS.includes(domain)){
@@ -3564,7 +3587,7 @@ document.getElementById('sender-analyze-btn').addEventListener('click', ()=>{
     <div class="result-block"><h3>Hallazgos (${findings.length})</h3>${renderFindings(findings)}</div>
     ${domain ? `<div class="result-block">
       <h3>Comprobación de servidores de correo (MX)</h3>
-      <p class="hint">Con tu permiso, se consulta un resolutor DNS público (Cloudflare) para ver si "${escapeHtml(domain)}" tiene servidores de correo configurados. Un dominio sin MX y sin web reales no puede recibir ni enviar correo de forma legítima — fuerte indicio de dominio inventado o inactivo.</p>
+      <p class="hint">Con tu permiso, se consulta un resolutor DNS público (Cloudflare) para ver si "${escapeHtml(domain)}" tiene servidores de correo configurados. Un dominio sin MX y sin web reales no puede recibir ni enviar correo de forma legítima, fuerte indicio de dominio inventado o inactivo.</p>
       <div class="row mt"><button class="btn ghost mx-check-btn" data-uid="${uid}" data-domain="${encodeURIComponent(domain)}">Comprobar registros MX</button></div>
       <div id="mx-${uid}" class="mt"></div>
     </div>` : ''}
@@ -3590,7 +3613,7 @@ document.addEventListener('click', async (e)=>{
     if(data.Status === 3){
       box.innerHTML = renderFinding({sev:'high', title:'El dominio no existe (NXDOMAIN)', desc:`"${domain}" no está registrado o no resuelve en DNS público. Un remitente con un dominio inexistente es prácticamente siempre falso.`});
     } else if(answers.length===0){
-      box.innerHTML = renderFinding({sev:'med', title:'Sin registros MX', desc:`"${domain}" existe pero no tiene servidores de correo (MX) configurados. Es inusual para un dominio que envía correo de forma legítima — revísalo con más atención.`});
+      box.innerHTML = renderFinding({sev:'med', title:'Sin registros MX', desc:`"${domain}" existe pero no tiene servidores de correo (MX) configurados. Es inusual para un dominio que envía correo de forma legítima. Revísalo con más atención.`});
     } else {
       box.innerHTML = renderFinding({sev:'ok', title:`${answers.length} registro(s) MX encontrado(s)`, desc:'El dominio tiene servidores de correo configurados. Esto confirma que puede enviar/recibir correo, pero no garantiza que este mensaje en concreto sea legítimo.'});
     }
@@ -3609,9 +3632,7 @@ async function ensureTesseract(){
     const s = document.createElement('script');
     s.src = 'https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.0.4/tesseract.min.js';
     s.crossOrigin = 'anonymous';
-    // TODO (Subresource Integrity pendiente): generar con
-    //   curl -s <URL de arriba> | openssl dgst -sha384 -binary | openssl base64 -A
-    // y añadir aquí:  s.integrity = 'sha384-...';
+    s.integrity = 'sha384-Ptw8HCYAWF6vIop6WuGxfSCiDCIzUWqjrHYfx8Vd0S4CMBaicAdBh2y+Ufle664A';
     s.onload = resolve; s.onerror = reject;
     document.head.appendChild(s);
   });
@@ -3655,7 +3676,7 @@ document.getElementById('shot-analyze-btn').addEventListener('click', async ()=>
     });
     out.innerHTML = `<div class="card">
       <div class="row" style="justify-content:flex-end;margin-bottom:4px;">${exportButtonHtml(uid)}</div>
-      ${renderVerdict(score, 'Basado en el texto reconocido por OCR — sin encabezados técnicos, el análisis de remitente es limitado.')}
+      ${renderVerdict(score, 'Basado en el texto reconocido por OCR, sin encabezados técnicos, el análisis de remitente es limitado.')}
       <div class="result-block"><h3>Hallazgos (${res.findings.length})</h3>${renderFindings(res.findings)}</div>
       <div class="result-block"><h3>Texto reconocido</h3><textarea rows="5" readonly>${escapeHtml(text)}</textarea></div>
     </div>${res.urlSection}`;
@@ -3713,38 +3734,38 @@ const HIGH_RISK_PERMS = ['Accesibilidad','Administrador de dispositivo','Superpo
 
 /* ---------------- "Qué haría Vigía": recomendación accionable por permiso, no solo el nombre ---------------- */
 const HIGH_RISK_PERM_ADVICE = {
-  'Accesibilidad': 'Revísalo en Ajustes → Accesibilidad — permite leer la pantalla y simular toques; es el permiso más abusado por troyanos bancarios.',
-  'Administrador de dispositivo': 'Revísalo en Ajustes → Seguridad → Apps de administración de dispositivo — permite bloquear o borrar el dispositivo en remoto.',
-  'Superposición de pantalla': 'Revócalo en Ajustes → Apps → Mostrar sobre otras apps — se usa para superponer pantallas falsas de phishing sobre apps legítimas.',
-  'Instalar apps desconocidas': 'Revócalo salvo que sea una tienda de confianza — permite instalar más apps sin pasar por Google Play.',
+  'Accesibilidad': 'Revísalo en Ajustes → Accesibilidad: permite leer la pantalla y simular toques; es el permiso más abusado por troyanos bancarios.',
+  'Administrador de dispositivo': 'Revísalo en Ajustes → Seguridad → Apps de administración de dispositivo: permite bloquear o borrar el dispositivo en remoto.',
+  'Superposición de pantalla': 'Revócalo en Ajustes → Apps → Mostrar sobre otras apps: se usa para superponer pantallas falsas de phishing sobre apps legítimas.',
+  'Instalar apps desconocidas': 'Revócalo salvo que sea una tienda de confianza: permite instalar más apps sin pasar por Google Play.',
 };
 const PERMISSION_ADVICE = {
   // Android (nombre tras quitar el prefijo "android.permission.")
-  CAMERA: 'Ajustes → Apps → (la app) → Permisos → Cámara — deniégalo o concédelo solo mientras la usas.',
-  RECORD_AUDIO: 'Ajustes → Apps → (la app) → Permisos → Micrófono — revócalo salvo que necesites llamadas o notas de voz.',
-  ACCESS_FINE_LOCATION: 'Cambia a "Solo mientras se usa la app" — evita conceder ubicación "todo el tiempo" salvo apps de navegación.',
+  CAMERA: 'Ajustes → Apps → (la app) → Permisos → Cámara: deniégalo o concédelo solo mientras la usas.',
+  RECORD_AUDIO: 'Ajustes → Apps → (la app) → Permisos → Micrófono: revócalo salvo que necesites llamadas o notas de voz.',
+  ACCESS_FINE_LOCATION: 'Cambia a "Solo mientras se usa la app": evita conceder ubicación "todo el tiempo" salvo apps de navegación.',
   ACCESS_BACKGROUND_LOCATION: 'Es el nivel más invasivo de ubicación: en Ajustes → Apps → Permisos → Ubicación, baja a "Solo mientras se usa la app".',
   READ_CONTACTS: 'Deniégalo salvo que la app lo necesite para su función principal (p. ej. mensajería).',
   WRITE_CONTACTS: 'Deniégalo salvo que necesites que la app modifique tu agenda.',
-  SMS: 'Muy pocas apps legítimas necesitan leer tus SMS — revócalo salvo que sea tu app de mensajería o de doble factor.',
+  SMS: 'Muy pocas apps legítimas necesitan leer tus SMS: revócalo salvo que sea tu app de mensajería o de doble factor.',
   READ_CALL_LOG: 'Revócalo salvo que sea una app de gestión de llamadas de confianza.',
-  BIND_ACCESSIBILITY_SERVICE: 'Ajustes → Accesibilidad — permite leer la pantalla y simular toques; el más abusado por troyanos bancarios.',
-  BIND_DEVICE_ADMIN: 'Ajustes → Seguridad → Apps de administración de dispositivo — permite bloquear o borrar el dispositivo en remoto.',
-  SYSTEM_ALERT_WINDOW: 'Ajustes → Apps → Mostrar sobre otras apps — se usa para superponer pantallas falsas de phishing.',
-  REQUEST_INSTALL_PACKAGES: 'Revócalo salvo que sea una tienda de confianza — permite instalar más apps sin pasar por Google Play.',
-  MANAGE_EXTERNAL_STORAGE: 'Ajustes → Apps → Permisos → Archivos y contenido multimedia — da acceso a todos tus archivos, no solo a los suyos.',
+  BIND_ACCESSIBILITY_SERVICE: 'Ajustes → Accesibilidad: permite leer la pantalla y simular toques; el más abusado por troyanos bancarios.',
+  BIND_DEVICE_ADMIN: 'Ajustes → Seguridad → Apps de administración de dispositivo: permite bloquear o borrar el dispositivo en remoto.',
+  SYSTEM_ALERT_WINDOW: 'Ajustes → Apps → Mostrar sobre otras apps: se usa para superponer pantallas falsas de phishing.',
+  REQUEST_INSTALL_PACKAGES: 'Revócalo salvo que sea una tienda de confianza: permite instalar más apps sin pasar por Google Play.',
+  MANAGE_EXTERNAL_STORAGE: 'Ajustes → Apps → Permisos → Archivos y contenido multimedia: da acceso a todos tus archivos, no solo a los suyos.',
   // iOS
   Camera: 'Ajustes → (la app) → Cámara → desactívalo salvo que lo uses activamente.',
   Microphone: 'Ajustes → (la app) → Micrófono → desactívalo salvo que necesites llamadas o notas de voz.',
-  LocationAlways: 'Ajustes → Privacidad y seguridad → Localización → cambia a "Preguntar la próxima vez" o "Al usar la app" — evita "Siempre".',
+  LocationAlways: 'Ajustes → Privacidad y seguridad → Localización → cambia a "Preguntar la próxima vez" o "Al usar la app": evita "Siempre".',
   LocationWhenInUse: 'Concédelo solo cuando lo necesites, no des por hecho que debe quedar activo de forma permanente.',
   Contacts: 'Ajustes → (la app) → Contactos → desactívalo salvo que lo necesite para su función principal.',
   PhotoLibrary: 'Ajustes → (la app) → Fotos → elige "Fotos seleccionadas" en vez de dar acceso a toda la galería.',
   FaceID: 'Si la app no es de pago o banca, revisa por qué necesita Face ID.',
-  Motion: 'Ajustes → (la app) → Movimiento y forma física — pocas apps fuera de fitness lo necesitan realmente.',
+  Motion: 'Ajustes → (la app) → Movimiento y forma física: pocas apps fuera de fitness lo necesitan realmente.',
   Bluetooth: 'Revísalo si la app no usa dispositivos externos (auriculares, wearables...).',
-  HealthShare: 'Ajustes → Salud → Acceso de apps y dispositivos — revisa qué datos de salud comparte exactamente.',
-  HealthUpdate: 'Ajustes → Salud → Acceso de apps y dispositivos — revisa qué puede escribir esta app en tus datos de salud.',
+  HealthShare: 'Ajustes → Salud → Acceso de apps y dispositivos: revisa qué datos de salud comparte exactamente.',
+  HealthUpdate: 'Ajustes → Salud → Acceso de apps y dispositivos: revisa qué puede escribir esta app en tus datos de salud.',
   CallKit: 'Revísalo si la app no es de llamadas o videollamadas.',
 };
 function adviceBlock(perms, map){
@@ -3777,7 +3798,7 @@ function analyzeAppManual({name, id, publisher, category, source, perms}){
 
   const highRiskGranted = perms.filter(p=>HIGH_RISK_PERMS.includes(p));
   if(highRiskGranted.length){
-    findings.push({sev:'high', title:'Permisos de muy alto impacto solicitados', desc:`Solicita: ${highRiskGranted.join(', ')}. Estos permisos permiten leer pantalla, simular toques o instalar software adicional — son los más abusados por troyanos bancarios y spyware.${adviceBlock(highRiskGranted, HIGH_RISK_PERM_ADVICE)}`});
+    findings.push({sev:'high', title:'Permisos de muy alto impacto solicitados', desc:`Solicita: ${highRiskGranted.join(', ')}. Estos permisos permiten leer pantalla, simular toques o instalar software adicional. Son los más abusados por troyanos bancarios y spyware.${adviceBlock(highRiskGranted, HIGH_RISK_PERM_ADVICE)}`});
   }
 
   const lowNeed = CATEGORY_LOW_NEED[category] || [];
@@ -3819,13 +3840,13 @@ document.getElementById('app-analyze-btn').addEventListener('click', ()=>{
   registerReport(uid, {
     kind: 'app', title: 'Informe de análisis de app móvil (formulario manual)',
     subject: name || id, score, findings,
-    disclaimer: 'Análisis heurístico de contexto declarado, complemento a tu solución MTD/EMM — no reemplaza el análisis estático/dinámico real del binario.'
+    disclaimer: 'Análisis heurístico de contexto declarado, complemento a tu solución MTD/EMM. No reemplaza el análisis estático/dinámico real del binario.'
   });
   out.innerHTML = `<div class="card">
     <div class="row" style="justify-content:flex-end;margin-bottom:4px;">${exportButtonHtml(uid)}</div>
     ${renderVerdict(score)}
     <div class="result-block"><h3>Hallazgos (${findings.length})</h3>${renderFindings(findings)}</div>
-    <p class="disclaimer"><b>Recuerda:</b> este es un análisis heurístico de contexto declarado, pensado como <b>complemento</b> a tu solución MTD/EMM — no reemplaza el análisis estático/dinámico real del binario ni la telemetría de dispositivo.</p>
+    <p class="disclaimer"><b>Recuerda:</b> este es un análisis heurístico de contexto declarado, pensado como <b>complemento</b> a tu solución MTD/EMM. No reemplaza el análisis estático/dinámico real del binario ni la telemetría de dispositivo.</p>
   </div>`;
   pulseSignal(score);
 });
@@ -3845,9 +3866,7 @@ async function ensureJSZip(){
     const s = document.createElement('script');
     s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
     s.crossOrigin = 'anonymous';
-    // TODO (Subresource Integrity pendiente): generar con
-    //   curl -s <URL de arriba> | openssl dgst -sha384 -binary | openssl base64 -A
-    // y añadir aquí:  s.integrity = 'sha384-...';
+    s.integrity = 'sha384-+mbV2IY1Zk/X1p/nWllGySJSUN8uMs+gUAN10Or95UBH0fpj6GfKgPmgC5EXieXG';
     s.onload = resolve; s.onerror = reject;
     document.head.appendChild(s);
   });
@@ -3888,7 +3907,7 @@ const ANDROID_LIB_SIGNATURES = [
   {frag:'com/google/firebase/database', name:'Firebase Realtime Database', cat:'firebase'},
   {frag:'com/google/firebase/remoteconfig', name:'Firebase Remote Config', cat:'firebase'},
   {frag:'com/google/firebase/installations', name:'Firebase Installations', cat:'firebase'},
-  {frag:'com/google/firebase/', name:'Firebase (Google) — módulo genérico', cat:'firebase'},
+  {frag:'com/google/firebase/', name:'Firebase (Google): módulo genérico', cat:'firebase'},
   {frag:'com/crashlytics/', name:'Crashlytics (diagnóstico)', cat:'firebase'},
   {frag:'com/google/android/gms/ads', name:'Google AdMob', cat:'ads'},
   {frag:'com/facebook/ads/', name:'Meta Audience Network', cat:'ads'},
@@ -3980,7 +3999,7 @@ function findLibraryHits(haystack, signatures){
 }
 function renderLibraryFindings(hits, findings){
   if(!hits.size){
-    findings.push({sev:'ok', title:'Sin librerías/SDKs de terceros conocidos detectados', desc:'Ni en las cadenas de código/manifiesto ni en los recursos analizados se han reconocido firmas de la lista curada de Vigía (no exhaustiva — un SDK nuevo o poco común puede no estar catalogado).'});
+    findings.push({sev:'ok', title:'Sin librerías/SDKs de terceros conocidos detectados', desc:'Ni en las cadenas de código/manifiesto ni en los recursos analizados se han reconocido firmas de la lista curada de Vigía (no exhaustiva, un SDK nuevo o poco común puede no estar catalogado).'});
     return;
   }
   const byCat = {};
@@ -4141,7 +4160,7 @@ async function analyzeApkFile(file){
       const cert = findAndParseCertificate(sigBuf);
       if(cert){
         const fingerprint = await sha256Hex(sigBuf.slice(cert.start, cert.end));
-        findings.push({sev:'ok', title:'Certificado de firma (v1) leído', desc:`Emisor: ${cert.issuer}\nSujeto: ${cert.subject}\nValidez: ${cert.notBefore} → ${cert.notAfter}\nSerie: ${cert.serialHex}\nHuella SHA-256: ${fingerprint}${cert.selfSigned?'\n(Autofirmado — normal en Android: no usa una CA como TLS.)':''}`});
+        findings.push({sev:'ok', title:'Certificado de firma (v1) leído', desc:`Emisor: ${cert.issuer}\nSujeto: ${cert.subject}\nValidez: ${cert.notBefore} → ${cert.notAfter}\nSerie: ${cert.serialHex}\nHuella SHA-256: ${fingerprint}${cert.selfSigned?'\n(Autofirmado, normal en Android: no usa una CA como TLS.)':''}`});
         if(cert.isDebugCert) findings.push({sev:'high', title:'Firmado con certificado de depuración (debug) de Android', desc:'Coincide con el patrón del keystore de depuración por defecto de Android Studio (CN=Android Debug). Una app publicada así nunca debería llegar a producción: cualquiera puede firmar apps con esa misma clave de depuración estándar y hacerlas pasar por actualizaciones.'});
         const notAfterDate = new Date(cert.notAfter.replace(' UTC','Z').replace(' ','T'));
         if(!isNaN(notAfterDate) && notAfterDate < new Date()) findings.push({sev:'med', title:'Certificado de firma caducado', desc:`Caducó el ${cert.notAfter}. No impide instalar la app en Android (a diferencia de TLS), pero es una señal de mantenimiento descuidado o de un paquete antiguo.`});
@@ -4159,7 +4178,7 @@ async function analyzeApkFile(file){
   if(hasApkSigBlockV2(fileBytes)) findings.push({sev:'ok', title:'Incluye APK Signing Block (firma v2/v3)', desc:'Además de (o en vez de) la firma clásica, el paquete usa el esquema de firma moderno de Android, más robusto frente a manipulación del ZIP.'});
 
   const dexNames = names.filter(n=>/^classes\d*\.dex$/.test(n));
-  if(dexNames.length > 3) findings.push({sev:'low', title:`App con múltiples archivos .dex (${dexNames.length})`, desc:'Habitual en apps grandes (multidex) — no es señal de riesgo por sí sola, solo un dato informativo.'});
+  if(dexNames.length > 3) findings.push({sev:'low', title:`App con múltiples archivos .dex (${dexNames.length})`, desc:'Habitual en apps grandes (multidex). No es señal de riesgo por sí sola, solo un dato informativo.'});
 
   /* Librerías, SDKs de publicidad, Firebase y dominios (búsqueda de cadenas en dex/recursos) */
   let haystack = manifestStrings.join('\n');
@@ -4184,7 +4203,7 @@ async function analyzeApkFile(file){
   /* Packers / protectores comerciales y librerías nativas */
   const lowerNames = names.map(n=>n.toLowerCase()).join('\n');
   const packerHits = APK_PACKER_SIGNATURES.filter(p=>lowerNames.includes(p.frag));
-  if(packerHits.length) findings.push({sev:'high', title:`Posible empaquetador/protector comercial: ${packerHits.map(p=>p.name).join(', ')}`, desc:'Se han encontrado archivos característicos de sistemas de "hardening"/empaquetado (加固), usados tanto para proteger apps legítimas contra ingeniería inversa como, en ocasiones, para ocultar código malicioso o apps repaquetadas ilegalmente. No es una condena automática, pero dificulta cualquier análisis estático — trátalo con más cautela.'});
+  if(packerHits.length) findings.push({sev:'high', title:`Posible empaquetador/protector comercial: ${packerHits.map(p=>p.name).join(', ')}`, desc:'Se han encontrado archivos característicos de sistemas de "hardening"/empaquetado (加固), usados tanto para proteger apps legítimas contra ingeniería inversa como, en ocasiones, para ocultar código malicioso o apps repaquetadas ilegalmente. No es una condena automática, pero dificulta cualquier análisis estático. Trátalo con más cautela.'});
   const nativeLibs = [...new Set(names.filter(n=>/^lib\/[^/]+\/.+\.so$/.test(n)).map(n=>n.split('/').pop()))];
   if(nativeLibs.length) findings.push({sev:'low', title:`${nativeLibs.length} librería(s) nativa(s) (.so)`, desc: nativeLibs.slice(0,25).join(', ') + (nativeLibs.length>25?'…':'')});
 
@@ -4250,7 +4269,7 @@ async function analyzeIpaFile(file){
       if(expMatch) provDesc += `Caduca: ${expMatch[1]}\n`;
       if(deviceN) provDesc += `Dispositivos aprovisionados: ${deviceN}`;
       if(provDesc) findings.push({sev:'ok', title:'Datos del perfil de aprovisionamiento', desc: provDesc.trim()});
-      if(allDevices) findings.push({sev:'high', title:'Perfil de distribución empresarial (In-House)', desc:'Permite instalar en cualquier dispositivo sin pasar por la App Store ni un límite de UDIDs registrados — típico de distribución corporativa interna, pero también un vector habitual para distribuir apps fraudulentas fuera de la revisión de Apple.'});
+      if(allDevices) findings.push({sev:'high', title:'Perfil de distribución empresarial (In-House)', desc:'Permite instalar en cualquier dispositivo sin pasar por la App Store ni un límite de UDIDs registrados, típico de distribución corporativa interna, pero también un vector habitual para distribuir apps fraudulentas fuera de la revisión de Apple.'});
       if(getTaskAllow) findings.push({sev:'med', title:'Build de desarrollo (get-task-allow = true)', desc:'Permite adjuntar un depurador al proceso. Normal en builds de desarrollo/TestFlight interno, pero no debería aparecer en una build de producción distribuida ampliamente.'});
     }catch(e){}
   } else {
@@ -4278,7 +4297,7 @@ async function analyzeIpaFile(file){
       const execStrings = extractStrings(buf.byteLength>6_000_000 ? buf.slice(0,6_000_000) : buf, 6);
       haystack += '\n' + execStrings.join('\n');
       const hookHits = IOS_HOOK_SIGNATURES.filter(sig=>execStrings.some(s=>s.includes(sig)));
-      if(hookHits.length) findings.push({sev:'high', title:`Señales de instrumentación/hooking en el binario: ${hookHits.join(', ')}`, desc:'Cadenas asociadas a frameworks de inyección/jailbreak (Frida, Cydia Substrate, etc.). Puede deberse a herramientas de testing dejadas por error, o a una app modificada/repaquetada — trátalo con cautela si no esperabas verlo aquí.'});
+      if(hookHits.length) findings.push({sev:'high', title:`Señales de instrumentación/hooking en el binario: ${hookHits.join(', ')}`, desc:'Cadenas asociadas a frameworks de inyección/jailbreak (Frida, Cydia Substrate, etc.). Puede deberse a herramientas de testing dejadas por error, o a una app modificada/repaquetada. Trátalo con cautela si no esperabas verlo aquí.'});
     }catch(e){}
   }
   renderDomainFindings(extractDomains(haystack).slice(0,60), findings);
@@ -4319,7 +4338,7 @@ document.getElementById('appfile-analyze-btn').addEventListener('click', async (
       ${renderVerdict(score)}
       <div class="result-block"><h3>Hallazgos (${res.findings.length})</h3>${renderFindings(res.findings)}</div>
       ${renderHashBlock(hash)}
-      <p class="disclaimer"><b>Alcance:</b> extracción heurística de metadatos del paquete (${isApk?'APK':'IPA'}): permisos y permisos peligrosos, librerías/SDKs de terceros, trackers, SDKs de publicidad, Firebase, dominios embebidos, certificado de firma y detección de protectores/empaquetadores conocidos. No incluye análisis de código, comportamiento en ejecución, ni verificación criptográfica completa de la firma — úsalo como apoyo, no como veredicto final de tu MTD.</p>
+      <p class="disclaimer"><b>Alcance:</b> extracción heurística de metadatos del paquete (${isApk?'APK':'IPA'}): permisos y permisos peligrosos, librerías/SDKs de terceros, trackers, SDKs de publicidad, Firebase, dominios embebidos, certificado de firma y detección de protectores/empaquetadores conocidos. No incluye análisis de código, comportamiento en ejecución, ni verificación criptográfica completa de la firma. Úsalo como apoyo, no como veredicto final de tu MTD.</p>
     </div>`;
     pulseSignal(score);
   }catch(err){
@@ -4374,7 +4393,7 @@ function checkNameImpersonation(text, fieldLabel){
       if(w.length < brand.length-2 || w.length > brand.length+2) continue;
       const dist = levenshtein(w, brand);
       if(dist>0 && dist<=2){
-        findings.push({sev:'high', title:`${fieldLabel||'El nombre declarado'} imita a la marca "${brand}"`, desc:`"${w}" dentro de "${text}" se parece mucho a "${brand}" (distancia ${dist} carácter${dist>1?'es':''}). Un editor o desarrollador con un nombre casi idéntico —pero no exacto— a una marca conocida es un patrón muy habitual en apps falsas.`});
+        findings.push({sev:'high', title:`${fieldLabel||'El nombre declarado'} imita a la marca "${brand}"`, desc:`"${w}" dentro de "${text}" se parece mucho a "${brand}" (distancia ${dist} carácter${dist>1?'es':''}). Un editor o desarrollador con un nombre casi idéntico (pero no exacto) a una marca conocida es un patrón muy habitual en apps falsas.`});
         break outer;
       }
     }
@@ -4392,7 +4411,7 @@ function checkBrandDeveloperMismatch(nameOrId, developer){
   for(const brand of BRANDS){
     if(brand.length<4) continue;
     if(lowerCombined.includes(brand) && !devLower.includes(brand)){
-      return [{sev:'med', title:`Hace referencia a "${brand}", pero el editor declarado no la menciona`, desc:`El editor/desarrollador que aparece es "${developer}". Esto no confirma nada por sí solo —algunas empresas usan una razón social distinta a su marca comercial—, pero antes de confiar comprueba en la ficha oficial de la tienda que ese editor es realmente quien publica ${brand}.`}];
+      return [{sev:'med', title:`Hace referencia a "${brand}", pero el editor declarado no la menciona`, desc:`El editor/desarrollador que aparece es "${developer}". Esto no confirma nada por sí solo (algunas empresas usan una razón social distinta a su marca comercial), pero antes de confiar comprueba en la ficha oficial de la tienda que ese editor es realmente quien publica ${brand}.`}];
     }
   }
   return [];
@@ -4455,7 +4474,7 @@ function renderIosResult(app){
   const uid = 'st' + Math.random().toString(36).slice(2,10);
   registerReport(uid, {
     kind:'app-tienda', title:'Informe de verificación de app (App Store)',
-    subject:`${app.trackName} — ${app.sellerName} (${bundleId})`, score, findings,
+    subject:`${app.trackName} · ${app.sellerName} (${bundleId})`, score, findings,
     disclaimer:'Metadatos oficiales obtenidos de la API pública de Apple (iTunes). Los permisos y el detalle de "Privacidad de la app" no son accesibles por API: consulta el enlace oficial más abajo.'
   });
   return `<div class="card">
@@ -4487,7 +4506,7 @@ function renderAndroidResult(parsed){
   let pkg = parsed.packageName || '';
   if(pkg) findings.push(...checkPackageBrandImpersonation(pkg));
   if(findings.length===0){
-    findings.push({sev:'ok', title: pkg ? 'Sin señales de impersonación en el identificador de paquete' : 'Sin identificador de paquete para analizar', desc: pkg ? 'El nombre de paquete no coincide con patrones de suplantación de marcas conocidas.' : 'Con solo un nombre/desarrollador no es posible identificar el paquete real sin abrir la ficha de Google Play — usa los enlaces de abajo.'});
+    findings.push({sev:'ok', title: pkg ? 'Sin señales de impersonación en el identificador de paquete' : 'Sin identificador de paquete para analizar', desc: pkg ? 'El nombre de paquete no coincide con patrones de suplantación de marcas conocidas.' : 'Con solo un nombre/desarrollador no es posible identificar el paquete real sin abrir la ficha de Google Play. Usa los enlaces de abajo.'});
   }
   const score = computeScore(findings);
   const brand = extractBrandTag(findings);
@@ -4548,7 +4567,7 @@ document.getElementById('store-analyze-btn').addEventListener('click', async ()=
     pulseSignal();
   }catch(err){
     status.textContent = '';
-    out.innerHTML = `<p class="hint">No se pudo completar la búsqueda (${escapeHtml(err.message||'error de red')}). El servicio de consulta pública puede estar limitando peticiones temporalmente — inténtalo de nuevo en un momento.</p>`;
+    out.innerHTML = `<p class="hint">No se pudo completar la búsqueda (${escapeHtml(err.message||'error de red')}). El servicio de consulta pública puede estar limitando peticiones temporalmente. Inténtalo de nuevo en un momento.</p>`;
   }
 });
 document.getElementById('store-clear-btn').addEventListener('click', ()=>{
@@ -4655,7 +4674,7 @@ document.getElementById('netlog-analyze-btn').addEventListener('click', ()=>{
   const allFindings = results.flatMap(r=>r.findings);
   const score = computeScore(allFindings);
   const trackers = Object.keys(categoryCounts);
-  saveHistory('app', (appName?appName+' — ':'')+`${total} conexiones`, score, {tags: trackers.length?{trackers}:{}});
+  saveHistory('app', (appName?appName+' · ':'')+`${total} conexiones`, score, {tags: trackers.length?{trackers}:{}});
 
   const uid = 'nl' + Math.random().toString(36).slice(2,10);
   const categorySummary = Object.entries(categoryCounts).map(([c,n])=>`${c}: ${n}`).join(', ');
@@ -4663,7 +4682,7 @@ document.getElementById('netlog-analyze-btn').addEventListener('click', ()=>{
     kind:'conexiones-red', title:'Informe de análisis de conexiones de red',
     subject: (appName || 'app sin nombre') + ` (${total} host(s), ${trackerCount} rastreador(es) conocido(s))`,
     score, findings: allFindings,
-    extraTitle: 'Listado completo analizado', extraText: results.map(r=>`${r.host} — ${r.findings.map(f=>f.title).join('; ')}`).join('\n'),
+    extraTitle: 'Listado completo analizado', extraText: results.map(r=>`${r.host}: ${r.findings.map(f=>f.title).join('; ')}`).join('\n'),
     disclaimer:'Análisis de un registro de conexiones importado manualmente (Vigía no captura tráfico de red). La lista de rastreadores conocidos es ilustrativa, no exhaustiva.'
   });
 
@@ -4675,7 +4694,7 @@ document.getElementById('netlog-analyze-btn').addEventListener('click', ()=>{
     ${renderVerdict(score)}
     <div class="result-block"><h3>Detalle por conexión (${results.length})</h3>${results.map(r=>renderConnectionResult(r.host, r.findings)).join('')}</div>
   </div>
-  <p class="disclaimer">Este análisis parte de un registro que tú has obtenido con una herramienta real de monitorización (informe de privacidad de iOS, NetGuard/PCAPdroid en Android, etc.) — Vigía no captura tráfico de red por sí misma. La lista de rastreadores conocidos es ilustrativa y no sustituye un catálogo especializado como εxodus Privacy.</p>`;
+  <p class="disclaimer">Este análisis parte de un registro que tú has obtenido con una herramienta real de monitorización (informe de privacidad de iOS, NetGuard/PCAPdroid en Android, etc.). Vigía no captura tráfico de red por sí misma. La lista de rastreadores conocidos es ilustrativa y no sustituye un catálogo especializado como εxodus Privacy.</p>`;
   pulseSignal(score);
 });
 document.getElementById('netlog-clear-btn').addEventListener('click', ()=>{
@@ -4772,7 +4791,7 @@ function analyzeSmsText(sender, text){
   /* 1. Lenguaje de presión / urgencia / autoridad */
   const urgencyHits = URGENCY_WORDS.filter(w=>lower.includes(w));
   if(urgencyHits.length){
-    findings.push({sev: urgencyHits.length>=2?'high':'med', title:'Lenguaje de presión o urgencia', desc:`Frases como: ${urgencyHits.slice(0,5).join(', ')}. La presión temporal, la amenaza de consecuencias o la invocación de un organismo oficial buscan que actúes sin verificar — es la técnica de ingeniería social más común en smishing.`});
+    findings.push({sev: urgencyHits.length>=2?'high':'med', title:'Lenguaje de presión o urgencia', desc:`Frases como: ${urgencyHits.slice(0,5).join(', ')}. La presión temporal, la amenaza de consecuencias o la invocación de un organismo oficial buscan que actúes sin verificar. Es la técnica de ingeniería social más común en smishing.`});
   }
 
   if(/\b(c[oó]digo|otp|clave de un solo uso)\b/i.test(text) && /\b(no lo compartas|comparte|env[ií]a|reenv[ií]a|dicta|facilita)\b/i.test(text)){
@@ -4785,7 +4804,7 @@ function analyzeSmsText(sender, text){
   if(sender && !senderIsNumeric && senderNorm.length){
     const exactBrand = BRANDS.find(b=>b.length>=4 && senderNorm.includes(b));
     if(exactBrand){
-      findings.push({sev:'low', title:'El remitente declarado incluye el nombre de una marca', desc:'Los remitentes de SMS con nombre de marca (sender ID alfanumérico) son fácilmente falsificables — cualquiera puede enviar un SMS que se muestre como "BBVA" o "Correos" sin ser esa entidad.'});
+      findings.push({sev:'low', title:'El remitente declarado incluye el nombre de una marca', desc:'Los remitentes de SMS con nombre de marca (sender ID alfanumérico) son fácilmente falsificables. Cualquiera puede enviar un SMS que se muestre como "BBVA" o "Correos" sin ser esa entidad.'});
     } else {
       let closest = null, closestDist = Infinity;
       for(const b of BRANDS){
@@ -4794,17 +4813,17 @@ function analyzeSmsText(sender, text){
         if(dist < closestDist){ closestDist = dist; closest = b; }
       }
       if(closest && closestDist>=1 && closestDist<=2){
-        findings.push({sev:'high', title:`Remitente muy parecido a la marca "${closest}", pero no idéntico`, desc:`"${sender}" se diferencia de "${closest}" en solo ${closestDist} carácter(es) (distancia de edición ${closestDist}). Es el mismo patrón que el typosquatting en dominios, aplicado al nombre del remitente — diseñado para pasar desapercibido a simple vista.`});
+        findings.push({sev:'high', title:`Remitente muy parecido a la marca "${closest}", pero no idéntico`, desc:`"${sender}" se diferencia de "${closest}" en solo ${closestDist} carácter(es) (distancia de edición ${closestDist}). Es el mismo patrón que el typosquatting en dominios, aplicado al nombre del remitente, diseñado para pasar desapercibido a simple vista.`});
       }
     }
   }
 
   /* 5. Enlaces ocultos: caracteres invisibles/de control, o URLs con espacios insertados para evadir filtros */
   if(HIDDEN_CHAR_RE.test(text)){
-    findings.push({sev:'high', title:'Caracteres invisibles o de control Unicode en el mensaje', desc:'El texto contiene caracteres de ancho cero o de control de dirección de escritura. Se usan para camuflar enlaces, alterar visualmente cómo se lee una palabra/dominio, o evadir filtros antispam basados en texto — no es algo que aparezca en SMS legítimos.'});
+    findings.push({sev:'high', title:'Caracteres invisibles o de control Unicode en el mensaje', desc:'El texto contiene caracteres de ancho cero o de control de dirección de escritura. Se usan para camuflar enlaces, alterar visualmente cómo se lee una palabra/dominio, o evadir filtros antispam basados en texto. No es algo que aparezca en SMS legítimos.'});
   }
   if(/\b[a-z]{3,}\s+\.\s*[a-z]{2,}\s*\.\s*[a-z]{2,4}\b/i.test(text) || /\bh\s*t\s*t\s*p\s*s?\s*:\s*\/\s*\//i.test(text)){
-    findings.push({sev:'med', title:'Posible enlace ofuscado con espacios', desc:'Se detecta un patrón tipo "h t t p s" o un dominio con espacios insertados entre las partes — una técnica para evitar que los filtros automáticos de SMS/spam reconozcan el enlace como tal.'});
+    findings.push({sev:'med', title:'Posible enlace ofuscado con espacios', desc:'Se detecta un patrón tipo "h t t p s" o un dominio con espacios insertados entre las partes, una técnica para evitar que los filtros automáticos de SMS/spam reconozcan el enlace como tal.'});
   }
 
   const urls = extractUrls(text);
@@ -4819,7 +4838,7 @@ function analyzeSmsText(sender, text){
   const bareDomains = extractDomains(text);
   const shortenerHits = bareDomains.filter(d=>URL_SHORTENERS.includes(d));
   if(shortenerHits.length && !urls.some(u=>shortenerHits.some(s=>u.includes(s)))){
-    findings.push({sev:'med', title:'Enlace acortado sin protocolo explícito', desc:`Se menciona "${shortenerHits.join(', ')}" sin "https://" delante — habitual en SMS reales para ahorrar caracteres. No es posible saber el destino final sin visitarlo; usa una herramienta de vista previa antes de hacer clic.`});
+    findings.push({sev:'med', title:'Enlace acortado sin protocolo explícito', desc:`Se menciona "${shortenerHits.join(', ')}" sin "https://" delante, habitual en SMS reales para ahorrar caracteres. No es posible saber el destino final sin visitarlo; usa una herramienta de vista previa antes de hacer clic.`});
   }
 
   /* 4. Números de tarificación especial mencionados en el propio texto */
@@ -4835,11 +4854,11 @@ function analyzeSmsText(sender, text){
     const card = cardHits[0];
     const bin = card.slice(0,8);
     const network = classifyBinNetwork(card);
-    findings.push({sev:'high', title:'El mensaje contiene un número con formato de tarjeta de pago', desc:`Se ha detectado una secuencia de ${card.length} dígitos que supera la validación de checksum de tarjetas (Luhn)${network?`, compatible con el formato de ${network}`:''}. Ningún banco legítimo pide el número completo de tu tarjeta por SMS — si esta cifra viene de ti mismo (p. ej. reenviaste un dato por error), elimínala del mensaje antes de reenviarlo a nadie.`});
+    findings.push({sev:'high', title:'El mensaje contiene un número con formato de tarjeta de pago', desc:`Se ha detectado una secuencia de ${card.length} dígitos que supera la validación de checksum de tarjetas (Luhn)${network?`, compatible con el formato de ${network}`:''}. Ningún banco legítimo pide el número completo de tu tarjeta por SMS. Si esta cifra viene de ti mismo (p. ej. reenviaste un dato por error), elimínala del mensaje antes de reenviarlo a nadie.`});
     const binUid = 'bin' + Math.random().toString(36).slice(2,10);
     binSection = `<div class="result-block">
       <h3>Identificar el banco emisor a partir del BIN (opcional)</h3>
-      <p class="hint">El BIN (los primeros 6-8 dígitos) identifica la entidad emisora. Con tu permiso, se consulta un servicio externo (binlist.net, gratuito y sin registro, con límite de consultas) para mostrar el banco, la red y el país asociados — solo se envían esos primeros dígitos, nunca la tarjeta completa.</p>
+      <p class="hint">El BIN (los primeros 6-8 dígitos) identifica la entidad emisora. Con tu permiso, se consulta un servicio externo (binlist.net, gratuito y sin registro, con límite de consultas) para mostrar el banco, la red y el país asociados. Solo se envían esos primeros dígitos, nunca la tarjeta completa.</p>
       <div class="row mt"><button class="btn ghost bin-lookup-btn" data-uid="${binUid}" data-bin="${encodeURIComponent(bin)}">Consultar BIN en binlist.net</button></div>
       <div id="bin-${binUid}" class="mt"></div>
     </div>`;
@@ -4863,7 +4882,7 @@ document.addEventListener('click', async (e)=>{
     const bankName = data.bank && data.bank.name ? data.bank.name : 'desconocido';
     const scheme = data.scheme ? data.scheme.toUpperCase() : (data.brand || 'desconocida');
     const country = data.country && data.country.name ? data.country.name : 'desconocido';
-    box.innerHTML = renderFinding({sev:'ok', title:`Emisor: ${bankName}`, desc:`Red: ${scheme}. Tipo: ${data.type||'desconocido'}. País de emisión: ${country}. Esto identifica de qué entidad es la tarjeta mencionada — no confirma si el SMS es legítimo ni si la tarjeta está comprometida.`});
+    box.innerHTML = renderFinding({sev:'ok', title:`Emisor: ${bankName}`, desc:`Red: ${scheme}. Tipo: ${data.type||'desconocido'}. País de emisión: ${country}. Esto identifica de qué entidad es la tarjeta mencionada. No confirma si el SMS es legítimo ni si la tarjeta está comprometida.`});
   }catch(err){
     box.innerHTML = `<p class="hint">No se pudo consultar el BIN (${escapeHtml(err.message||'error de red')}). El servicio externo puede estar limitando peticiones (5/hora) o no reconocer este BIN.</p>`;
   } finally {
@@ -4889,7 +4908,7 @@ document.getElementById('sms-analyze-btn').addEventListener('click', ()=>{
   const uid = 'sm' + Math.random().toString(36).slice(2,10);
   registerReport(uid, {
     kind: 'sms', title: 'Informe de análisis de SMS',
-    subject: (sender ? sender + ' — ' : '') + text.slice(0,80), score, findings: res.findings,
+    subject: (sender ? sender + ' · ' : '') + text.slice(0,80), score, findings: res.findings,
     extraTitle: 'Texto completo del SMS', extraText: text,
     disclaimer: 'Nunca compartas un código de verificación recibido por SMS, ni siquiera con quien dice representar a tu banco.'
   });
@@ -5144,7 +5163,7 @@ function checkPngTrailer(bytes, findings){
   }
   const trailing = bytes.length - pos;
   if(trailing > 8){
-    findings.push({sev:'high', title:`${trailing} bytes de datos tras el chunk IEND`, desc:'Un PNG termina oficialmente en su chunk IEND. Cualquier byte adicional después es contenido "invisible" para un visor de imágenes normal — la misma técnica de esteganografía/polyglot que en JPEG.'});
+    findings.push({sev:'high', title:`${trailing} bytes de datos tras el chunk IEND`, desc:'Un PNG termina oficialmente en su chunk IEND. Cualquier byte adicional después es contenido "invisible" para un visor de imágenes normal, la misma técnica de esteganografía/polyglot que en JPEG.'});
   }
 }
 
@@ -5336,7 +5355,7 @@ async function analyzeOoxmlZip(file, bytes){
       if(/\/hyperlink$/i.test(type)){
         hyperlinks.add(target);
       } else {
-        findings.push({sev:'high', title:'Referencia externa remota no-hiperenlace', desc:`Relación de tipo "${type.split('/').pop()}" apunta a un recurso externo: ${target}. Si es una plantilla adjunta, un objeto OLE o un "chunk" externo, el documento puede descargar y cargar ese contenido remoto (incluidas macros) al abrirse, sin avisar — técnica conocida como "inyección de plantilla remota".`});
+        findings.push({sev:'high', title:'Referencia externa remota no-hiperenlace', desc:`Relación de tipo "${type.split('/').pop()}" apunta a un recurso externo: ${target}. Si es una plantilla adjunta, un objeto OLE o un "chunk" externo, el documento puede descargar y cargar ese contenido remoto (incluidas macros) al abrirse, sin avisar, técnica conocida como "inyección de plantilla remota".`});
       }
     }
   }
@@ -5427,7 +5446,7 @@ function analyzePdfBytes(bytes){
   while((m = uriRe.exec(text))){ if(m[1]) uriMatches.add(m[1]); }
 
   if(objStmCount > 0){
-    findings.push({sev:'low', title:`El documento usa flujos de objetos comprimidos (/ObjStm: ${objStmCount})`, desc:'Un escaneo de texto simple como este no puede ver el contenido dentro de esos flujos comprimidos — los resultados anteriores podrían no ser exhaustivos si el PDF oculta palabras clave dentro de un /ObjStm. Esta es la misma limitación que tienen herramientas de triage como "pdfid".'});
+    findings.push({sev:'low', title:`El documento usa flujos de objetos comprimidos (/ObjStm: ${objStmCount})`, desc:'Un escaneo de texto simple como este no puede ver el contenido dentro de esos flujos comprimidos. Los resultados anteriores podrían no ser exhaustivos si el PDF oculta palabras clave dentro de un /ObjStm. Esta es la misma limitación que tienen herramientas de triage como "pdfid".'});
   }
 
   if(findings.length === 0){
@@ -5502,7 +5521,7 @@ document.getElementById('image-analyze-btn').addEventListener('click', async ()=
     });
     out.innerHTML = `<div class="card">
       <div class="row" style="justify-content:space-between;align-items:flex-start;">
-        <div class="hint" style="font-family:var(--mono);margin-bottom:10px;word-break:break-all;flex:1;min-width:200px;">${escapeHtml(f.name)} — ${escapeHtml(res.sig.label)}, ${res.sizeKB} KB</div>
+        <div class="hint" style="font-family:var(--mono);margin-bottom:10px;word-break:break-all;flex:1;min-width:200px;">${escapeHtml(f.name)}: ${escapeHtml(res.sig.label)}, ${res.sizeKB} KB</div>
         ${exportButtonHtml(uid)}
       </div>
       ${renderVerdict(score)}
@@ -5543,14 +5562,14 @@ document.getElementById('doc-analyze-btn').addEventListener('click', async ()=>{
     });
     out.innerHTML = `<div class="card">
       <div class="row" style="justify-content:space-between;align-items:flex-start;">
-        <div class="hint" style="font-family:var(--mono);margin-bottom:10px;word-break:break-all;flex:1;min-width:200px;">${escapeHtml(f.name)} — ${escapeHtml(res.sig.label)}, ${res.sizeKB} KB</div>
+        <div class="hint" style="font-family:var(--mono);margin-bottom:10px;word-break:break-all;flex:1;min-width:200px;">${escapeHtml(f.name)}: ${escapeHtml(res.sig.label)}, ${res.sizeKB} KB</div>
         ${exportButtonHtml(uid)}
       </div>
       ${renderVerdict(score)}
       <div class="result-block"><h3>Hallazgos (${res.findings.length})</h3>${renderFindings(res.findings)}</div>
       ${renderHashBlock(hash)}
     </div>${renderFileHyperlinks(res.hyperlinks)}
-    <p class="disclaimer">Análisis heurístico local: macros, acciones automáticas, plantillas/objetos remotos e hipervínculos. No sustituye un antivirus ni un sandbox de detonación de documentos — trata con especial cautela cualquier documento con macros de origen desconocido.</p>`;
+    <p class="disclaimer">Análisis heurístico local: macros, acciones automáticas, plantillas/objetos remotos e hipervínculos. No sustituye un antivirus ni un sandbox de detonación de documentos. Trata con especial cautela cualquier documento con macros de origen desconocido.</p>`;
     pulseSignal(score);
   }catch(err){
     status.textContent = '';
@@ -5572,9 +5591,7 @@ async function ensureJsQR(){
     const s = document.createElement('script');
     s.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js';
     s.crossOrigin = 'anonymous';
-    // TODO (Subresource Integrity pendiente): generar con
-    //   curl -s <URL de arriba> | openssl dgst -sha384 -binary | openssl base64 -A
-    // y añadir aquí:  s.integrity = 'sha384-...';
+    s.integrity = 'sha384-hStSInNIZ8ljtOVrmrgf7zdHMapaLBWoSnPTtF0nzsybp4+LuhDz6sHuEVpWIX8o';
     s.onload = resolve; s.onerror = reject;
     document.head.appendChild(s);
   });
@@ -5642,7 +5659,7 @@ function classifyAndAnalyzeQrContent(raw){
     findings.push(...senderFindings);
   } else if(/^wifi:/i.test(trimmed)){
     subType = 'Configuración de red WiFi';
-    findings.push({sev:'med', title:'Código QR de conexión WiFi', desc:'Este QR conecta automáticamente el dispositivo a una red WiFi (y puede incluir su contraseña en texto dentro del propio código). Solo escanéalo si confías en quién lo proporcionó — es una forma habitual de dirigir a víctimas hacia redes WiFi controladas por un atacante ("evil twin").'});
+    findings.push({sev:'med', title:'Código QR de conexión WiFi', desc:'Este QR conecta automáticamente el dispositivo a una red WiFi (y puede incluir su contraseña en texto dentro del propio código). Solo escanéalo si confías en quién lo proporcionó. Es una forma habitual de dirigir a víctimas hacia redes WiFi controladas por un atacante ("evil twin").'});
   } else if(/^geo:/i.test(trimmed)){
     subType = 'Ubicación geográfica';
     findings.push({sev:'ok', title:'Código QR de ubicación', desc:'Apunta a unas coordenadas geográficas. No representa en sí un riesgo de seguridad.'});
@@ -5671,14 +5688,14 @@ function renderQrOutcome(decodedText, imgLabel){
   saveHistory('archivo', 'QR: ' + decodedText.slice(0,50), score);
   const uid = 'qr' + Math.random().toString(36).slice(2,10);
   registerReport(uid, {
-    kind:'qr', title:'Informe de análisis de código QR', subject:`${subType} — ${decodedText.slice(0,100)}`,
+    kind:'qr', title:'Informe de análisis de código QR', subject:`${subType}: ${decodedText.slice(0,100)}`,
     score, findings,
     extraTitle:'Contenido decodificado completo', extraText: decodedText,
     disclaimer:'Vigía decodifica y analiza el contenido sin abrirlo ni visitarlo automáticamente.'
   });
   return `<div class="card">
     <div class="row" style="justify-content:space-between;align-items:flex-start;">
-      <div class="hint" style="flex:1;min-width:200px;">${imgLabel?escapeHtml(imgLabel)+' — ':''}Tipo detectado: <b style="color:var(--text);">${escapeHtml(subType)}</b></div>
+      <div class="hint" style="flex:1;min-width:200px;">${imgLabel?escapeHtml(imgLabel)+': ':''}Tipo detectado: <b style="color:var(--text);">${escapeHtml(subType)}</b></div>
       ${exportButtonHtml(uid)}
     </div>
     <div class="hint" style="font-family:var(--mono);margin:8px 0 10px;word-break:break-all;padding:8px;background:#0C1424;border-radius:6px;">${escapeHtml(decodedText)}</div>
@@ -5731,7 +5748,7 @@ async function startQrCamera(){
     video.srcObject = qrStream;
     await video.play();
     wrap.style.display = '';
-    status.textContent = 'cámara activa — buscando un código QR…';
+    status.textContent = 'cámara activa, buscando un código QR…';
     const canvas = document.getElementById('qr-canvas');
     const ctx = canvas.getContext('2d');
     const tick = ()=>{
@@ -5845,7 +5862,7 @@ const SCRIPT_PATTERN_GROUPS = {
     { re:/-enc(odedcommand)?\b/i, sev:'high', title:'Comando codificado en Base64 (-EncodedCommand)', desc:'Ejecutar comandos codificados en Base64 es la técnica de ofuscación más común en PowerShell malicioso, precisamente para dificultar este tipo de análisis de texto.' },
     { re:/iex\s*\(|invoke-expression/i, sev:'high', title:'Uso de Invoke-Expression / IEX', desc:'Ejecuta como código cualquier cadena de texto que reciba, habitualmente descargada de internet. Es la forma más común de "descargar y ejecutar" en PowerShell.' },
     { re:/downloadstring|downloadfile|net\.webclient|invoke-webrequest|start-bitstransfer/i, sev:'high', title:'Descarga de contenido remoto', desc:'El script descarga contenido de internet, a menudo para ejecutarlo a continuación con IEX.' },
-    { re:/-windowstyle\s+hidden|-w\s+hidden/i, sev:'high', title:'Ejecución con ventana oculta', desc:'Oculta la ventana de PowerShell al usuario — no tiene ningún propósito legítimo habitual fuera de tareas de automatización de sistema controladas.' },
+    { re:/-windowstyle\s+hidden|-w\s+hidden/i, sev:'high', title:'Ejecución con ventana oculta', desc:'Oculta la ventana de PowerShell al usuario. No tiene ningún propósito legítimo habitual fuera de tareas de automatización de sistema controladas.' },
     { re:/-executionpolicy\s+bypass|-ep\s+bypass/i, sev:'high', title:'Omisión de la política de ejecución', desc:'Se salta deliberadamente la protección que impide ejecutar scripts no firmados.' },
     { re:/frombase64string/i, sev:'med', title:'Decodificación de Base64', desc:'Puede ser legítimo, pero combinado con descargas o IEX es un patrón claro de payload ofuscado.' },
   ],
@@ -5858,7 +5875,7 @@ const SCRIPT_PATTERN_GROUPS = {
   ],
   vbs: [
     { re:/createobject\s*\(\s*["']wscript\.shell["']/i, sev:'high', title:'Creación de WScript.Shell', desc:'Permite ejecutar comandos del sistema operativo desde el script.' },
-    { re:/adodb\.stream/i, sev:'high', title:'Uso de ADODB.Stream', desc:'Se usa habitualmente para escribir en disco contenido descargado o decodificado desde Base64 — un paso típico para soltar un payload adicional.' },
+    { re:/adodb\.stream/i, sev:'high', title:'Uso de ADODB.Stream', desc:'Se usa habitualmente para escribir en disco contenido descargado o decodificado desde Base64, un paso típico para soltar un payload adicional.' },
     { re:/\.run\s*\(/i, sev:'med', title:'Llamada a .Run(', desc:'Ejecuta un programa o comando externo.' },
     { re:/chr\(\d+\)\s*&|chrw\(/i, sev:'med', title:'Construcción de cadenas carácter a carácter', desc:'Técnica de ofuscación habitual para ocultar palabras clave (URLs, comandos) de un escaneo de texto simple.' },
   ],
@@ -5879,7 +5896,7 @@ const SCRIPT_PATTERN_GROUPS = {
     { re:/\beval\s*\(|\bexec\s*\(/i, sev:'med', title:'Uso de eval()/exec()', desc:'Ejecuta código Python arbitrario construido en tiempo de ejecución, una técnica habitual de ofuscación.' },
     { re:/base64\.b64decode/i, sev:'med', title:'Decodificación de Base64', desc:'Puede ocultar un payload adicional que se ejecuta después de decodificarse.' },
     { re:/socket\.socket\s*\([^)]*\)[^\n]*\.connect/i, sev:'high', title:'Apertura de conexión de red tipo socket', desc:'Combinado con ejecución de comandos, es la base de una shell reversa en Python.' },
-    { re:/pickle\.loads?/i, sev:'med', title:'Deserialización con pickle', desc:'La deserialización de datos no confiables con pickle puede ejecutar código arbitrario — es un vector de ataque conocido en Python.' },
+    { re:/pickle\.loads?/i, sev:'med', title:'Deserialización con pickle', desc:'La deserialización de datos no confiables con pickle puede ejecutar código arbitrario. Es un vector de ataque conocido en Python.' },
   ],
 };
 
@@ -5915,7 +5932,7 @@ function scanScriptText(text, ext){
         const bytes = new Uint8Array(bin.length);
         for(let i=0;i<bin.length;i++) bytes[i] = bin.charCodeAt(i);
         decodedCommand = new TextDecoder('utf-16le').decode(bytes);
-        findings.push({sev:'high', title:'Comando codificado decodificado con éxito', desc:'Vigía ha decodificado el Base64 del -EncodedCommand. Revisa el contenido decodificado más abajo — es el comando real que se ejecutaría.'});
+        findings.push({sev:'high', title:'Comando codificado decodificado con éxito', desc:'Vigía ha decodificado el Base64 del -EncodedCommand. Revisa el contenido decodificado más abajo. Es el comando real que se ejecutaría.'});
       }catch(e){ /* no se pudo decodificar: se mantiene solo la alerta de -enc detectada arriba */ }
     }
   }
@@ -5953,7 +5970,7 @@ async function analyzeExecutableFile(file){
       findings.push({sev:'ok', title:`Cabecera PE válida: ${pe.isDLL?'DLL':'EXE'}, ${pe.machineName}, subsistema ${pe.subsystemName}`, desc:`${pe.numSections} sección(es) en el binario.`});
       const packerHits = pe.sections.filter(s=>PACKER_SECTION_NAMES.some(p=>s.name.toUpperCase().includes(p)));
       if(packerHits.length){
-        findings.push({sev:'high', title:`Sección(es) de empaquetador/protector conocido: ${packerHits.map(s=>s.name).join(', ')}`, desc:'El binario está comprimido/protegido con un empaquetador conocido. Se usa tanto en software legítimo como en malware, precisamente para dificultar el análisis estático — trátalo con más cautela si no esperabas este archivo.'});
+        findings.push({sev:'high', title:`Sección(es) de empaquetador/protector conocido: ${packerHits.map(s=>s.name).join(', ')}`, desc:'El binario está comprimido/protegido con un empaquetador conocido. Se usa tanto en software legítimo como en malware, precisamente para dificultar el análisis estático. Trátalo con más cautela si no esperabas este archivo.'});
       }
       if(!pe.hasCertTable){
         findings.push({sev:'med', title:'Sin firma digital (Authenticode)', desc:'El ejecutable no declara un certificado de firma de código. No es concluyente (mucho software legítimo tampoco firma), pero un archivo sin firmar que dice ser de un editor reconocido es motivo de sospecha adicional.'});
@@ -5991,7 +6008,7 @@ async function analyzeExecutableFile(file){
   const entropy = shannonEntropy(bytes.length > 2_000_000 ? bytes.subarray(0,2_000_000) : bytes);
   const entropyNote = bytes.length > 2_000_000 ? ' (calculada sobre los primeros 2 MB)' : '';
   if(entropy > 7.5){
-    findings.push({sev:'med', title:`Entropía muy alta: ${entropy.toFixed(2)}/8${entropyNote}`, desc:'Un valor cercano a 8 indica datos con aspecto aleatorio: típico de contenido comprimido, cifrado o empaquetado. Ni es exclusivo de malware ni lo descarta — muchos instaladores legítimos también están comprimidos.'});
+    findings.push({sev:'med', title:`Entropía muy alta: ${entropy.toFixed(2)}/8${entropyNote}`, desc:'Un valor cercano a 8 indica datos con aspecto aleatorio: típico de contenido comprimido, cifrado o empaquetado. Ni es exclusivo de malware ni lo descarta. Muchos instaladores legítimos también están comprimidos.'});
   }
 
   if(urls.length){
@@ -6024,7 +6041,7 @@ document.getElementById('exe-analyze-btn').addEventListener('click', async ()=>{
     });
     out.innerHTML = `<div class="card">
       <div class="row" style="justify-content:space-between;align-items:flex-start;">
-        <div class="hint" style="font-family:var(--mono);margin-bottom:10px;word-break:break-all;flex:1;min-width:200px;">${escapeHtml(f.name)} — ${escapeHtml(res.sig.label)}, ${res.sizeKB} KB</div>
+        <div class="hint" style="font-family:var(--mono);margin-bottom:10px;word-break:break-all;flex:1;min-width:200px;">${escapeHtml(f.name)}: ${escapeHtml(res.sig.label)}, ${res.sizeKB} KB</div>
         ${exportButtonHtml(uid)}
       </div>
       ${renderVerdict(score)}
@@ -6032,7 +6049,7 @@ document.getElementById('exe-analyze-btn').addEventListener('click', async ()=>{
       ${res.extraText ? `<div class="result-block"><h3>${escapeHtml(res.extraTitle)}</h3><textarea rows="4" readonly>${escapeHtml(res.extraText)}</textarea></div>` : ''}
       ${renderHashBlock(hash)}
     </div>${renderFileHyperlinks(res.urls)}
-    <p class="disclaimer">Análisis estático local (cabeceras binarias, entropía, secciones de empaquetadores, y patrones de texto en scripts). Vigía nunca ejecuta el archivo — esto no sustituye un antivirus ni una sandbox de análisis dinámico.</p>`;
+    <p class="disclaimer">Análisis estático local (cabeceras binarias, entropía, secciones de empaquetadores, y patrones de texto en scripts). Vigía nunca ejecuta el archivo. Esto no sustituye un antivirus ni una sandbox de análisis dinámico.</p>`;
     pulseSignal(score);
   }catch(err){
     status.textContent = '';
@@ -6093,7 +6110,7 @@ function parseTar(bytes){
 function evaluateArchiveListing(listing, findings){
   const traversal = listing.filter(e=>checkPathTraversal(e.name));
   if(traversal.length){
-    findings.push({sev:'high', title:`${traversal.length} entrada(s) con ruta de salida del directorio ("zip slip")`, desc:`Ejemplo: ${traversal[0].name}. Un nombre de archivo con "../" o una ruta absoluta puede, en programas de descompresión mal protegidos, escribir fuera de la carpeta de destino — una vulnerabilidad clásica de archivos comprimidos maliciosos.`});
+    findings.push({sev:'high', title:`${traversal.length} entrada(s) con ruta de salida del directorio ("zip slip")`, desc:`Ejemplo: ${traversal[0].name}. Un nombre de archivo con "../" o una ruta absoluta puede, en programas de descompresión mal protegidos, escribir fuera de la carpeta de destino, una vulnerabilidad clásica de archivos comprimidos maliciosos.`});
   }
   const doubleExt = listing.filter(e=>checkDoubleExtension(e.name));
   if(doubleExt.length){
@@ -6159,7 +6176,7 @@ function analyzeRarBytes(bytes, findings){
 }
 
 function analyze7zBytes(bytes, findings){
-  findings.push({sev:'med', title:'Archivo 7-Zip (formato de cabecera comprimida)', desc:'A diferencia de ZIP/RAR, 7z suele comprimir también los nombres de archivo dentro de su propia cabecera, así que Vigía no puede ni siquiera listar su contenido sin una librería de descompresión completa. Trata cualquier .7z de origen desconocido — y especialmente si está protegido con contraseña — con la máxima precaución: es un formato muy usado precisamente para evadir el análisis automático de antivirus y filtros de correo.'});
+  findings.push({sev:'med', title:'Archivo 7-Zip (formato de cabecera comprimida)', desc:'A diferencia de ZIP/RAR, 7z suele comprimir también los nombres de archivo dentro de su propia cabecera, así que Vigía no puede ni siquiera listar su contenido sin una librería de descompresión completa. Trata cualquier .7z de origen desconocido (y especialmente si está protegido con contraseña) con la máxima precaución: es un formato muy usado precisamente para evadir el análisis automático de antivirus y filtros de correo.'});
 }
 
 async function analyzeArchiveFile(file){
@@ -6237,7 +6254,7 @@ document.getElementById('archive-analyze-btn').addEventListener('click', async (
     });
     out.innerHTML = `<div class="card">
       <div class="row" style="justify-content:space-between;align-items:flex-start;">
-        <div class="hint" style="font-family:var(--mono);margin-bottom:10px;word-break:break-all;flex:1;min-width:200px;">${escapeHtml(f.name)} — ${escapeHtml(res.sig.label)}, ${res.sizeKB} KB ${res.meta?'· '+escapeHtml(res.meta):''}</div>
+        <div class="hint" style="font-family:var(--mono);margin-bottom:10px;word-break:break-all;flex:1;min-width:200px;">${escapeHtml(f.name)}: ${escapeHtml(res.sig.label)}, ${res.sizeKB} KB ${res.meta?'· '+escapeHtml(res.meta):''}</div>
         ${exportButtonHtml(uid)}
       </div>
       ${renderVerdict(score)}
@@ -6348,14 +6365,14 @@ function detectInstallPlatform(){
 // sin salir de la app. Cuando hay evento nativo disponible (Chrome/Edge/Android),
 // no hacen falta estos pasos: se ofrece directamente el diálogo real.
 const INSTALL_STEPS = {
-  'ios': { icon:'📱', title:'Instalar en iPhone / iPad (Safari)', note:'En iOS solo funciona desde Safari — Chrome y otros navegadores no pueden instalar apps ahí, es una restricción del propio sistema.', steps:[
+  'ios': { icon:'📱', title:'Instalar en iPhone / iPad (Safari)', note:'En iOS solo funciona desde Safari. Chrome y otros navegadores no pueden instalar apps ahí, es una restricción del propio sistema.', steps:[
     'Abre esta página en <b>Safari</b> (si no la tienes abierta ahí ya).',
     'Toca el icono de <b>compartir</b> (el cuadrado con la flecha hacia arriba) en la barra inferior.',
     'Desplázate hacia abajo y toca <b>"Añadir a pantalla de inicio"</b>.',
     'Toca <b>"Añadir"</b> arriba a la derecha. Ya tienes a Vigía como un icono más en tu pantalla.',
   ]},
   'android-chrome': { icon:'🤖', title:'Instalar en Android (Chrome)', note:null, steps:[
-    'Toca el botón <b>"Instalar Vigía"</b> de aquí abajo — Chrome te mostrará su propio diálogo de instalación.',
+    'Toca el botón <b>"Instalar Vigía"</b> de aquí abajo. Chrome te mostrará su propio diálogo de instalación.',
     'Si no ves el botón, abre el menú ⋮ de Chrome y busca <b>"Instalar aplicación"</b> o <b>"Añadir a pantalla de inicio"</b>.',
   ]},
   'android-firefox': { icon:'🤖', title:'Instalar en Android (Firefox)', note:'Firefox para Android sí permite instalar la app, aunque sin el diálogo automático que tiene Chrome.', steps:[
@@ -6372,10 +6389,10 @@ const INSTALL_STEPS = {
     'Si tu versión de Safari no lo ofrece, puedes seguir usando Vigía como una pestaña normal, o guardarla en favoritos.',
   ]},
   'desktop-firefox': { icon:'💻', title:'Instalar en PC (Firefox)', note:'Firefox de escritorio no ofrece instalación nativa de PWAs todavía.', steps:[
-    'Puedes seguir usando Vigía como página normal — guárdala en favoritos para tenerla a mano.',
+    'Puedes seguir usando Vigía como página normal. Guárdala en favoritos para tenerla a mano.',
     'O crea manualmente un acceso directo del navegador a esta URL en tu escritorio.',
   ]},
-  'unknown': { icon:'🌐', title:'Instalar Vigía', note:'No hemos podido identificar tu navegador con seguridad — prueba desde el menú de tu navegador buscando "Instalar aplicación" o "Añadir a pantalla de inicio".', steps:[] },
+  'unknown': { icon:'🌐', title:'Instalar Vigía', note:'No hemos podido identificar tu navegador con seguridad. Prueba desde el menú de tu navegador buscando "Instalar aplicación" o "Añadir a pantalla de inicio".', steps:[] },
 };
 
 function renderInstallStepsHtml(platform, opts){
@@ -6444,7 +6461,7 @@ function renderInstallBanner(){
     <div class="ib-icon">👁️</div>
     <div class="ib-body">
       <p class="ib-title">Llévate Vigía contigo</p>
-      <p class="ib-sub">Instálala en este dispositivo y tenla siempre a mano, con su propio icono — sin depender de encontrar la pestaña del navegador.</p>
+      <p class="ib-sub">Instálala en este dispositivo y tenla siempre a mano, con su propio icono, sin depender de encontrar la pestaña del navegador.</p>
       <div class="ib-actions">
         <button class="btn" id="install-banner-cta">${canNative ? 'Instalar Vigía' : 'Ver cómo instalarla'}</button>
         <button class="ib-snooze" id="install-banner-snooze">Recuérdamelo más tarde</button>
@@ -6551,7 +6568,7 @@ if(contactForm){
         body: new FormData(contactForm),
       });
       if(res.ok){
-        status.innerHTML = '<p class="hint" style="color:var(--safe);">✓ Mensaje enviado. Gracias — el autor lo leerá directamente.</p>';
+        status.innerHTML = '<p class="hint" style="color:var(--safe);">✓ Mensaje enviado. Gracias. El autor lo leerá directamente.</p>';
         contactForm.reset();
       }else{
         status.innerHTML = '<p class="hint" style="color:var(--danger);">✗ No se ha podido enviar. Puedes intentarlo de nuevo en unos segundos, o escribir directamente a través de GitHub (más abajo).</p>';
