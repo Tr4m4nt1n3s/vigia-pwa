@@ -1002,7 +1002,8 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
 
 <footer>Vigía analiza todo localmente en tu navegador. Algunas comprobaciones opcionales (ver dirección final de un enlace acortado, comprobar registros MX de un dominio, OCR de capturas, buscar una app en la tienda) solo se ejecutan cuando tú pulsas el botón correspondiente, y en ese momento consultan un servicio externo de terceros con el dato mínimo necesario. Instálala como app (PWA) desde el menú de tu navegador.
 <div class="credits">
-  <div class="license-line">© 2026 <a href="https://jorgebayanescobar.es" target="_blank" rel="noopener noreferrer">Jorge Bayán Escobar</a> · Todos los derechos reservados · <a href="#" id="footer-contact-link">📩 Contacto y sugerencias</a></div>
+  <div class="license-line">© 2026 <a href="https://jorgebayanescobar.es" target="_blank" rel="noopener noreferrer">Jorge Bayán Escobar</a> · Todos los derechos reservados</div>
+  <div class="license-line"><a href="#" id="footer-contact-link">📩 Contacto y sugerencias</a></div>
 </div>
 </footer>
 
@@ -1603,6 +1604,23 @@ function pdfScoreMeta(score){
   return { label:'SIN SEÑALES RELEVANTES', color:[61,201,151] };
 }
 
+// La fuente estándar que usa jsPDF (Helvetica, codificación WinAnsi) no incluye
+// emoticonos ni flechas Unicode (→) — al intentar dibujarlos no falla limpiamente,
+// corrompe el resto de esa línea de texto (así se detectó: capturas de pantalla del
+// usuario mostrando texto con espacios sueltos entre letras y símbolos ilegibles en
+// el bloque "Qué haría Vigía"). En pantalla no pasa nada, el navegador sí los soporta;
+// esta función solo se aplica al texto que va DENTRO del PDF.
+function pdfSafeText(str){
+  if(!str) return str;
+  return String(str)
+    .replace(/\u2192/g, '->')
+    .replace(/\u2194/g, '<->')
+    .replace(/[\u2190-\u2BFF\u{1F000}-\u{1FFFF}\uFE0F\u200D\u20E3]/gu, '')
+    .replace(/[ \t]*\n[ \t]*/g, '\n')
+    .replace(/[ \t]{2,}/g, ' ')
+    .trim();
+}
+
 function writeReportSection(doc, ctx, report, marginX, contentW, pageH){
   function drawHeader(continued){
     doc.setFont('helvetica','bold'); doc.setFontSize(15); doc.setTextColor(15,20,30);
@@ -1624,14 +1642,14 @@ function writeReportSection(doc, ctx, report, marginX, contentW, pageH){
   if(ctx.freshPage){ drawHeader(false); ctx.freshPage = false; }
 
   doc.setFont('helvetica','bold'); doc.setFontSize(12.5); doc.setTextColor(15,20,30);
-  const titleLines = doc.splitTextToSize(report.title, contentW);
+  const titleLines = doc.splitTextToSize(pdfSafeText(report.title), contentW);
   ensureSpace(titleLines.length*6+2);
   doc.text(titleLines, marginX, ctx.y); ctx.y += titleLines.length*6 + 3;
 
   doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(110,120,140);
   doc.text('Fecha del análisis: ' + new Date(report.ts).toLocaleString('es-ES'), marginX, ctx.y); ctx.y += 5.5;
   if(report.subject){
-    const subjLines = doc.splitTextToSize('Objeto analizado: ' + report.subject, contentW);
+    const subjLines = doc.splitTextToSize(pdfSafeText('Objeto analizado: ' + report.subject), contentW);
     ensureSpace(subjLines.length*5+2);
     doc.text(subjLines, marginX, ctx.y); ctx.y += subjLines.length*5 + 5;
   } else { ctx.y += 2; }
@@ -1652,7 +1670,7 @@ function writeReportSection(doc, ctx, report, marginX, contentW, pageH){
   report.findings.forEach(f=>{
     const sevMeta = pdfSeverityMeta(f.sev);
     doc.setFont('helvetica','bold'); doc.setFontSize(9.5);
-    const titleLines2 = doc.splitTextToSize(f.title, contentW - 20);
+    const titleLines2 = doc.splitTextToSize(pdfSafeText(f.title), contentW - 20);
     ensureSpace(titleLines2.length*5 + 2);
     doc.setTextColor(sevMeta.color[0], sevMeta.color[1], sevMeta.color[2]);
     doc.text(`[${sevMeta.label}]`, marginX, ctx.y);
@@ -1661,7 +1679,7 @@ function writeReportSection(doc, ctx, report, marginX, contentW, pageH){
     ctx.y += titleLines2.length*5 + 1;
 
     doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(100,110,128);
-    const descLines = doc.splitTextToSize(f.desc, contentW - 4);
+    const descLines = doc.splitTextToSize(pdfSafeText(f.desc), contentW - 4);
     ensureSpace(descLines.length*4.6 + 5);
     doc.text(descLines, marginX + 2, ctx.y);
     ctx.y += descLines.length*4.6 + 6;
@@ -1670,9 +1688,9 @@ function writeReportSection(doc, ctx, report, marginX, contentW, pageH){
   if(report.extraText){
     ensureSpace(9);
     doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(15,20,30);
-    doc.text(report.extraTitle || 'Información adicional', marginX, ctx.y); ctx.y += 6.5;
+    doc.text(pdfSafeText(report.extraTitle || 'Información adicional'), marginX, ctx.y); ctx.y += 6.5;
     doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(100,110,128);
-    const extraLines = doc.splitTextToSize(report.extraText, contentW);
+    const extraLines = doc.splitTextToSize(pdfSafeText(report.extraText), contentW);
     extraLines.forEach(line=>{
       ensureSpace(4.6);
       doc.text(line, marginX, ctx.y); ctx.y += 4.6;
@@ -1684,7 +1702,7 @@ function writeReportSection(doc, ctx, report, marginX, contentW, pageH){
   doc.setDrawColor(210,218,232); doc.line(marginX, ctx.y, marginX + contentW, ctx.y); ctx.y += 6;
   doc.setFont('helvetica','italic'); doc.setFontSize(7.8); doc.setTextColor(140,150,165);
   const disclaimer = 'Informe generado localmente por Vigía a partir de un análisis heurístico automatizado. No sustituye una revisión de seguridad certificada, un análisis forense, ni el veredicto de tu MTD/antivirus/proveedor de correo.' + (report.disclaimer ? ' ' + report.disclaimer : '');
-  const discLines = doc.splitTextToSize(disclaimer, contentW);
+  const discLines = doc.splitTextToSize(pdfSafeText(disclaimer), contentW);
   ensureSpace(discLines.length*4.2 + 4);
   doc.text(discLines, marginX, ctx.y);
   ctx.y += discLines.length*4.2 + 10;

@@ -1,5 +1,5 @@
 {
-  "name": "Vigía — Análisis de amenazas",
+  "name": "Vigía",
   "short_name": "Vigía",
   "description": "Analiza URLs, correos, apps móviles y SMS en busca de señales de riesgo.",
   "start_url": ".",
