@@ -25,6 +25,7 @@
   --text-dim:#93A0BD;
   --signal:#46E0C6;
   --signal-dim:#1F5F58;
+  --accent2:#5B8DEF;
   --warn:#F2A93B;
   --danger:#E5484D;
   --safe:#3DDC97;
@@ -157,9 +158,23 @@ input[type=file]{font-family:var(--sans);font-size:12.5px;padding:8px;}
 .btn:active{transform:scale(0.98);}
 .btn.ghost{background:none;border:1px solid var(--line);color:var(--text-dim);}
 .btn.ghost:hover{color:var(--text);border-color:var(--text-dim);}
+/* Variante para una acción secundaria que hay que distinguir claramente de la acción
+   principal (verde) y de "Limpiar" (gris neutro) — p. ej. "Escanear en directo con la
+   cámara" junto a "Analizar QR subido": mismo look que .ghost pero con un color propio
+   (azul), para que no se confundan al tacto en móvil ni de un vistazo en escritorio. */
+.btn.accent2{background:none;border:1px solid var(--accent2);color:var(--accent2);}
+.btn.accent2:hover{background:rgba(91,141,239,0.1);}
 .btn:disabled{opacity:0.5;cursor:not-allowed;box-shadow:none;}
 
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+/* En móvil, cuando estos botones concretos (subir/analizar QR + escanear en directo)
+   se apilan uno encima de otro al envolver, el hueco normal de .row (10px) se nota
+   justo para dos botones grandes seguidos — se amplía un poco solo aquí para reducir
+   el riesgo de pulsar el que no tocaba. */
+@media(max-width:520px){
+  .qr-actions-row{gap:14px;}
+  .qr-actions-row .btn{width:100%;}
+}
 .mt{margin-top:14px;}
 
 /* chips de permisos / opciones */
@@ -402,7 +417,7 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
       <small>Estación de análisis de amenazas · local y sin backend</small>
     </div>
   </div>
-  <div class="status-chip"><span class="dot"></span><span id="conn-status">en línea</span></div>
+  <div class="status-chip"><span class="dot" id="conn-dot"></span><span id="conn-status">en línea</span></div>
 </div>
 
 <div class="pulse-strip" aria-hidden="true">
@@ -567,7 +582,7 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
 
   <section class="panel" id="panel-url">
     <h2 class="panel-title">Análisis de URLs, dominios e IPs</h2>
-    <p class="panel-sub">Pega una o varias URLs/dominios, comprueba una dirección IP pública, o revisa si tu conexión filtra tu IP real. Vigía revisa la estructura y patrones típicos de phishing y typosquatting, sin visitar el enlace. Incluye entropía y punycode decodificado, y consulta opcional de DNS, ASN y WHOIS (RDAP).</p>
+    <p class="panel-sub">Pega una o varias URLs/dominios, comprueba una dirección IP pública, o revisa si tu conexión filtra tu IP real. <b style="color:var(--text);">Por defecto, Vigía solo analiza el patrón del propio texto de la URL</b> (estructura, TLD, homógrafos, entropía, typosquatting...), sin visitar el enlace ni consultar nada en internet. Es un análisis de forma, no una comprobación de que el sitio exista o sea seguro ahora mismo. Para eso está la consulta opcional de <b style="color:var(--text);">DNS, ASN y WHOIS</b> más abajo en cada resultado: es la única parte de este módulo que sale a internet a verificar algo real, y solo se activa si tú lo pides.</p>
 
     <div class="tabbtn-inline" role="tablist">
       <button class="active" data-mode="urls">URLs y dominios</button>
@@ -713,7 +728,7 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
         <div class="card" style="margin:0;">
           <b style="color:var(--text);">Android</b>
           <p class="hint mt">No hay un informe nativo equivalente; usa un firewall/monitor de código abierto sin root:</p>
-          <p class="hint"><b>NetGuard</b> (F-Droid/GitHub) o <b>PCAPdroid</b> (F-Droid/GitHub). Ambos crean una VPN local en tu propio dispositivo (el tráfico no sale a ningún servidor externo) y muestran cada dominio/IP contactado por cada app.</p>
+          <p class="hint"><b>NetGuard</b> o <b>PCAPdroid</b> (F-Droid/GitHub) muestran cada dominio/IP contactado por cada app. <b>TrackerControl</b> (F-Droid) va un paso más allá: identifica directamente qué rastreadores/empresas hay detrás de cada conexión (listas Disconnect y DuckDuckGo Tracker Radar) y permite exportar el resultado como CSV. Los tres crean una VPN local en tu propio dispositivo — el tráfico no sale a ningún servidor externo, y ninguno lo comparte con Vigía automáticamente: exportas tú, pegas tú.</p>
         </div>
       </div>
 
@@ -722,7 +737,7 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
         <input type="text" id="netlog-appname" placeholder="Ej. Linterna Ultra Pro">
       </div>
       <div class="mt">
-        <label class="field-label" for="netlog-text">Pega la lista de dominios/IPs contactados (uno por línea)</label>
+        <label class="field-label" for="netlog-text">Pega el registro de conexiones (uno por línea, o el CSV exportado de TrackerControl u otra app)</label>
         <textarea id="netlog-text" rows="6" placeholder="graph.facebook.com&#10;googleads.g.doubleclick.net&#10;api.miapplegitima.com&#10;185.23.44.109"></textarea>
       </div>
       <div class="row mt">
@@ -928,9 +943,9 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
           <input type="file" id="qr-camera-file" accept="image/*" capture="environment">
         </div>
       </div>
-      <div class="row mt">
+      <div class="row mt qr-actions-row">
         <button class="btn" id="qr-analyze-btn">Analizar QR subido</button>
-        <button class="btn ghost" id="qr-live-btn">📷 Escanear en directo con la cámara</button>
+        <button class="btn accent2" id="qr-live-btn">📷 Escanear en directo con la cámara</button>
         <button class="btn ghost" id="qr-clear-btn">Limpiar</button>
         <span id="qr-status" class="hint"></span>
       </div>
@@ -1059,8 +1074,21 @@ window.addEventListener('DOMContentLoaded', ()=>{
   activateTab(['dashboard','guia','url','email','apps','sms','archivos','historial'].includes(h) ? h : 'dashboard');
 });
 navigator.connection || 0;
-window.addEventListener('online', ()=>document.getElementById('conn-status').textContent='en línea');
-window.addEventListener('offline', ()=>document.getElementById('conn-status').textContent='sin conexión (modo local)');
+window.addEventListener('online', ()=>{
+  document.getElementById('conn-status').textContent='en línea';
+  document.getElementById('conn-dot').style.background='';
+});
+window.addEventListener('offline', ()=>{
+  document.getElementById('conn-status').textContent='sin conexión (modo local)';
+  document.getElementById('conn-dot').style.background='var(--text-dim)';
+});
+// Estado inicial: el chip nace asumiendo "en línea" en el HTML, pero si la página se
+// abre ya sin conexión (p. ej. desde el service worker en caché) hay que reflejarlo
+// desde el primer render, no solo al detectar un cambio de estado a partir de ahora.
+if(!navigator.onLine){
+  document.getElementById('conn-status').textContent='sin conexión (modo local)';
+  document.getElementById('conn-dot').style.background='var(--text-dim)';
+}
 </script>
 
 <script>
@@ -2131,7 +2159,7 @@ document.addEventListener('click', async (e)=>{
         findings.push({sev:'ok', title:`ASN / organización: ${geo.asn||'desconocido'}`, desc:`${geo.org||'Organización desconocida'}${(geo.city||geo.country_name) ? `, ${[geo.city,geo.country_name].filter(Boolean).join(', ')}` : ''}.`});
       }catch(err){}
     } else {
-      findings.push({sev:'med', title:'El dominio existe pero no tiene registros A', desc:'El DNS confirma que el dominio está registrado (no es NXDOMAIN), pero no resuelve a ninguna IPv4 en este momento — puede depender solo de otros tipos de registro, o estar mal configurado.'});
+      findings.push({sev:'med', title:'El dominio existe pero no tiene registros A', desc:'El DNS confirma que el dominio está registrado (no es NXDOMAIN), pero no resuelve a ninguna IPv4 en este momento. Puede depender solo de otros tipos de registro, o estar mal configurado.'});
     }
     if(!nxdomain && nsAnswers.length) findings.push({sev:'ok', title:`Servidores de nombres (${nsAnswers.length})`, desc: nsAnswers.join(', ')});
     if(!nxdomain && txtAnswers.length) findings.push({sev:'low', title:`${txtAnswers.length} registro(s) TXT`, desc: txtAnswers.slice(0,5).join(' | ')});
@@ -2376,7 +2404,7 @@ function renderUrlResult(res){
       <div class="hint" style="font-family:var(--mono);margin-bottom:10px;word-break:break-all;flex:1;min-width:200px;">${escapeHtml(res.raw)}</div>
       ${exportButtonHtml(uid)}
     </div>
-    ${renderVerdict(score, 'Basado en el patrón del texto de la URL, no en si el dominio está activo ahora mismo — para confirmarlo, usa "Consultar DNS, ASN, WHOIS y si existe" más abajo.')}
+    ${renderVerdict(score, 'Basado en el patrón del texto de la URL, no en si el dominio está activo ahora mismo. Para confirmarlo, usa "Consultar DNS, ASN, WHOIS y si existe" más abajo.')}
     <div class="result-block">
       <h3>Hallazgos (${res.findings.length})</h3>
       ${renderFindings(res.findings)}
@@ -2391,7 +2419,7 @@ function renderUrlResult(res){
     </div>
     <div class="result-block">
       <h3>DNS, ASN y WHOIS (RDAP)</h3>
-      <p class="hint">Con tu permiso, se consulta el DNS público (Cloudflare) para ver a qué IP resuelve el dominio y su organización (ASN), y el registro RDAP (el sustituto moderno de WHOIS, accesible por HTTPS) para ver cuándo se registró y quién es el registrador. <b style="color:var(--text);">También es la forma de confirmar si el dominio existe de verdad ahora mismo</b> — el análisis de arriba solo mira el patrón del texto de la URL, no si está activa.</p>
+      <p class="hint">Con tu permiso, se consulta el DNS público (Cloudflare) para ver a qué IP resuelve el dominio y su organización (ASN), y el registro RDAP (el sustituto moderno de WHOIS, accesible por HTTPS) para ver cuándo se registró y quién es el registrador. <b style="color:var(--text);">También es la forma de confirmar si el dominio existe de verdad ahora mismo</b>. El análisis de arriba solo mira el patrón del texto de la URL, no si está activa.</p>
       <div class="row mt"><button class="btn ghost url-intel-btn" data-domain="${encodeURIComponent(res.host)}" data-target="intel-${intelUid}">Consultar DNS, ASN, WHOIS y si existe</button></div>
       <div id="intel-${intelUid}" class="mt"></div>
     </div>
@@ -4641,6 +4669,45 @@ function classifyHost(hostRaw){
   return null;
 }
 
+// Admite tanto una línea = un host suelto (formato típico de NetGuard/PCAPdroid) como
+// una línea CSV con varias columnas (p. ej. la exportación de TrackerControl: fecha, app,
+// dominio, empresa, categoría...). No se asume el orden exacto de columnas de ningún
+// exportador concreto —así no depende de un formato que la app de turno pueda cambiar—,
+// simplemente se busca el primer campo de la línea que sea un dominio o IP real.
+function looksLikeHostOrIp(s){
+  if(!s) return false;
+  if(/^(\d{1,3}\.){3}\d{1,3}$/.test(s)) return true;
+  if(!/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,24}$/i.test(s)) return false;
+  // Un identificador de paquete tipo "com.ejemplo.app" tiene la misma forma que un
+  // dominio (etiquetas separadas por puntos) — para no confundirlo con el dominio real
+  // de una fila CSV, se exige que el último segmento sea un TLD real conocido, igual que
+  // ya hace extractDomains()/extractBareLinksFromText() en el resto de la app.
+  const tld = s.toLowerCase().slice(s.lastIndexOf('.')+1);
+  return COMMON_TLDS.has(tld);
+}
+function extractHostFromLogLine(line){
+  // Formato de una sola columna (NetGuard/PCAPdroid): si es lo único en la línea, se
+  // acepta aunque tenga forma de paquete (com.ejemplo.app) — no hay otro candidato mejor.
+  const simple = line.replace(/^[a-z]+:\/\//i,'').split(/[/:\s]/)[0];
+  if(!line.includes(',') && !line.includes(';') && !line.includes('\t') && looksLikeHostOrIp(simple)) return simple;
+  const fields = line.split(/[,;\t]/).map(f=>f.trim().replace(/^["']|["']$/g,''));
+  const candidates = fields
+    .map(f=>f.replace(/^[a-z]+:\/\//i,'').split(/[/:\s]/)[0])
+    .filter(looksLikeHostOrIp);
+  // Formato CSV (varias columnas): se descartan primero los candidatos con forma de
+  // identificador de paquete (com.ejemplo.app) — casi ningún dominio real de internet
+  // empieza literalmente por la etiqueta "com."/"org."/"io"... como primer segmento, así
+  // que es una señal fiable para no confundirlo con el dominio de destino real de esa
+  // misma fila. Si no queda ningún candidato "limpio", se acepta uno con forma de paquete
+  // antes que nada.
+  const clean = candidates.filter(c=>!looksLikePackageId(c));
+  return clean[0] || candidates[0] || null;
+}
+function looksLikePackageId(s){
+  const parts = s.toLowerCase().split('.');
+  if(parts.length < 3) return false;
+  return ['com','org','net','io','co','edu','gov','app','dev','de','uk','info'].includes(parts[0]);
+}
 function analyzeConnectionLog(appName, rawText){
   const lines = rawText.split('\n').map(l=>l.trim()).filter(Boolean);
   const results = [];
@@ -4648,8 +4715,7 @@ function analyzeConnectionLog(appName, rawText){
   const categoryCounts = {};
 
   lines.forEach(line=>{
-    // Admite líneas con protocolo/puerto/ruta; nos quedamos solo con el host
-    let host = line.replace(/^[a-z]+:\/\//i,'').split(/[/:\s]/)[0];
+    const host = extractHostFromLogLine(line);
     if(!host) return;
 
     const category = classifyHost(host);
@@ -4797,6 +4863,29 @@ async function lookupBinInfo(bin){
   return res.json();
 }
 
+// extractUrls() exige "http(s)://" delante. Muchos SMS reales omiten el protocolo para
+// ahorrar caracteres (p. ej. "seur.comwwy.xyz/es") — sin este complemento, esos enlaces
+// no se detectaban en absoluto y nunca llegaban a pasar por el motor completo de URLs,
+// aunque el mismo texto pegado directamente en el módulo de URLs sí se analizaba bien.
+function extractBareLinksFromText(text){
+  const re = /\b((?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,24})(\/[^\s"'<>()]*)?/gi;
+  const found = [];
+  let m;
+  while((m = re.exec(text))){
+    const domain = m[1].toLowerCase();
+    if(DOMAIN_STOPLIST.has(domain) || /^\d+\.\d+$/.test(domain)) continue;
+    const tld = domain.slice(domain.lastIndexOf('.')+1);
+    if(!COMMON_TLDS.has(tld)) continue;
+    const before = text.slice(Math.max(0, m.index-8), m.index);
+    if(/https?:\/\/$/i.test(before)) continue; // ya lo capturará extractUrls() con protocolo
+    if(before.endsWith('@')) continue; // parte de un email (ej. "soporte@correos.es"), no es un enlace
+    found.push(domain + (m[2]||''));
+  }
+  return found;
+}
+function extractSmsLinks(text){
+  return [...new Set([...extractUrls(text), ...extractBareLinksFromText(text)])];
+}
 function analyzeSmsText(sender, text){
   const findings = [];
   const lower = text.toLowerCase();
@@ -4844,7 +4933,7 @@ function analyzeSmsText(sender, text){
     findings.push({sev:'med', title:'Posible enlace ofuscado con espacios', desc:'Se detecta un patrón tipo "h t t p s" o un dominio con espacios insertados entre las partes, una técnica para evitar que los filtros automáticos de SMS/spam reconozcan el enlace como tal.'});
   }
 
-  const urls = extractUrls(text);
+  const urls = extractSmsLinks(text);
   let urlSection = '';
   if(urls.length){
     const analyzed = urls.map(u=>analyzeSingleUrl(u));
@@ -6571,14 +6660,17 @@ const CONTACT_FORM_ENDPOINT = 'https://formspree.io/f/mbgroonp';
 
 const contactForm = document.getElementById('contact-form');
 if(contactForm){
+  let contactStatusToken = 0;
   contactForm.addEventListener('submit', async (e)=>{
     e.preventDefault();
     const btn = document.getElementById('contact-submit-btn');
     const status = document.getElementById('contact-status');
     const originalLabel = btn.textContent;
+    const myToken = ++contactStatusToken; // evita que un aviso viejo borre uno nuevo si se envía otro mensaje antes de que expire
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span> enviando…';
     status.innerHTML = '';
+    let ok = false;
     try{
       const res = await fetch(CONTACT_FORM_ENDPOINT, {
         method: 'POST',
@@ -6586,6 +6678,7 @@ if(contactForm){
         body: new FormData(contactForm),
       });
       if(res.ok){
+        ok = true;
         status.innerHTML = '<p class="hint" style="color:var(--safe);">✓ Mensaje enviado. Gracias. El autor lo leerá directamente.</p>';
         contactForm.reset();
       }else{
@@ -6596,6 +6689,15 @@ if(contactForm){
     }finally{
       btn.disabled = false;
       btn.textContent = originalLabel;
+      // El aviso de éxito desaparece solo a los pocos segundos (tiempo de sobra para
+      // leerlo) para que, si el usuario envía un segundo mensaje, quede claro si ESE
+      // envío tuvo éxito o no, en vez de quedarse leyendo el aviso del anterior.
+      // Los avisos de error se dejan fijos, para no perder de vista un fallo real.
+      if(ok){
+        setTimeout(()=>{
+          if(contactStatusToken === myToken) status.innerHTML = '';
+        }, 6000);
+      }
     }
   });
 }
