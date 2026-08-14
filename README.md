@@ -113,7 +113,7 @@ Firefox de escritorio no ofrece instalación nativa de PWAs. Puedes seguir usand
 
 No es obligatorio instalarla. Puedes:
 
-- Abrir directamente el archivo `vigia-analisis-amenazas.html` con doble clic en cualquier navegador de escritorio, sin necesidad de conexión a internet para las funciones que no requieran servicios externos.
+- Abrir directamente el archivo `index.html` con doble clic en cualquier navegador de escritorio, sin necesidad de conexión a internet para las funciones que no requieran servicios externos.
 - Guardarla como marcador/favorito en tu navegador y acceder por la URL cuando la necesites.
 
 ## 🔒 Privacidad y seguridad
@@ -144,7 +144,7 @@ Cuando una función no es técnicamente posible desde una web, Vigía te lo expl
 ## 📂 Estructura del repositorio
 
 ```
-vigia-analisis-amenazas.html   ← la aplicación completa (un único archivo)
+index.html                     ← la aplicación completa (un único archivo)
 manifest.json                  ← manifiesto de la PWA
 favicon.ico
 favicon-16.png
