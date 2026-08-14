@@ -138,13 +138,17 @@ Cuando una función no es técnicamente posible desde una web, Vigía te lo expl
 
 - **HTML, CSS y JavaScript puro** — sin frameworks, sin build, sin `node_modules`. Todo cabe en un único archivo.
 - **Sin backend**: no hay servidor propio; todo se ejecuta en el navegador del usuario.
-- Librerías externas cargadas **solo bajo demanda** desde CDN, únicamente cuando el módulo correspondiente las necesita: JSZip (comprimidos), Tesseract.js (OCR), jsPDF (exportar a PDF), jsQR (lectura de códigos QR).
-- Servicios externos gratuitos y sin necesidad de clave de API, siempre bajo acción explícita del usuario: DNS-over-HTTPS de Cloudflare, RDAP, ipapi.co, binlist.net, iTunes API.
+- Librerías externas cargadas **solo bajo demanda** desde CDN, únicamente cuando el módulo correspondiente las necesita: JSZip (comprimidos), Tesseract.js (OCR), jsPDF (exportar a PDF), jsQR (lectura de códigos QR). Todas verificadas con **Subresource Integrity** (hash `sha384-...`), para que el navegador rechace el script si el CDN sirviera alguna vez un archivo distinto al esperado.
+- Servicios externos gratuitos y sin necesidad de clave de API, siempre bajo acción explícita del usuario: DNS-over-HTTPS de Cloudflare, RDAP, ipapi.co, binlist.net, iTunes API. La búsqueda en App Store pasa además por `allorigins.win`, un servicio-puente público de solo lectura, ya que la API de Apple no admite llamadas directas desde un navegador; Vigía lo indica explícitamente junto al propio buscador.
+- **Content-Security-Policy** activa como capa adicional de seguridad: limita desde qué dominios puede cargarse código, bloquea la inyección de plugins y de etiquetas `<base>`, y restringe dónde puede enviarse un formulario.
+- **Protección contra archivos comprimidos maliciosos** ("bombas de descompresión"): antes de descomprimir cualquier entrada de un `.zip`/`.apk`/`.ipa`/documento ofimático, Vigía comprueba el tamaño real que declara sin necesidad de descomprimirla, y se detiene si es anómalamente grande, en vez de intentar procesarla y arriesgarse a agotar la memoria del navegador.
+- **Service Worker real** (`sw.js`, archivo propio, no generado en tiempo de ejecución): cachea el cascarón de la app para que sea instalable y usable offline tras la primera visita, con una caché versionada que se renueva sola en cada actualización — así nunca te quedas atrapado en una versión antigua sin darte cuenta.
 
 ## 📂 Estructura del repositorio
 
 ```
 index.html                     ← la aplicación completa (un único archivo)
+sw.js                          ← Service Worker (instalación + caché offline versionada)
 manifest.json                  ← manifiesto de la PWA
 favicon.ico
 favicon-16.png
@@ -154,7 +158,9 @@ vigia-icon-192.png
 vigia-icon-512.png
 ```
 
-> ⚠️ Importante: todos los archivos de icono y `manifest.json` deben estar en la **misma carpeta** que el `.html`, ya que las rutas son relativas.
+> ⚠️ Importante: todos los archivos de icono, `manifest.json` y `sw.js` deben estar en la **misma carpeta** que el `.html` (`index.html` en GitHub), ya que las rutas son relativas.
+>
+> ⚠️ En cada actualización de `index.html`, sube también `sw.js` con `CACHE_VERSION` incrementado (por ejemplo, de `vigia-shell-v2` a `vigia-shell-v3`). Si no lo haces, quienes ya tengan Vigía instalada pueden quedarse indefinidamente en la versión anterior, sin ningún aviso.
 
 ## ❓ Preguntas frecuentes
 
@@ -165,7 +171,7 @@ No. Puedes usar Vigía directamente desde el navegador, con o sin instalarla com
 No. No hay servidor. Todo se queda en tu propio dispositivo, y puedes borrarlo cuando quieras.
 
 **¿Funciona sin conexión a internet?**
-Las funciones que no dependen de servicios externos (analizar un permiso, calcular un hash, leer un QR, etc.) funcionan sin conexión. Las que consultan datos externos (WHOIS, DNS, geolocalización de IP...) necesitan internet en el momento en que las actives.
+Después de visitarla una vez con conexión, el propio cascarón de Vigía queda instalado y se abre sin internet gracias a su Service Worker. Con la app ya abierta, las funciones que no dependen de servicios externos (analizar un permiso, calcular un hash, leer un QR, etc.) funcionan sin conexión. Las que consultan datos externos (WHOIS, DNS, geolocalización de IP...) necesitan internet en el momento en que las actives, igual que cualquier actualización nueva de la propia app.
 
 Para más preguntas, consulta la propia sección **Guía → FAQ** dentro de la aplicación, con explicaciones adicionales y un glosario de más de 60 términos de seguridad.
 
