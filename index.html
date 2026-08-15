@@ -12,6 +12,17 @@
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link id="manifest-link" rel="manifest" href="manifest.json">
 
+<!-- Content-Security-Policy: capa de defensa en profundidad, no un parche a un agujero conocido
+     (el código ya escapa de forma consistente todo el contenido dinámico con escapeHtml()).
+     Dos límites honestos, documentados en vez de ocultados:
+     - script-src necesita 'unsafe-inline' porque toda la lógica de Vigía vive en bloques de script
+       inline dentro de un único archivo .html sin servidor que pueda generar un nonce por carga; aun así,
+       sigue bloqueando que un script se cargue desde un dominio ajeno a los ya autorizados.
+     - connect-src se deja amplio a "https:" a propósito: el módulo RDAP (WHOIS moderno) redirige
+       a servidores de registro autoritativos que varían según el dominio consultado (Verisign,
+       RIPE, registradores concretos...) y no se pueden enumerar de antemano; una lista cerrada
+       rompería silenciosamente esa función, justo lo que la filosofía del proyecto quiere evitar. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; connect-src 'self' https:; object-src 'none'; base-uri 'none'; form-action 'self' https://formspree.io; frame-ancestors 'self';">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Vigía">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -100,6 +111,10 @@ nav.tabs{
 nav.tabs::-webkit-scrollbar{height:4px;display:block;}
 nav.tabs::-webkit-scrollbar-thumb{background:var(--signal-dim);border-radius:4px;}
 nav.tabs::-webkit-scrollbar-track{background:transparent;}
+.tab-icon{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.3;
+  vertical-align:-3px;margin-right:6px;flex:none;}
+.chip-icon{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.3;
+  vertical-align:-2px;margin-right:5px;flex:none;}
 nav.tabs button{
   font-family:var(--mono);font-size:12.5px;letter-spacing:0.02em;
   background:none;border:none;color:var(--text-dim);
@@ -276,7 +291,7 @@ input[type=file]{font-family:var(--sans);font-size:12.5px;padding:8px;}
 .hdr-row{display:flex;gap:10px;padding:6px 10px;border-bottom:1px solid var(--line);font-size:12px;}
 .hdr-row:last-child{border-bottom:none;}
 .hdr-row:nth-child(odd){background:rgba(255,255,255,0.015);}
-.hdr-name{font-family:var(--mono);color:var(--signal-dim);flex:0 0 150px;word-break:break-word;}
+.hdr-name{font-family:var(--mono);color:var(--text-dim);flex:0 0 150px;word-break:break-word;}
 .hdr-val{font-family:var(--mono);color:var(--text-dim);flex:1;word-break:break-all;}
 
 .hint{font-size:12px;color:var(--text-dim);line-height:1.5;}
@@ -403,6 +418,49 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
 </head>
 <body>
 
+<!-- Sprite de iconos propios (trazo fino, sin relleno) para navegación y accesos rápidos,
+     sustituyendo al emoji nativo del sistema: el emoji lo renderiza cada SO con su propio
+     estilo/color (Google, Apple, Microsoft...), rompiendo la identidad visual cian ya cuidada
+     en el resto de la app (el "ojo" de marca, el anillo de veredicto, el ECG). currentColor
+     hace que cada icono herede automáticamente el color del texto del botón que lo usa. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="icon-home" viewBox="0 0 16 16">
+      <polyline points="2.3,7.8 8,3 13.7,7.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M4,7 V13 H12 V7" stroke-linecap="round" stroke-linejoin="round"/>
+      <rect x="6.6" y="9.4" width="2.8" height="3.6"/>
+    </symbol>
+    <symbol id="icon-help" viewBox="0 0 16 16">
+      <circle cx="8" cy="8" r="6.2"/>
+      <text x="8" y="10.6" text-anchor="middle" font-size="7.2" font-family="Georgia,serif" fill="currentColor" stroke="none">?</text>
+    </symbol>
+    <symbol id="icon-link" viewBox="0 0 16 16">
+      <rect x="1.4" y="6.3" width="6.4" height="3.4" rx="1.7" transform="rotate(-40 4.6 8)"/>
+      <rect x="8.2" y="6.3" width="6.4" height="3.4" rx="1.7" transform="rotate(-40 11.4 8)"/>
+    </symbol>
+    <symbol id="icon-mail" viewBox="0 0 16 16">
+      <rect x="1.8" y="3.6" width="12.4" height="8.8" rx="1.4"/>
+      <polyline points="2.3,4.4 8,9 13.7,4.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="icon-phone" viewBox="0 0 16 16">
+      <rect x="4.8" y="1.8" width="6.4" height="12.4" rx="1.6"/>
+      <line x1="7" y1="12" x2="9" y2="12" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="icon-chat" viewBox="0 0 16 16">
+      <rect x="2" y="3.4" width="12" height="7.6" rx="1.8"/>
+      <polyline points="5,11 5,13.4 7.6,11" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="icon-folder" viewBox="0 0 16 16">
+      <path d="M2,5.2 V12.6 H14 V6 H8.4 L7,4.4 H2 Z" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="icon-clock" viewBox="0 0 16 16">
+      <circle cx="8" cy="8" r="6.2"/>
+      <line x1="8" y1="8" x2="8" y2="4.4" stroke-linecap="round"/>
+      <line x1="8" y1="8" x2="10.6" y2="9.4" stroke-linecap="round"/>
+    </symbol>
+  </defs>
+</svg>
+
 <div class="topbar">
   <div class="brand">
     <svg class="brand-mark" viewBox="0 0 34 34" aria-hidden="true">
@@ -434,14 +492,14 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
 <div class="nav-wrap">
   <button class="nav-scroll-btn left" id="nav-scroll-left" aria-label="Desplazar pestañas a la izquierda" type="button">‹</button>
   <nav class="tabs" role="tablist">
-    <button role="tab" aria-selected="true" data-tab="dashboard">🏠 Dashboard</button>
-    <button role="tab" aria-selected="false" data-tab="guia">❔ Guía</button>
-    <button role="tab" aria-selected="false" data-tab="url">🔗 URLs y dominios</button>
-    <button role="tab" aria-selected="false" data-tab="email">✉️ Correo electrónico</button>
-    <button role="tab" aria-selected="false" data-tab="apps">📱 Apps móviles</button>
-    <button role="tab" aria-selected="false" data-tab="sms">💬 SMS</button>
-    <button role="tab" aria-selected="false" data-tab="archivos">📁 Archivos</button>
-    <button role="tab" aria-selected="false" data-tab="historial">🕘 Historial</button>
+    <button role="tab" aria-selected="true" data-tab="dashboard"><svg class="tab-icon" aria-hidden="true"><use href="#icon-home"></use></svg>Dashboard</button>
+    <button role="tab" aria-selected="false" data-tab="guia"><svg class="tab-icon" aria-hidden="true"><use href="#icon-help"></use></svg>Guía</button>
+    <button role="tab" aria-selected="false" data-tab="url"><svg class="tab-icon" aria-hidden="true"><use href="#icon-link"></use></svg>URLs y dominios</button>
+    <button role="tab" aria-selected="false" data-tab="email"><svg class="tab-icon" aria-hidden="true"><use href="#icon-mail"></use></svg>Correo electrónico</button>
+    <button role="tab" aria-selected="false" data-tab="apps"><svg class="tab-icon" aria-hidden="true"><use href="#icon-phone"></use></svg>Apps móviles</button>
+    <button role="tab" aria-selected="false" data-tab="sms"><svg class="tab-icon" aria-hidden="true"><use href="#icon-chat"></use></svg>SMS</button>
+    <button role="tab" aria-selected="false" data-tab="archivos"><svg class="tab-icon" aria-hidden="true"><use href="#icon-folder"></use></svg>Archivos</button>
+    <button role="tab" aria-selected="false" data-tab="historial"><svg class="tab-icon" aria-hidden="true"><use href="#icon-clock"></use></svg>Historial</button>
   </nav>
   <button class="nav-scroll-btn right" id="nav-scroll-right" aria-label="Desplazar pestañas a la derecha" type="button">›</button>
 </div>
@@ -464,7 +522,7 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
       <div class="card" id="dash-risk-card" style="text-align:center;"></div>
     </div>
 
-    <div class="card">
+    <div class="card" id="dash-intel-card">
       <div class="row" style="justify-content:space-between;align-items:baseline;margin-bottom:4px;">
         <h3 style="font-family:var(--mono);font-size:13px;color:var(--text);text-transform:uppercase;letter-spacing:.06em;margin:0;">🧠 Centro de Inteligencia</h3>
         <span class="hint" style="font-size:11px;">INTEL</span>
@@ -473,7 +531,7 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
       <div class="subgrid" id="dash-intel-grid" style="gap:10px;"></div>
     </div>
 
-    <div class="card">
+    <div class="card" id="dash-recent-card">
       <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:6px;">
         <h3 style="font-family:var(--mono);font-size:12.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin:0;">Últimos análisis</h3>
         <button class="btn ghost dash-goto-tab" data-tab="historial" style="padding:6px 12px;font-size:11px;">Ver historial completo →</button>
@@ -481,14 +539,14 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
       <div id="dash-recent-list"></div>
     </div>
 
-    <div class="card">
+    <div class="card" id="dash-quickaccess-card">
       <h3 style="font-family:var(--mono);font-size:12.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin:0 0 10px;">Accesos rápidos</h3>
       <div class="chip-grid">
-        <button class="chip dash-goto-tab" data-tab="url">🔗 URLs e IPs</button>
-        <button class="chip dash-goto-tab" data-tab="email">📧 Correo</button>
-        <button class="chip dash-goto-tab" data-tab="apps">📱 Apps móviles</button>
-        <button class="chip dash-goto-tab" data-tab="sms">💬 SMS y teléfono</button>
-        <button class="chip dash-goto-tab" data-tab="archivos">📁 Archivos y QR</button>
+        <button class="chip dash-goto-tab" data-tab="url"><svg class="chip-icon" aria-hidden="true"><use href="#icon-link"></use></svg>URLs e IPs</button>
+        <button class="chip dash-goto-tab" data-tab="email"><svg class="chip-icon" aria-hidden="true"><use href="#icon-mail"></use></svg>Correo</button>
+        <button class="chip dash-goto-tab" data-tab="apps"><svg class="chip-icon" aria-hidden="true"><use href="#icon-phone"></use></svg>Apps móviles</button>
+        <button class="chip dash-goto-tab" data-tab="sms"><svg class="chip-icon" aria-hidden="true"><use href="#icon-chat"></use></svg>SMS y teléfono</button>
+        <button class="chip dash-goto-tab" data-tab="archivos"><svg class="chip-icon" aria-hidden="true"><use href="#icon-folder"></use></svg>Archivos y QR</button>
       </div>
     </div>
   </section>
@@ -748,6 +806,7 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
 
     <div class="card" id="apps-store-block" style="display:none;">
       <p class="hint">Vigía no puede descargar ni escanear el binario real de una app de la tienda (ni Google ni Apple lo permiten desde un navegador). Lo que sí hace: <b>verificar la identidad real del editor</b> mediante la API pública de Apple, y ayudarte a encontrar el informe real de <b>rastreadores y permisos</b> en fuentes independientes fiables, para completar después el formulario manual con lo que veas ahí.</p>
+      <p class="hint">La búsqueda en App Store no puede llamar a Apple directamente desde el navegador (no lo permite), así que pasa primero por <span style="font-family:var(--mono);">allorigins.win</span>, un servicio-puente público y gratuito de solo lectura, antes de llegar a la API real de Apple. Si ese servicio-puente falla o está saturado, la búsqueda de App Store puede no responder aunque el resto de Vigía funcione con normalidad.</p>
       <div class="row mt">
         <label class="chip active" style="cursor:pointer;"><input type="radio" name="store-platform" value="ios" checked style="display:none;"> App Store (iOS)</label>
         <label class="chip" style="cursor:pointer;"><input type="radio" name="store-platform" value="android" style="display:none;"> Google Play (Android)</label>
@@ -1153,7 +1212,7 @@ function renderVerdict(score, extraDesc){
       <svg viewBox="0 0 64 64">
         <circle class="bg" cx="32" cy="32" r="${r}"></circle>
         <circle class="fg" cx="32" cy="32" r="${r}" stroke="${color}"
-          stroke-dasharray="${c}" stroke-dashoffset="${offset}"></circle>
+          stroke-dasharray="${c}" stroke-dashoffset="${c}" data-final-offset="${offset}" data-anim-pending="1"></circle>
       </svg>
       <div class="score">${score}</div>
     </div>
@@ -1163,6 +1222,30 @@ function renderVerdict(score, extraDesc){
     </div>
   </div>`;
 }
+
+/* El anillo de veredicto se inserta siempre "vacío" (offset = circunferencia completa) y
+   marcado con data-anim-pending; este observador detecta su llegada al DOM —venga del
+   módulo que venga, sin tener que enganchar esta lógica a cada uno de los puntos donde se
+   inserta un veredicto— y dispara la transición ya definida en CSS (.ring .fg{transition:
+   stroke-dashoffset...}) hacia el valor real, para que el anillo se "dibuje" en vez de
+   aparecer ya completo de golpe. */
+const ringRevealObserver = new MutationObserver(mutations=>{
+  for(const m of mutations){
+    m.addedNodes.forEach(node=>{
+      if(node.nodeType !== 1) return;
+      const pending = [];
+      if(node.matches && node.matches('.ring .fg[data-anim-pending="1"]')) pending.push(node);
+      if(node.querySelectorAll) pending.push(...node.querySelectorAll('.ring .fg[data-anim-pending="1"]'));
+      pending.forEach(circle=>{
+        circle.removeAttribute('data-anim-pending');
+        const finalOffset = circle.getAttribute('data-final-offset');
+        circle.getBoundingClientRect(); // fuerza al navegador a registrar el estado "vacío" antes de animar
+        requestAnimationFrame(()=>{ circle.style.strokeDashoffset = finalOffset; });
+      });
+    });
+  }
+});
+ringRevealObserver.observe(document.body, {childList:true, subtree:true});
 
 /* Una única viñeta plegable: icono + título compacto, con el detalle técnico
    oculto hasta que se pulsa (para no saturar la vista de un vistazo). */
@@ -1393,6 +1476,24 @@ function renderDashboard(){
     }).join('');
   }
 
+  // Primera visita (sin historial todavía): la promesa de Vigía es "pega algo y compruébalo
+  // en segundos", así que "Accesos rápidos" —lo único accionable de todo el Dashboard— se
+  // sube justo debajo de los contadores en vez de dejarlo al final de una pantalla larga de
+  // tarjetas vacías. En cuanto hay al menos un análisis guardado, vuelve a su sitio habitual
+  // (después de "Últimos análisis"). Idempotente: no pasa nada si ya estaba en su sitio.
+  const quickAccessCard = document.getElementById('dash-quickaccess-card');
+  const intelCard = document.getElementById('dash-intel-card');
+  const recentCard = document.getElementById('dash-recent-card');
+  if(quickAccessCard && intelCard && recentCard){
+    if(!hist.length){
+      if(intelCard.previousElementSibling !== quickAccessCard){
+        intelCard.parentNode.insertBefore(quickAccessCard, intelCard);
+      }
+    } else if(recentCard.nextElementSibling !== quickAccessCard){
+      recentCard.parentNode.insertBefore(quickAccessCard, recentCard.nextElementSibling);
+    }
+  }
+
   renderIntelCenter(hist);
 }
 
@@ -1517,6 +1618,18 @@ function renderIntelWidget(title, icon, items, opts){
 function renderIntelCenter(hist){
   const el = document.getElementById('dash-intel-grid');
   if(!el) return;
+
+  // En el primer uso (sin historial todavía) no tiene sentido pintar 13 tarjetas repitiendo,
+  // cada una con su propia frase, que "todavía no hay datos": es la pantalla de bienvenida
+  // real de la app y una pared de vacío no ayuda a nadie. Un único mensaje explica lo mismo
+  // en un vistazo, y "Accesos rápidos" (reordenado más arriba en este caso) hace el resto.
+  if(!hist.length){
+    el.innerHTML = `<div class="card" style="text-align:center;padding:22px 16px;">
+      <p class="hint" style="margin:0;">Aquí verás patrones repetidos entre tus análisis —dominios, IPs, remitentes, trackers...— en cuanto guardes el primero. De momento no hay nada que agregar.</p>
+    </div>`;
+    return;
+  }
+
   const intel = computeIntel(hist);
   const totalAnalyses = hist.length;
 
@@ -3919,6 +4032,14 @@ async function ensureJSZip(){
   jsZipLoaded = true;
 }
 
+// Protección contra "bomba de descompresión" también para las lecturas puntuales de un
+// solo archivo dentro de un .apk/.ipa/.docx (AndroidManifest.xml, Info.plist, vbaProject.bin...):
+// antes de descomprimir se mira el tamaño ya descomprimido que declara el propio ZIP.
+const MAX_SINGLE_ZIP_ENTRY_BYTES = 100 * 1024 * 1024; // 100 MB
+function zipEntryTooLarge(entry){
+  return !!(entry && entry._data && typeof entry._data.uncompressedSize === 'number' && entry._data.uncompressedSize > MAX_SINGLE_ZIP_ENTRY_BYTES);
+}
+
 // Extrae subcadenas legibles (ASCII y UTF-16LE) de un buffer binario, útil para AndroidManifest.xml compilado
 function extractStrings(buffer, minLen){
   minLen = minLen || 4;
@@ -4173,7 +4294,9 @@ async function analyzeApkFile(file){
   let packageName = '', permissions = new Set(), manifestStrings = [];
 
   const manifestEntry = zip.file('AndroidManifest.xml');
-  if(manifestEntry){
+  if(manifestEntry && zipEntryTooLarge(manifestEntry)){
+    findings.push({sev:'high', title:'AndroidManifest.xml con tamaño descomprimido anómalo', desc:'Esta entrada declara, sin necesidad de descomprimirla, un tamaño real muy por encima de lo esperado para un manifiesto de Android. Vigía no la descomprime para no agotar memoria; es en sí misma una señal de "bomba de descompresión" (zip bomb).'});
+  } else if(manifestEntry){
     const buf = await manifestEntry.async('arraybuffer');
     manifestStrings = extractStrings(buf, 5);
     for(const s of manifestStrings){
@@ -4200,7 +4323,9 @@ async function analyzeApkFile(file){
     findings.push({sev:'high', title:'No se detectó carpeta META-INF (firma)', desc:'Un APK sin metadatos de firma visibles puede estar corrupto, mal empaquetado, o haber sido manipulado para eliminar rastros de firma original.'});
   }
   const sigFile = names.find(n=>/^META-INF\/.*\.(RSA|DSA|EC)$/i.test(n));
-  if(sigFile){
+  if(sigFile && zipEntryTooLarge(zip.file(sigFile))){
+    findings.push({sev:'high', title:'Archivo de firma con tamaño descomprimido anómalo', desc:`"${sigFile}" declara un tamaño real muy por encima de lo esperado para un certificado de firma. Vigía no lo descomprime; es en sí misma una señal de "bomba de descompresión".`});
+  } else if(sigFile){
     try{
       const sigBuf = new Uint8Array(await zip.file(sigFile).async('arraybuffer'));
       const cert = findAndParseCertificate(sigBuf);
@@ -4270,7 +4395,9 @@ async function analyzeIpaFile(file){
   const plistEntry = names.find(n=>/^Payload\/[^\/]+\.app\/Info\.plist$/.test(n));
   let bundleId = '', usageDescriptions = [], plistText = '', appFolder = '';
 
-  if(plistEntry){
+  if(plistEntry && zipEntryTooLarge(zip.file(plistEntry))){
+    findings.push({sev:'high', title:'Info.plist con tamaño descomprimido anómalo', desc:'Esta entrada declara, sin necesidad de descomprimirla, un tamaño real muy por encima de lo esperado para un Info.plist. Vigía no la descomprime para no agotar memoria; es en sí misma una señal de "bomba de descompresión" (zip bomb).'});
+  } else if(plistEntry){
     appFolder = plistEntry.split('/')[1];
     const text = await zip.file(plistEntry).async('string');
     plistText = text;
@@ -5423,7 +5550,9 @@ async function analyzeOoxmlZip(file, bytes){
   let hyperlinks = new Set();
 
   const vbaEntry = names.find(n=>/vbaProject\.bin$/i.test(n));
-  if(vbaEntry){
+  if(vbaEntry && zipEntryTooLarge(zip.file(vbaEntry))){
+    findings.push({sev:'high', title:'vbaProject.bin con tamaño descomprimido anómalo', desc:'Esta entrada declara, sin necesidad de descomprimirla, un tamaño real muy por encima de lo esperado para un proyecto de macros. Vigía no la descomprime para no agotar memoria; es en sí misma una señal de "bomba de descompresión" (zip bomb).'});
+  } else if(vbaEntry){
     const vbaBuf = await zip.file(vbaEntry).async('arraybuffer');
     const strings = extractBinaryStrings(vbaBuf, 4);
     const upperJoined = strings.join(' ').toUpperCase();
@@ -5436,7 +5565,9 @@ async function analyzeOoxmlZip(file, bytes){
   }
 
   const contentTypesEntry = names.find(n=>n === '[Content_Types].xml');
-  if(contentTypesEntry){
+  if(contentTypesEntry && zipEntryTooLarge(zip.file(contentTypesEntry))){
+    findings.push({sev:'high', title:'[Content_Types].xml con tamaño descomprimido anómalo', desc:'Esta entrada declara, sin necesidad de descomprimirla, un tamaño real muy por encima de lo esperado para este archivo de metadatos. Vigía no la descomprime; es en sí misma una señal de "bomba de descompresión".'});
+  } else if(contentTypesEntry){
     const ct = await zip.file(contentTypesEntry).async('string');
     const macroEnabled = /macroEnabled/i.test(ct);
     const nonMacroExt = ['docx','xlsx','pptx','dotx','xltx','potx'];
@@ -5448,7 +5579,12 @@ async function analyzeOoxmlZip(file, bytes){
   // Relaciones externas: plantillas remotas, objetos OLE remotos e hipervínculos
   const relsFiles = names.filter(n=>/_rels\/[^/]+\.rels$/i.test(n));
   for(const relFile of relsFiles){
-    const relXml = await zip.file(relFile).async('string');
+    const relEntry = zip.file(relFile);
+    if(zipEntryTooLarge(relEntry)){
+      findings.push({sev:'high', title:`Archivo de relaciones con tamaño descomprimido anómalo`, desc:`"${relFile}" declara un tamaño real muy por encima de lo esperado. Vigía no lo descomprime; es en sí misma una señal de "bomba de descompresión".`});
+      continue;
+    }
+    const relXml = await relEntry.async('string');
     const relTagRe = /<Relationship\b[^>]*\/?>/gi;
     let m;
     while((m = relTagRe.exec(relXml))){
@@ -5889,6 +6025,14 @@ function stopQrCamera(){
 }
 document.getElementById('qr-live-btn').addEventListener('click', startQrCamera);
 document.getElementById('qr-live-stop-btn').addEventListener('click', stopQrCamera);
+// La cámara solo se paraba al detectar un QR, pulsar "detener" o cambiar de sub-pestaña dentro
+// del propio módulo. Si el usuario minimizaba la app o cambiaba de pestaña del navegador con el
+// escaneo en directo abierto, la cámara seguía grabando en segundo plano (gasto de batería y,
+// sobre todo, una cámara encendida sin que el usuario la vea ni la recuerde).
+document.addEventListener('visibilitychange', ()=>{
+  if(document.hidden) stopQrCamera();
+});
+window.addEventListener('pagehide', stopQrCamera);
 
 /* ==================== SUB-MÓDULO: EJECUTABLES Y SCRIPTS ==================== */
 
@@ -6236,11 +6380,26 @@ async function analyzeZipArchive(bytes, findings){
   const listing = names.map(n=>({ name:n, dir: zip.files[n].dir }));
   evaluateArchiveListing(listing.filter(e=>!e.dir), findings);
 
+  // Protección contra "bomba de descompresión" (zip bomb): un ZIP de pocos KB puede
+  // declarar entradas de varios GB una vez descomprimidas y colgar la pestaña. Antes
+  // de descomprimir cada entrada se mira el tamaño YA descomprimido que declara el
+  // propio ZIP (disponible sin descomprimir nada), y se lleva además un acumulado
+  // total por si son muchas entradas medianas en vez de una sola entrada gigante.
+  const MAX_ENTRY_UNCOMPRESSED = 150 * 1024 * 1024;   // 150 MB por entrada
+  const MAX_TOTAL_UNCOMPRESSED = 300 * 1024 * 1024;   // 300 MB acumulados
   let encryptedCount = 0;
+  let oversizedSkipped = 0;
+  let totalUncompressed = 0;
   const mismatches = [];
   for(const name of names){
     const entry = zip.files[name];
     if(entry.dir) continue;
+    const declaredSize = entry._data && typeof entry._data.uncompressedSize === 'number' ? entry._data.uncompressedSize : null;
+    if(declaredSize !== null) totalUncompressed += declaredSize;
+    if((declaredSize !== null && declaredSize > MAX_ENTRY_UNCOMPRESSED) || totalUncompressed > MAX_TOTAL_UNCOMPRESSED){
+      oversizedSkipped++;
+      continue; // no se descomprime: el tamaño declarado ya es la señal de riesgo
+    }
     let entryBytes;
     try{
       entryBytes = new Uint8Array(await entry.async('uint8array'));
@@ -6256,6 +6415,9 @@ async function analyzeZipArchive(bytes, findings){
         mismatches.push(`${name} (declarado .${ext}, contenido real: ${innerSig.label})`);
       }
     }
+  }
+  if(oversizedSkipped > 0){
+    findings.push({sev:'high', title:`${oversizedSkipped} entrada(s) omitida(s) por tamaño descomprimido anómalo`, desc:'Una o más entradas de este archivo declaran, sin necesidad de descomprimirlas, un tamaño real muy por encima de lo razonable. Vigía no las descomprime para no agotar la memoria del navegador. Esto es en sí mismo una señal a tener en cuenta: es la técnica típica de una "bomba de descompresión" (zip bomb), pensada para bloquear o colgar herramientas de análisis automático como esta.'});
   }
   if(encryptedCount > 0){
     findings.push({sev:'med', title:`${encryptedCount} entrada(s) protegida(s) con contraseña`, desc:'Los archivos comprimidos cifrados son una técnica de evasión muy habitual: impiden que los antivirus de correo/red analicen el contenido automáticamente. No es malicioso por sí solo, pero justifica precaución extra, sobre todo si la contraseña viene en el mismo mensaje que el archivo.'});
@@ -6384,41 +6546,21 @@ document.getElementById('archive-clear-btn').addEventListener('click', ()=>{
 
 <script>
 /* =========================================================================
-   PWA — manifest.json real (archivo estático, ver más abajo) + service worker
-   (para instalación y uso offline del cascarón de la app; los módulos de
-   OCR/zip necesitan red la 1ª vez). El manifest ya no se genera por blob:
-   en tiempo de ejecución -- eso rompía "Añadir a pantalla de inicio" en iOS
-   al cambiar de dominio, porque un blob: no es un recurso persistente que
-   iOS pueda re-obtener fuera del contexto JS que lo creó. Ahora es un
-   archivo real (manifest.json) referenciado directamente en el <link>.
+   PWA — manifest.json y sw.js son archivos reales (ver más abajo), no
+   generados por blob: en tiempo de ejecución. Un blob: no es un recurso
+   persistente re-obtenible fuera del contexto JS que lo creó: ya rompía
+   "Añadir a pantalla de inicio" en iOS con el manifest, y por el mismo
+   motivo la especificación prohíbe directamente registrar un Service
+   Worker desde una URL blob: (Chrome/Firefox lo rechazan con
+   "Script URL's scheme is not 'http' or 'https'"). Con el registro por
+   blob:, el service worker nunca llegaba a activarse y el .catch() vacío
+   lo ocultaba: el offline real y la caché versionada de abajo (sw.js)
+   dependen de que el registro sea a un archivo servido de verdad.
    ========================================================================= */
 
 (function setupPWA(){
   if('serviceWorker' in navigator){
-    const swCode = `
-      const CACHE = 'vigia-shell-v1';
-      self.addEventListener('install', e => { self.skipWaiting(); });
-      self.addEventListener('activate', e => { self.clients.claim(); });
-      self.addEventListener('fetch', e => {
-        if(e.request.method !== 'GET') return;
-        e.respondWith(
-          caches.open(CACHE).then(async cache => {
-            const cached = await cache.match(e.request);
-            if(cached) return cached;
-            try{
-              const res = await fetch(e.request);
-              if(res.ok && e.request.url.startsWith(self.location.origin)) cache.put(e.request, res.clone());
-              return res;
-            }catch(err){
-              return cached || Response.error();
-            }
-          })
-        );
-      });
-    `;
-    const swBlob = new Blob([swCode], {type:'application/javascript'});
-    const swUrl = URL.createObjectURL(swBlob);
-    navigator.serviceWorker.register(swUrl).catch(()=>{ /* el modo file:// puede impedir el registro; no es crítico */ });
+    navigator.serviceWorker.register('./sw.js').catch(()=>{ /* el modo file:// puede impedir el registro; no es crítico */ });
   }
 })();
 </script>

@@ -7,7 +7,7 @@
    usuarios que ya instalaron Vigía pueden quedarse atrapados en una versión
    antigua indefinidamente, porque el navegador solo vuelve a comprobar el
    contenido de la caché cuando cambia el nombre de la caché. */
-const CACHE_VERSION = 'vigia-shell-v2';
+const CACHE_VERSION = 'vigia-shell-v4';
 
 self.addEventListener('install', e => {
   self.skipWaiting();
