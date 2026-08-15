@@ -193,7 +193,38 @@ input[type=file]{font-family:var(--sans);font-size:12.5px;padding:8px;}
 .mt{margin-top:14px;}
 
 /* chips de permisos / opciones */
+#dash-intel-card summary::-webkit-details-marker{display:none;}
+#dash-intel-card summary::marker{content:"";}
+#dash-intel-card summary::after{
+  content:'⌄';
+  margin-left:auto;padding-left:10px;flex-shrink:0;align-self:center;
+  color:var(--text-dim);font-size:16px;line-height:1;
+  transition:transform .2s ease;
+}
+#dash-intel-card[open] summary::after{ transform:rotate(180deg); color:var(--signal); }
+
 .chip-grid{display:flex;flex-wrap:wrap;gap:8px;}
+
+/* ---------- Inicio: tarjetas de síntoma y Analizar: acceso directo ---------- */
+.symptom-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px;}
+.symptom-card{
+  display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;
+  background:linear-gradient(180deg, var(--panel), var(--panel-2));
+  border:1px solid var(--line);border-radius:var(--radius);
+  padding:16px 14px;cursor:pointer;transition:border-color .15s, transform .1s;
+  font-family:var(--sans);color:var(--text);
+}
+.symptom-card:hover{border-color:var(--signal-dim);}
+.symptom-card:active{transform:scale(0.98);}
+.symptom-card .symptom-icon{width:22px;height:22px;stroke:var(--signal);fill:none;stroke-width:1.2;}
+.symptom-card .symptom-title{font-size:14px;font-weight:600;line-height:1.35;}
+.symptom-card .symptom-sub{font-size:11.5px;color:var(--text-dim);line-height:1.4;}
+.symptom-card-muted{background:transparent;border-style:dashed;}
+.symptom-card-muted .symptom-icon{stroke:var(--text-dim);}
+.triage-options{display:flex;flex-direction:column;gap:8px;align-items:flex-start;}
+.triage-options .btn{width:100%;text-align:left;}
+@media(max-width:480px){.symptom-grid{grid-template-columns:1fr;}}
+
 .chip{
   font-family:var(--mono);font-size:12px;border:1px solid var(--line);
   border-radius:20px;padding:7px 12px;cursor:pointer;color:var(--text-dim);
@@ -458,6 +489,35 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
       <line x1="8" y1="8" x2="8" y2="4.4" stroke-linecap="round"/>
       <line x1="8" y1="8" x2="10.6" y2="9.4" stroke-linecap="round"/>
     </symbol>
+    <symbol id="icon-search" viewBox="0 0 16 16">
+      <circle cx="6.8" cy="6.8" r="4.3"/>
+      <line x1="10" y1="10" x2="13.6" y2="13.6" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="icon-qr" viewBox="0 0 16 16">
+      <rect x="2" y="2" width="4.4" height="4.4"/>
+      <rect x="9.6" y="2" width="4.4" height="4.4"/>
+      <rect x="2" y="9.6" width="4.4" height="4.4"/>
+      <rect x="9.7" y="9.7" width="1.8" height="1.8" fill="currentColor" stroke="none"/>
+      <rect x="12.3" y="9.7" width="1.7" height="1.7" fill="currentColor" stroke="none"/>
+      <rect x="9.7" y="12.3" width="1.7" height="1.7" fill="currentColor" stroke="none"/>
+    </symbol>
+    <symbol id="icon-chart" viewBox="0 0 16 16">
+      <line x1="2.3" y1="13.5" x2="13.7" y2="13.5" stroke-linecap="round"/>
+      <rect x="3.4" y="8.6" width="2.3" height="4.6"/>
+      <rect x="6.85" y="5.6" width="2.3" height="7.6"/>
+      <rect x="10.3" y="3" width="2.3" height="10.2"/>
+    </symbol>
+    <symbol id="icon-settings" viewBox="0 0 16 16">
+      <line x1="2" y1="4.4" x2="14" y2="4.4" stroke-linecap="round"/>
+      <circle cx="6.2" cy="4.4" r="1.5" fill="currentColor" stroke="none"/>
+      <line x1="2" y1="8" x2="14" y2="8" stroke-linecap="round"/>
+      <circle cx="10.1" cy="8" r="1.5" fill="currentColor" stroke="none"/>
+      <line x1="2" y1="11.6" x2="14" y2="11.6" stroke-linecap="round"/>
+      <circle cx="7.6" cy="11.6" r="1.5" fill="currentColor" stroke="none"/>
+    </symbol>
+    <symbol id="icon-phone-call" viewBox="0 0 16 16">
+      <path d="M3.2,2.4 C3,4.6 4.4,8.6 7.4,11.6 C10.4,14.6 12.5,15 13.6,12.8 L11.7,10.5 C11,10.9 10.3,10.8 9.4,10 C8.6,9.2 8.1,8.4 7.8,7.6 C7.5,6.8 7.6,6.2 8.1,5.6 L5.6,3.1 C4.7,2.2 3.4,2 3.2,2.4 Z" stroke-linejoin="round"/>
+    </symbol>
   </defs>
 </svg>
 
@@ -492,14 +552,11 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
 <div class="nav-wrap">
   <button class="nav-scroll-btn left" id="nav-scroll-left" aria-label="Desplazar pestañas a la izquierda" type="button">‹</button>
   <nav class="tabs" role="tablist">
-    <button role="tab" aria-selected="true" data-tab="dashboard"><svg class="tab-icon" aria-hidden="true"><use href="#icon-home"></use></svg>Dashboard</button>
-    <button role="tab" aria-selected="false" data-tab="guia"><svg class="tab-icon" aria-hidden="true"><use href="#icon-help"></use></svg>Guía</button>
-    <button role="tab" aria-selected="false" data-tab="url"><svg class="tab-icon" aria-hidden="true"><use href="#icon-link"></use></svg>URLs y dominios</button>
-    <button role="tab" aria-selected="false" data-tab="email"><svg class="tab-icon" aria-hidden="true"><use href="#icon-mail"></use></svg>Correo electrónico</button>
-    <button role="tab" aria-selected="false" data-tab="apps"><svg class="tab-icon" aria-hidden="true"><use href="#icon-phone"></use></svg>Apps móviles</button>
-    <button role="tab" aria-selected="false" data-tab="sms"><svg class="tab-icon" aria-hidden="true"><use href="#icon-chat"></use></svg>SMS</button>
-    <button role="tab" aria-selected="false" data-tab="archivos"><svg class="tab-icon" aria-hidden="true"><use href="#icon-folder"></use></svg>Archivos</button>
-    <button role="tab" aria-selected="false" data-tab="historial"><svg class="tab-icon" aria-hidden="true"><use href="#icon-clock"></use></svg>Historial</button>
+    <button role="tab" aria-selected="true" data-tab="inicio"><svg class="tab-icon" aria-hidden="true"><use href="#icon-home"></use></svg>Inicio</button>
+    <button role="tab" aria-selected="false" data-tab="analizar"><svg class="tab-icon" aria-hidden="true"><use href="#icon-search"></use></svg>Analizar</button>
+    <button role="tab" aria-selected="false" data-tab="dashboard"><svg class="tab-icon" aria-hidden="true"><use href="#icon-chart"></use></svg>Mis análisis</button>
+    <button role="tab" aria-selected="false" data-tab="guia"><svg class="tab-icon" aria-hidden="true"><use href="#icon-help"></use></svg>Aprender</button>
+    <button role="tab" aria-selected="false" data-tab="ajustes"><svg class="tab-icon" aria-hidden="true"><use href="#icon-settings"></use></svg>Ajustes</button>
   </nav>
   <button class="nav-scroll-btn right" id="nav-scroll-right" aria-label="Desplazar pestañas a la derecha" type="button">›</button>
 </div>
@@ -508,7 +565,116 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
   <!-- Los tres paneles y el historial se insertan aquí -->
   <div id="panels-root">
 
-  <section class="panel active" id="panel-dashboard">
+  <section class="panel active" id="panel-inicio">
+    <h2 class="panel-title">¿Qué quieres comprobar?</h2>
+    <p class="panel-sub">Elige lo que más se parezca a lo que te ha pasado. Te llevamos directo al análisis que necesitas, sin tener que saber de antemano qué módulo es el correcto.</p>
+
+    <div class="symptom-grid" id="symptom-grid">
+      <button class="symptom-card" data-route="url">
+        <svg class="symptom-icon" aria-hidden="true"><use href="#icon-link"></use></svg>
+        <span class="symptom-title">Me han enviado un enlace</span>
+        <span class="symptom-sub">WhatsApp · SMS · correo · redes sociales</span>
+      </button>
+      <button class="symptom-card" data-route="email">
+        <svg class="symptom-icon" aria-hidden="true"><use href="#icon-mail"></use></svg>
+        <span class="symptom-title">He recibido un correo sospechoso</span>
+      </button>
+      <button class="symptom-card" data-route="apps">
+        <svg class="symptom-icon" aria-hidden="true"><use href="#icon-phone"></use></svg>
+        <span class="symptom-title">Una aplicación me pide permisos extraños</span>
+      </button>
+      <button class="symptom-card" data-route="sms" data-submode="text">
+        <svg class="symptom-icon" aria-hidden="true"><use href="#icon-chat"></use></svg>
+        <span class="symptom-title">He recibido un SMS sospechoso</span>
+      </button>
+      <button class="symptom-card" data-route="archivos" data-submode="qr">
+        <svg class="symptom-icon" aria-hidden="true"><use href="#icon-qr"></use></svg>
+        <span class="symptom-title">Me han enviado un QR</span>
+      </button>
+      <button class="symptom-card" data-route="archivos" data-submode="image">
+        <svg class="symptom-icon" aria-hidden="true"><use href="#icon-folder"></use></svg>
+        <span class="symptom-title">Me han enviado un archivo</span>
+      </button>
+      <button class="symptom-card" data-route="sms" data-submode="phone">
+        <svg class="symptom-icon" aria-hidden="true"><use href="#icon-phone-call"></use></svg>
+        <span class="symptom-title">Me han llamado desde un número extraño</span>
+      </button>
+      <button class="symptom-card symptom-card-muted" id="symptom-unknown">
+        <svg class="symptom-icon" aria-hidden="true"><use href="#icon-help"></use></svg>
+        <span class="symptom-title">No sé qué es</span>
+        <span class="symptom-sub">Déjame ayudarte</span>
+      </button>
+    </div>
+
+    <!-- Cuestionario guiado (2 preguntas como máximo) para quien pulsa "No sé qué es". Nada de
+         IA ni interpretación de texto libre: son reglas fijas y visibles, coherente con que
+         Vigía nunca simula una capacidad que no tiene realmente (ver Guía → FAQ). -->
+    <div class="card" id="triage-card" style="display:none;">
+      <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <h3 style="font-family:var(--mono);font-size:13px;color:var(--text);text-transform:uppercase;letter-spacing:.06em;margin:0;">Vamos a verlo entre los dos</h3>
+        <button class="btn ghost" id="triage-close-btn" style="padding:6px 12px;font-size:11px;">✕ Cerrar</button>
+      </div>
+
+      <div id="triage-q1">
+        <p class="hint" style="margin:0 0 10px;">¿Qué tienes delante ahora mismo?</p>
+        <div class="triage-options">
+          <button class="btn ghost triage-opt" data-next="q2-link">Un enlace o un mensaje de texto</button>
+          <button class="btn ghost triage-opt" data-route="email">Un correo electrónico completo</button>
+          <button class="btn ghost triage-opt" data-route="apps">Una aplicación</button>
+          <button class="btn ghost triage-opt" data-route="archivos" data-submode="image">Un archivo (imagen, documento, comprimido...)</button>
+          <button class="btn ghost triage-opt" data-route="sms" data-submode="phone">Una llamada de teléfono</button>
+        </div>
+      </div>
+
+      <div id="triage-q2-link" style="display:none;">
+        <p class="hint" style="margin:14px 0 10px;">¿Cómo te ha llegado ese enlace o mensaje?</p>
+        <div class="triage-options">
+          <button class="btn ghost triage-opt" data-route="sms" data-submode="text">Como SMS o WhatsApp, con más texto alrededor</button>
+          <button class="btn ghost triage-opt" data-route="url">Es solo el enlace suelto, sin más contexto</button>
+          <button class="btn ghost triage-opt" data-route="email">Dentro de un correo electrónico</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-analizar">
+    <h2 class="panel-title">Analizar</h2>
+    <p class="panel-sub">Acceso directo a cada módulo, para cuando ya sabes exactamente qué quieres revisar.</p>
+    <div class="symptom-grid" id="analizar-grid">
+      <button class="symptom-card" data-route="url">
+        <svg class="symptom-icon" aria-hidden="true"><use href="#icon-link"></use></svg>
+        <span class="symptom-title">Enlace</span>
+        <span class="symptom-sub">URLs, dominios e IPs</span>
+      </button>
+      <button class="symptom-card" data-route="email">
+        <svg class="symptom-icon" aria-hidden="true"><use href="#icon-mail"></use></svg>
+        <span class="symptom-title">Correo</span>
+        <span class="symptom-sub">.eml, .msg, SPF/DKIM/DMARC</span>
+      </button>
+      <button class="symptom-card" data-route="sms" data-submode="text">
+        <svg class="symptom-icon" aria-hidden="true"><use href="#icon-chat"></use></svg>
+        <span class="symptom-title">SMS</span>
+        <span class="symptom-sub">Y números de teléfono</span>
+      </button>
+      <button class="symptom-card" data-route="apps">
+        <svg class="symptom-icon" aria-hidden="true"><use href="#icon-phone"></use></svg>
+        <span class="symptom-title">Aplicación</span>
+        <span class="symptom-sub">.apk, .ipa, tiendas oficiales</span>
+      </button>
+      <button class="symptom-card" data-route="archivos" data-submode="image">
+        <svg class="symptom-icon" aria-hidden="true"><use href="#icon-folder"></use></svg>
+        <span class="symptom-title">Archivo</span>
+        <span class="symptom-sub">Imágenes, ejecutables, comprimidos, documentos</span>
+      </button>
+      <button class="symptom-card" data-route="archivos" data-submode="qr">
+        <svg class="symptom-icon" aria-hidden="true"><use href="#icon-qr"></use></svg>
+        <span class="symptom-title">QR</span>
+        <span class="symptom-sub">Subido o con la cámara</span>
+      </button>
+    </div>
+  </section>
+
+  <section class="panel" id="panel-dashboard">
     <h2 class="panel-title">Panel de control</h2>
     <p class="panel-sub">Resumen de tu actividad en Vigía. Todo se calcula localmente a partir del historial guardado en este navegador. Nada de esto sale de tu dispositivo.</p>
 
@@ -522,14 +688,14 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
       <div class="card" id="dash-risk-card" style="text-align:center;"></div>
     </div>
 
-    <div class="card" id="dash-intel-card">
-      <div class="row" style="justify-content:space-between;align-items:baseline;margin-bottom:4px;">
-        <h3 style="font-family:var(--mono);font-size:13px;color:var(--text);text-transform:uppercase;letter-spacing:.06em;margin:0;">🧠 Centro de Inteligencia</h3>
+    <details class="card" id="dash-intel-card">
+      <summary style="cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:baseline;">
+        <h3 style="font-family:var(--mono);font-size:13px;color:var(--text);text-transform:uppercase;letter-spacing:.06em;margin:0;">🧠 Ver estadísticas avanzadas</h3>
         <span class="hint" style="font-size:11px;">INTEL</span>
-      </div>
-      <p class="hint" style="font-size:12px;margin-bottom:12px;">Patrones agregados de tus análisis guardados (hasta las últimas 300 entradas), recalculados con los mismos motores que el resto de Vigía. Nada de esto se envía a ningún sitio.</p>
+      </summary>
+      <p class="hint" style="font-size:12px;margin:12px 0;">Patrones agregados de tus análisis guardados (hasta las últimas 300 entradas), recalculados con los mismos motores que el resto de Vigía. Nada de esto se envía a ningún sitio.</p>
       <div class="subgrid" id="dash-intel-grid" style="gap:10px;"></div>
-    </div>
+    </details>
 
     <div class="card" id="dash-recent-card">
       <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:6px;">
@@ -552,25 +718,23 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
   </section>
 
   <section class="panel" id="panel-guia">
-    <h2 class="panel-title">Guía de Vigía</h2>
+    <h2 class="panel-title">Aprender</h2>
     <p class="panel-sub">Pensada para quien tiene pocos conocimientos de ciberseguridad: qué significan los términos que usa la app, preguntas frecuentes, y cómo se calcula el nivel de riesgo de cada análisis.</p>
 
     <div class="tabbtn-inline" role="tablist">
-      <button class="active" data-mode="glosario">📖 Glosario</button>
-      <button data-mode="niveles">🎯 Niveles de riesgo</button>
+      <button class="active" data-mode="niveles">🎯 ¿Qué significa el resultado?</button>
+      <button data-mode="glosario">📖 Glosario</button>
       <button data-mode="faq">❔ Preguntas frecuentes</button>
-      <button data-mode="instalar">📲 Instalar</button>
-      <button data-mode="contacto">📩 Contacto</button>
     </div>
 
-    <div class="card" id="guia-glosario-block">
+    <div class="card" id="guia-glosario-block" style="display:none;">
       <label class="field-label" for="glosario-search">Buscar un término</label>
       <input type="text" id="glosario-search" placeholder="Ej. phishing, hash, typosquatting…">
       <div id="glosario-list" class="mt"></div>
       <p class="hint mt" id="glosario-empty" style="display:none;">Ningún término coincide con tu búsqueda.</p>
     </div>
 
-    <div class="card" id="guia-niveles-block" style="display:none;">
+    <div class="card" id="guia-niveles-block">
       <h3 style="font-family:var(--mono);font-size:12.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin:0 0 4px;">¿Cómo se calcula el riesgo?</h3>
       <p class="hint">Cada análisis revisa una serie de "factores" (lo que en la app ves como ✓ / ⚠ / ✗). Cada uno tiene un peso según su gravedad, y los pesos <b style="color:var(--text);">se suman</b> hasta un máximo de 100:</p>
       <div class="mt">
@@ -599,12 +763,34 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
       </ul>
       <div id="faq-list"></div>
     </div>
+  </section>
 
-    <div class="card" id="guia-instalar-block" style="display:none;">
+  <section class="panel" id="panel-ajustes">
+    <h2 class="panel-title">Ajustes</h2>
+    <p class="panel-sub">Privacidad, instalación como app, y cómo contactar con el autor.</p>
+
+    <div class="tabbtn-inline" role="tablist">
+      <button class="active" data-mode="privacidad">🔒 Privacidad</button>
+      <button data-mode="instalar">📲 Instalación</button>
+      <button data-mode="contacto">📩 Contacto</button>
+    </div>
+
+    <div class="card" id="ajustes-privacidad-block">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text);">
+        <input type="checkbox" id="private-mode-toggle" style="width:16px;height:16px;accent-color:var(--signal);cursor:pointer;">
+        🕶️ Modo privado: no guardar nuevos análisis en el historial
+      </label>
+      <p class="hint" style="margin:6px 0 0 24px;">Los resultados se te siguen mostrando en pantalla igual que siempre, solo se deja de escribir aquí. Útil si estás investigando algo que prefieres que no quede ni siquiera en este navegador.</p>
+      <div style="border-top:1px dashed var(--line);margin:18px 0 14px;"></div>
+      <p class="hint" style="margin:0 0 10px;">Tu historial se guarda solo en este navegador (<code>localStorage</code>), nunca en un servidor de Vigía. Puedes revisarlo o borrarlo del todo desde <b style="color:var(--text);">Mis análisis</b>.</p>
+      <button class="btn ghost dash-goto-tab" data-tab="historial">Ver y gestionar mi historial →</button>
+    </div>
+
+    <div class="card" id="ajustes-instalar-block" style="display:none;">
       <div id="guia-install-content"></div>
     </div>
 
-    <div class="card" id="guia-contacto-block" style="display:none;">
+    <div class="card" id="ajustes-contacto-block" style="display:none;">
       <h3 style="font-family:var(--mono);font-size:12.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin:0 0 4px;">📩 Contacto y sugerencias</h3>
       <p class="hint" style="margin:0 0 16px;">¿Tienes una duda, has encontrado un error, o se te ocurre algo que Vigía debería tener? Este mensaje llega directamente al autor. No es un buzón automático ni una IA respondiendo.</p>
 
@@ -1054,15 +1240,8 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
 
   <section class="panel" id="panel-historial">
     <h2 class="panel-title">Historial local</h2>
-    <p class="panel-sub">Guardado únicamente en este navegador (localStorage). Puedes borrarlo cuando quieras.</p>
+    <p class="panel-sub">Guardado únicamente en este navegador (localStorage). Puedes borrarlo cuando quieras. El modo privado se gestiona desde Ajustes → Privacidad.</p>
     <div class="card">
-      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text);">
-        <input type="checkbox" id="private-mode-toggle" style="width:16px;height:16px;accent-color:var(--signal);cursor:pointer;">
-        🕶️ Modo privado: no guardar nuevos análisis en el historial
-      </label>
-      <p class="hint" style="margin:6px 0 0 24px;">Los resultados se te siguen mostrando en pantalla igual que siempre, solo se deja de escribir aquí. Útil si estás investigando algo que prefieres que no quede ni siquiera en este navegador.</p>
-    </div>
-    <div class="card mt">
       <div class="row" style="justify-content:space-between;">
         <span class="hint">Últimos análisis</span>
         <button class="btn ghost" id="history-clear-btn">Borrar historial</button>
@@ -1084,19 +1263,72 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
 <script>
 /* ============ Navegación de pestañas ============ */
 const tabButtons = document.querySelectorAll('nav.tabs button');
-function activateTab(name){
+// Módulos que ya no tienen su propio botón en la barra principal (son "hijos" de Analizar o de
+// Mis análisis en la nueva arquitectura) resaltan el botón padre correspondiente, para que
+// siempre quede claro en qué sección de las 5 principales está el usuario.
+const NAV_PARENT_TAB = { url:'analizar', email:'analizar', apps:'analizar', sms:'analizar', archivos:'analizar', historial:'dashboard' };
+function activateTab(name, subMode){
   document.querySelectorAll('section.panel').forEach(p=>p.classList.toggle('active', p.id==='panel-'+name));
-  tabButtons.forEach(b=>b.setAttribute('aria-selected', b.dataset.tab===name ? 'true':'false'));
+  const navName = NAV_PARENT_TAB[name] || name;
+  tabButtons.forEach(b=>b.setAttribute('aria-selected', b.dataset.tab===navName ? 'true':'false'));
   location.hash = name;
   if(name==='dashboard' && typeof renderDashboard==='function') renderDashboard();
+  if(subMode){
+    const subBtn = document.querySelector('#panel-'+name+' .tabbtn-inline button[data-mode="'+subMode+'"]');
+    if(subBtn) subBtn.click();
+  }
   // El módulo activo se desplaza a la vista, se abra desde donde se abra (clic, accesos
   // rápidos del Dashboard, o al cargar la página con un hash) — así nunca queda fuera de la
   // zona visible de la barra, sin necesidad de fijar ninguna pestaña por posición.
-  const activeBtn = [...tabButtons].find(b=>b.dataset.tab===name);
+  const activeBtn = [...tabButtons].find(b=>b.dataset.tab===navName);
   if(activeBtn) activeBtn.scrollIntoView({behavior:'smooth', inline:'center', block:'nearest'});
 }
 tabButtons.forEach(b=>b.addEventListener('click', ()=>activateTab(b.dataset.tab)));
-document.querySelectorAll('.dash-goto-tab').forEach(b=>b.addEventListener('click', ()=>activateTab(b.dataset.tab)));
+document.querySelectorAll('.dash-goto-tab').forEach(b=>b.addEventListener('click', ()=>activateTab(b.dataset.tab, b.dataset.submode)));
+
+/* ---------- Inicio y Analizar: enrutado directo a cada módulo (y, si aplica, sub-pestaña) ---------- */
+function goToModule(route, subMode){
+  activateTab(route, subMode);
+}
+document.querySelectorAll('#symptom-grid .symptom-card[data-route], #analizar-grid .symptom-card[data-route]').forEach(card=>{
+  card.addEventListener('click', ()=> goToModule(card.dataset.route, card.dataset.submode));
+});
+
+/* ---------- "No sé qué es" — cuestionario guiado de reglas fijas (sin IA, ver Guía → FAQ) ---------- */
+(function setupTriage(){
+  const unknownBtn = document.getElementById('symptom-unknown');
+  const triageCard = document.getElementById('triage-card');
+  const q1 = document.getElementById('triage-q1');
+  const q2Link = document.getElementById('triage-q2-link');
+  if(!unknownBtn || !triageCard) return;
+
+  function resetTriage(){
+    triageCard.style.display = 'none';
+    q1.style.display = '';
+    q2Link.style.display = 'none';
+  }
+  unknownBtn.addEventListener('click', ()=>{
+    triageCard.style.display = '';
+    q1.style.display = '';
+    q2Link.style.display = 'none';
+    triageCard.scrollIntoView({behavior:'smooth', block:'nearest'});
+  });
+  document.getElementById('triage-close-btn').addEventListener('click', resetTriage);
+
+  triageCard.querySelectorAll('.triage-opt').forEach(opt=>{
+    opt.addEventListener('click', ()=>{
+      if(opt.dataset.next === 'q2-link'){
+        q1.style.display = 'none';
+        q2Link.style.display = '';
+        return;
+      }
+      if(opt.dataset.route){
+        resetTriage();
+        goToModule(opt.dataset.route, opt.dataset.submode);
+      }
+    });
+  });
+})();
 
 /* Flechas de scroll de la barra de pestañas (solo relevantes con ratón/trackpad; en táctil se
    ocultan por CSS y basta con deslizar). Se deshabilitan solas al llegar a cada extremo. */
@@ -1130,7 +1362,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
     return;
   }
   const h = location.hash.replace('#','');
-  activateTab(['dashboard','guia','url','email','apps','sms','archivos','historial'].includes(h) ? h : 'dashboard');
+  activateTab(['inicio','analizar','dashboard','guia','ajustes','url','email','apps','sms','archivos','historial'].includes(h) ? h : 'inicio');
 });
 navigator.connection || 0;
 window.addEventListener('online', ()=>{
@@ -1946,8 +2178,17 @@ document.querySelectorAll('#panel-guia .tabbtn-inline button').forEach(btn=>{
     document.getElementById('guia-glosario-block').style.display = mode==='glosario' ? '' : 'none';
     document.getElementById('guia-niveles-block').style.display = mode==='niveles' ? '' : 'none';
     document.getElementById('guia-faq-block').style.display = mode==='faq' ? '' : 'none';
-    document.getElementById('guia-instalar-block').style.display = mode==='instalar' ? '' : 'none';
-    document.getElementById('guia-contacto-block').style.display = mode==='contacto' ? '' : 'none';
+  });
+});
+
+document.querySelectorAll('#panel-ajustes .tabbtn-inline button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('#panel-ajustes .tabbtn-inline button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const mode = btn.dataset.mode;
+    document.getElementById('ajustes-privacidad-block').style.display = mode==='privacidad' ? '' : 'none';
+    document.getElementById('ajustes-instalar-block').style.display = mode==='instalar' ? '' : 'none';
+    document.getElementById('ajustes-contacto-block').style.display = mode==='contacto' ? '' : 'none';
     if(mode==='instalar') renderInstallGuideBlock();
   });
 });
@@ -6748,7 +6989,7 @@ function maybeShowInstallBanner(){
   }catch(e){}
 }
 
-// Sección permanente "📲 Instalar" dentro de Guía — mismo contenido que el banner
+// Sección permanente "📲 Instalación" dentro de Ajustes — mismo contenido que el banner
 // y la modal, pero siempre accesible (para quien cerró el banner, o quiere
 // instalarla en otro dispositivo distinto).
 function renderInstallGuideBlock(){
@@ -6786,8 +7027,8 @@ function renderInstallGuideBlock(){
 // enlace del footer). Reutiliza activateTab() ya existente para el módulo,
 // y simula el clic en la sub-pestaña correspondiente dentro de Guía.
 function goToContactSection(){
-  activateTab('guia');
-  const btn = document.querySelector('#panel-guia .tabbtn-inline button[data-mode="contacto"]');
+  activateTab('ajustes');
+  const btn = document.querySelector('#panel-ajustes .tabbtn-inline button[data-mode="contacto"]');
   if(btn) btn.click();
 }
 const footerContactLink = document.getElementById('footer-contact-link');
