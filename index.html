@@ -169,6 +169,14 @@ p.panel-sub{color:var(--text-dim);font-size:13px;margin:0 0 18px;line-height:1.5
   border:1px solid var(--line);border-radius:var(--radius);
   padding:18px;margin-bottom:16px;
 }
+/* Detectado en la auditoría de resultados: "Exportar a PDF" (acción secundaria) aparecía
+   como el primer elemento interactivo de cada resultado, por delante del propio veredicto.
+   Reordenado con :has() en vez de tocar cada plantilla de los 8 módulos: mejora progresiva
+   —los navegadores que no soporten :has() simplemente mantienen el orden anterior, sin
+   ningún efecto negativo—, y :has() está soportado en todos los navegadores modernos
+   relevantes (Safari 15.4+, Chrome/Edge 105+, Firefox 121+) desde 2022-2023. */
+.card:has(> .verdict){display:flex;flex-direction:column;}
+.card:has(> .verdict) > .row:has(.export-pdf-btn){order:5;margin-top:14px;margin-bottom:0 !important;}
 label.field-label{display:block;font-size:12px;color:var(--text-dim);margin-bottom:6px;font-family:var(--mono);letter-spacing:0.02em;}
 textarea, input[type=text], input[type=file], select{
   width:100%;background:#0C1424;border:1px solid var(--line);border-radius:8px;
@@ -2999,12 +3007,12 @@ function renderUrlResult(res){
       <div class="hint" style="font-family:var(--mono);margin-bottom:10px;word-break:break-all;flex:1;min-width:200px;">${escapeHtml(res.raw)}</div>
       ${exportButtonHtml(uid)}
     </div>
-    ${renderVerdict(score, 'Basado en el patrón del texto de la URL, no en si el dominio está activo ahora mismo. Para confirmarlo, usa "Consultar DNS, ASN, WHOIS y si existe" más abajo.')}
+    ${renderVerdict(score, `Basado en el patrón del texto de la URL, no en si el dominio está activo ahora mismo. Para confirmarlo, ${getResultMode()==='avanzado' ? 'usa "Consultar DNS, ASN, WHOIS y si existe" más abajo' : 'activa "Ver detalles técnicos" más abajo'}.`)}
     <div class="result-block">
       <h3>Hallazgos (${res.findings.length})</h3>
       ${renderFindings(res.findings, 'url')}
     </div>
-    <div class="result-block">
+    <div class="result-block only-avanzado">
       <h3>${isShortener ? '⚠ Enlace acortado: dirección final' : 'Dirección final y saltos de redirección'}</h3>
       <p class="hint">Vigía no sigue el enlace por sí sola. Con tu permiso explícito, puede pedirle a un servicio externo (<span style="font-family:var(--mono);">redirectcheck.org</span>) que trace la cadena de redirecciones y te devuelva la URL final real.</p>
       <div class="row mt">
@@ -3012,13 +3020,13 @@ function renderUrlResult(res){
       </div>
       <div id="chain-${uid}" class="mt"></div>
     </div>
-    <div class="result-block">
+    <div class="result-block only-avanzado">
       <h3>DNS, ASN y WHOIS (RDAP)</h3>
       <p class="hint">Con tu permiso, se consulta el DNS público (Cloudflare) para ver a qué IP resuelve el dominio y su organización (ASN), y el registro RDAP (el sustituto moderno de WHOIS, accesible por HTTPS) para ver cuándo se registró y quién es el registrador. <b style="color:var(--text);">También es la forma de confirmar si el dominio existe de verdad ahora mismo</b>. El análisis de arriba solo mira el patrón del texto de la URL, no si está activa.</p>
       <div class="row mt"><button class="btn ghost url-intel-btn" data-domain="${encodeURIComponent(res.host)}" data-target="intel-${intelUid}">Consultar DNS, ASN, WHOIS y si existe</button></div>
       <div id="intel-${intelUid}" class="mt"></div>
     </div>
-    <div class="result-block">
+    <div class="result-block only-avanzado">
       <h3>Verificación manual recomendada</h3>
       <p class="hint">Antes de confiar del todo, contrástalo también en fuentes externas:</p>
       <div class="manual-links">${manualLinks.map(l=>`<a href="${l.href}" target="_blank" rel="noopener noreferrer">${l.name} ↗</a>`).join('')}</div>
@@ -3232,13 +3240,13 @@ function renderIpResult(res){
     </div>
     ${renderVerdict(score)}
     <div class="result-block"><h3>Hallazgos (${res.findings.length})</h3>${renderFindings(res.findings, 'url')}</div>
-    ${res.isV4 ? `<div class="result-block">
+    ${res.isV4 ? `<div class="result-block only-avanzado">
       <h3>Geolocalización y organización (opcional)</h3>
       <p class="hint">Con tu permiso, se consulta un servicio externo (ipapi.co) para ver el país, ciudad aproximada y el proveedor/organización asociados a esta IP.</p>
       <div class="row mt"><button class="btn ghost ip-geo-btn" data-uid="${geoUid}" data-ip="${encodeURIComponent(res.ip)}">Consultar geolocalización / organización</button></div>
       <div id="geo-${geoUid}" class="mt"></div>
     </div>` : ''}
-    <div class="result-block">
+    <div class="result-block only-avanzado">
       <h3>Verificación de reputación en fuentes externas</h3>
       <p class="hint">Vigía no mantiene una base de datos propia de IPs maliciosas. Contrasta esta IP en bases de reputación reales:</p>
       <div class="manual-links">${manualLinks.map(l=>`<a href="${l.href}" target="_blank" rel="noopener noreferrer">${l.name} ↗</a>`).join('')}</div>
