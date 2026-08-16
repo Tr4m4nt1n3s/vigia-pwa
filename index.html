@@ -94,6 +94,10 @@ a{color:var(--signal);}
 @keyframes ecg-scroll{ from{transform:translateX(0);} to{transform:translateX(-200px);} }
 
 .intro{max-width:1040px;margin:6px auto 22px;padding:0 20px;color:var(--text-dim);font-size:14px;line-height:1.55;max-width:680px;}
+.intro-more-btn{
+  background:none;border:none;padding:0;margin-left:2px;cursor:pointer;
+  color:var(--signal);font-family:var(--sans);font-size:13px;font-weight:600;text-decoration:underline;
+}
 .intro strong{color:var(--text);}
 
 /* ---------- Navegación de pestañas ---------- */
@@ -141,6 +145,16 @@ nav.tabs button[aria-selected="true"]{
 @media (pointer:fine){
   .nav-scroll-btn{display:flex;}
 }
+/* Detectado en la auditoría de Inicio: en pantalla táctil (el caso más habitual del público
+   objetivo) no hay flecha (arriba, solo puntero fino) NI barra de scroll visible en iOS Safari
+   (oculta el indicador nativo salvo durante el propio gesto de deslizar) — nada avisaba de que
+   hubiera más pestañas fuera de la vista. Este degradado en el borde derecho es una pista
+   pasiva, siempre visible, independiente del tipo de puntero.*/
+.nav-edge-fade{
+  position:absolute;top:0;bottom:1px;right:0;width:22px;z-index:2;pointer-events:none;
+  background:linear-gradient(to right, transparent, var(--ink) 80%);
+  transition:opacity .15s ease;
+}
 
 main{max-width:1040px;margin:0 auto;padding:22px 20px 40px;}
 section.panel{display:none;}
@@ -162,6 +176,9 @@ textarea, input[type=text], input[type=file], select{
   resize:vertical;outline:none;transition:border-color .15s;
 }
 textarea:focus, input[type=text]:focus, select:focus{border-color:var(--signal);}
+textarea.field-error{border-color:var(--danger);}
+.field-error-text{display:none;color:var(--danger);font-size:12px;margin:6px 0 0;}
+textarea.field-error + .field-error-text{display:block;}
 input[type=file]{font-family:var(--sans);font-size:12.5px;padding:8px;}
 
 .btn{
@@ -224,6 +241,49 @@ input[type=file]{font-family:var(--sans);font-size:12.5px;padding:8px;}
 .triage-options{display:flex;flex-direction:column;gap:8px;align-items:flex-start;}
 .triage-options .btn{width:100%;text-align:left;}
 @media(max-width:480px){.symptom-grid{grid-template-columns:1fr;}}
+
+/* ---------- Modo Básico / Avanzado ---------- */
+body:not(.mode-avanzado) .only-avanzado{display:none !important;}
+body.mode-avanzado .only-basico{display:none !important;}
+
+.basic-findings{margin:14px 0;}
+.basic-count{font-size:13px;color:var(--text);font-weight:600;margin:0 0 8px;}
+.basic-safe{font-size:13px;color:var(--safe);font-weight:600;margin:0;}
+.basic-signal-list{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px;}
+.basic-signal-list li{font-size:13.5px;color:var(--text);line-height:1.5;}
+
+.eli5-details{margin-top:12px;border-top:1px dashed var(--line);padding-top:12px;}
+.eli5-summary{
+  cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;
+  font-size:13px;font-weight:600;color:var(--signal);
+}
+.eli5-summary::-webkit-details-marker{display:none;}
+.eli5-summary::marker{content:"";}
+.eli5-summary::after{
+  content:'⌄';margin-left:auto;padding-left:10px;color:var(--text-dim);font-size:15px;line-height:1;
+  transition:transform .2s ease;
+}
+.eli5-details[open] .eli5-summary::after{ transform:rotate(180deg); }
+.eli5-list{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:10px;}
+.eli5-list li{
+  font-size:13.5px;color:var(--text);line-height:1.55;padding:10px 12px;border-radius:var(--radius);
+  background:var(--panel-2);border-left:2px solid var(--signal-dim);
+}
+
+.action-checklist{
+  margin:14px 0;padding:14px;border-radius:var(--radius);
+  background:linear-gradient(180deg, var(--panel), var(--panel-2));border:1px solid var(--line);
+}
+.action-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px;}
+.action-list li{font-size:13.5px;color:var(--text);line-height:1.45;}
+
+.mode-switch{display:flex;gap:8px;margin:10px 0;}
+.mode-switch-btn{
+  flex:1;padding:10px 12px;border-radius:var(--radius);border:1px solid var(--line);
+  background:var(--panel);color:var(--text-dim);font-family:var(--sans);font-size:13px;font-weight:600;
+  cursor:pointer;transition:border-color .15s, color .15s;
+}
+.mode-switch-btn.active{border-color:var(--signal);color:var(--signal);}
 
 .chip{
   font-family:var(--mono);font-size:12px;border:1px solid var(--line);
@@ -547,18 +607,19 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
   </svg>
 </div>
 
-<p class="intro"><strong>Compruébalo antes de abrirlo, hacer clic o instalarlo.</strong> Pega una URL, importa un correo, sube un archivo o describe una app, y Vigía la analiza al momento en busca de señales de phishing, malware y fraude, todo en tu propio navegador, sin que nada salga de tu dispositivo. Solo si tú lo pides expresamente (por ejemplo, para ver a dónde lleva realmente un enlace acortado) se consulta algún servicio externo, y siempre de forma puntual.</p>
+<p class="intro"><strong>Compruébalo antes de abrirlo, hacer clic o instalarlo.</strong> Todo ocurre en tu propio dispositivo, sin enviar nada fuera salvo que tú lo pidas. <button class="intro-more-btn dash-goto-tab" data-tab="guia" data-submode="faq">¿Cómo funciona exactamente? →</button></p>
 
 <div class="nav-wrap">
   <button class="nav-scroll-btn left" id="nav-scroll-left" aria-label="Desplazar pestañas a la izquierda" type="button">‹</button>
   <nav class="tabs" role="tablist">
     <button role="tab" aria-selected="true" data-tab="inicio"><svg class="tab-icon" aria-hidden="true"><use href="#icon-home"></use></svg>Inicio</button>
     <button role="tab" aria-selected="false" data-tab="analizar"><svg class="tab-icon" aria-hidden="true"><use href="#icon-search"></use></svg>Analizar</button>
-    <button role="tab" aria-selected="false" data-tab="dashboard"><svg class="tab-icon" aria-hidden="true"><use href="#icon-chart"></use></svg>Mis análisis</button>
+    <button role="tab" aria-selected="false" data-tab="dashboard"><svg class="tab-icon" aria-hidden="true"><use href="#icon-chart"></use></svg>Análisis</button>
     <button role="tab" aria-selected="false" data-tab="guia"><svg class="tab-icon" aria-hidden="true"><use href="#icon-help"></use></svg>Aprender</button>
     <button role="tab" aria-selected="false" data-tab="ajustes"><svg class="tab-icon" aria-hidden="true"><use href="#icon-settings"></use></svg>Ajustes</button>
   </nav>
   <button class="nav-scroll-btn right" id="nav-scroll-right" aria-label="Desplazar pestañas a la derecha" type="button">›</button>
+  <div class="nav-edge-fade" id="nav-edge-fade" aria-hidden="true"></div>
 </div>
 
 <main>
@@ -567,73 +628,84 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
 
   <section class="panel active" id="panel-inicio">
     <h2 class="panel-title">¿Qué quieres comprobar?</h2>
-    <p class="panel-sub">Elige lo que más se parezca a lo que te ha pasado. Te llevamos directo al análisis que necesitas, sin tener que saber de antemano qué módulo es el correcto.</p>
+    <p class="panel-sub">Cuéntanos qué has recibido y te llevamos directo al análisis que necesitas — sin tener que saber de antemano qué módulo es el correcto.</p>
 
-    <div class="symptom-grid" id="symptom-grid">
-      <button class="symptom-card" data-route="url">
-        <svg class="symptom-icon" aria-hidden="true"><use href="#icon-link"></use></svg>
-        <span class="symptom-title">Me han enviado un enlace</span>
-        <span class="symptom-sub">WhatsApp · SMS · correo · redes sociales</span>
-      </button>
-      <button class="symptom-card" data-route="email">
-        <svg class="symptom-icon" aria-hidden="true"><use href="#icon-mail"></use></svg>
-        <span class="symptom-title">He recibido un correo sospechoso</span>
-      </button>
-      <button class="symptom-card" data-route="apps">
-        <svg class="symptom-icon" aria-hidden="true"><use href="#icon-phone"></use></svg>
-        <span class="symptom-title">Una aplicación me pide permisos extraños</span>
-      </button>
-      <button class="symptom-card" data-route="sms" data-submode="text">
-        <svg class="symptom-icon" aria-hidden="true"><use href="#icon-chat"></use></svg>
-        <span class="symptom-title">He recibido un SMS sospechoso</span>
-      </button>
-      <button class="symptom-card" data-route="archivos" data-submode="qr">
-        <svg class="symptom-icon" aria-hidden="true"><use href="#icon-qr"></use></svg>
-        <span class="symptom-title">Me han enviado un QR</span>
-      </button>
-      <button class="symptom-card" data-route="archivos" data-submode="image">
-        <svg class="symptom-icon" aria-hidden="true"><use href="#icon-folder"></use></svg>
-        <span class="symptom-title">Me han enviado un archivo</span>
-      </button>
-      <button class="symptom-card" data-route="sms" data-submode="phone">
-        <svg class="symptom-icon" aria-hidden="true"><use href="#icon-phone-call"></use></svg>
-        <span class="symptom-title">Me han llamado desde un número extraño</span>
-      </button>
-      <button class="symptom-card symptom-card-muted" id="symptom-unknown">
-        <svg class="symptom-icon" aria-hidden="true"><use href="#icon-help"></use></svg>
-        <span class="symptom-title">No sé qué es</span>
-        <span class="symptom-sub">Déjame ayudarte</span>
-      </button>
+    <!-- Flujo guiado (protagonista de Inicio): 2 preguntas como máximo con reglas fijas y
+         visibles (nada de IA ni interpretación de texto libre, ver Guía → FAQ), que termina
+         con el propio campo para pegar/escribir integrado aquí mismo — sin tener que aterrizar
+         en otra pestaña vacía y buscar el cuadro de texto por tu cuenta. -->
+    <div class="card" id="wizard-card">
+      <div id="wizard-q1">
+        <p class="hint" style="margin:0 0 12px;font-size:13.5px;">¿Qué has recibido?</p>
+        <div class="symptom-grid" id="wizard-grid">
+          <button class="symptom-card wizard-opt" data-next="q2-link">
+            <svg class="symptom-icon" aria-hidden="true"><use href="#icon-link"></use></svg>
+            <span class="symptom-title">Un enlace</span>
+          </button>
+          <button class="symptom-card wizard-opt" data-paste="eml">
+            <svg class="symptom-icon" aria-hidden="true"><use href="#icon-mail"></use></svg>
+            <span class="symptom-title">Un correo</span>
+          </button>
+          <button class="symptom-card wizard-opt" data-paste="sms">
+            <svg class="symptom-icon" aria-hidden="true"><use href="#icon-chat"></use></svg>
+            <span class="symptom-title">Un SMS</span>
+          </button>
+          <button class="symptom-card wizard-opt" data-route="archivos" data-submode="qr">
+            <svg class="symptom-icon" aria-hidden="true"><use href="#icon-qr"></use></svg>
+            <span class="symptom-title">Un QR</span>
+          </button>
+          <button class="symptom-card wizard-opt" data-route="archivos" data-submode="image">
+            <svg class="symptom-icon" aria-hidden="true"><use href="#icon-folder"></use></svg>
+            <span class="symptom-title">Un archivo</span>
+          </button>
+          <button class="symptom-card wizard-opt" data-route="apps">
+            <svg class="symptom-icon" aria-hidden="true"><use href="#icon-phone"></use></svg>
+            <span class="symptom-title">Una aplicación</span>
+          </button>
+          <button class="symptom-card wizard-opt" data-paste="phone">
+            <svg class="symptom-icon" aria-hidden="true"><use href="#icon-phone-call"></use></svg>
+            <span class="symptom-title">Una llamada</span>
+          </button>
+          <button class="symptom-card wizard-opt symptom-card-muted" id="wizard-unknown">
+            <svg class="symptom-icon" aria-hidden="true"><use href="#icon-help"></use></svg>
+            <span class="symptom-title">Otra cosa</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="wizard-q2-link" style="display:none;">
+        <p class="hint" style="margin:0 0 12px;">¿Dónde lo has recibido?</p>
+        <div class="triage-options">
+          <button class="btn ghost wizard-opt" data-paste="sms">WhatsApp o SMS</button>
+          <button class="btn ghost wizard-opt" data-paste="eml">Dentro de un correo electrónico</button>
+          <button class="btn ghost wizard-opt" data-paste="url">Instagram, otra red social o la web</button>
+        </div>
+        <button class="btn ghost" id="wizard-q2-back-btn" style="margin-top:10px;padding:6px 12px;font-size:11px;">← Atrás</button>
+      </div>
+
+      <div id="wizard-paste" style="display:none;">
+        <label class="field-label" id="wizard-paste-label" for="wizard-paste-input">Pega aquí lo que has recibido</label>
+        <textarea id="wizard-paste-input" rows="4"></textarea>
+        <p class="field-error-text" id="wizard-paste-error">Pega o escribe algo antes de analizar.</p>
+        <div class="row mt">
+          <button class="btn" id="wizard-paste-submit">Analizar</button>
+          <button class="btn ghost" id="wizard-back-btn">← Atrás</button>
+        </div>
+      </div>
+
+      <div id="wizard-fallback" style="display:none;">
+        <p class="hint" style="margin:0;">No pasa nada por no tenerlo claro. Prueba con la opción que más se parezca, mira todos los módulos de golpe en <button class="btn ghost dash-goto-tab" data-tab="analizar" style="padding:4px 10px;font-size:11px;">Analizar</button>, o <button class="btn ghost" id="wizard-contact-link" style="padding:4px 10px;font-size:11px;">escríbeme directamente</button> contándome qué ha pasado.</p>
+      </div>
     </div>
 
-    <!-- Cuestionario guiado (2 preguntas como máximo) para quien pulsa "No sé qué es". Nada de
-         IA ni interpretación de texto libre: son reglas fijas y visibles, coherente con que
-         Vigía nunca simula una capacidad que no tiene realmente (ver Guía → FAQ). -->
-    <div class="card" id="triage-card" style="display:none;">
-      <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <h3 style="font-family:var(--mono);font-size:13px;color:var(--text);text-transform:uppercase;letter-spacing:.06em;margin:0;">Vamos a verlo entre los dos</h3>
-        <button class="btn ghost" id="triage-close-btn" style="padding:6px 12px;font-size:11px;">✕ Cerrar</button>
-      </div>
-
-      <div id="triage-q1">
-        <p class="hint" style="margin:0 0 10px;">¿Qué tienes delante ahora mismo?</p>
-        <div class="triage-options">
-          <button class="btn ghost triage-opt" data-next="q2-link">Un enlace o un mensaje de texto</button>
-          <button class="btn ghost triage-opt" data-route="email">Un correo electrónico completo</button>
-          <button class="btn ghost triage-opt" data-route="apps">Una aplicación</button>
-          <button class="btn ghost triage-opt" data-route="archivos" data-submode="image">Un archivo (imagen, documento, comprimido...)</button>
-          <button class="btn ghost triage-opt" data-route="sms" data-submode="phone">Una llamada de teléfono</button>
-        </div>
-      </div>
-
-      <div id="triage-q2-link" style="display:none;">
-        <p class="hint" style="margin:14px 0 10px;">¿Cómo te ha llegado ese enlace o mensaje?</p>
-        <div class="triage-options">
-          <button class="btn ghost triage-opt" data-route="sms" data-submode="text">Como SMS o WhatsApp, con más texto alrededor</button>
-          <button class="btn ghost triage-opt" data-route="url">Es solo el enlace suelto, sin más contexto</button>
-          <button class="btn ghost triage-opt" data-route="email">Dentro de un correo electrónico</button>
-        </div>
-      </div>
+    <p class="hint" style="margin:22px 0 10px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);">¿Ya sabes qué necesitas? Acceso directo:</p>
+    <div class="chip-grid">
+      <button class="chip dash-goto-tab" data-tab="url"><svg class="chip-icon" aria-hidden="true"><use href="#icon-link"></use></svg>Enlace</button>
+      <button class="chip dash-goto-tab" data-tab="email"><svg class="chip-icon" aria-hidden="true"><use href="#icon-mail"></use></svg>Correo</button>
+      <button class="chip dash-goto-tab" data-tab="sms"><svg class="chip-icon" aria-hidden="true"><use href="#icon-chat"></use></svg>SMS</button>
+      <button class="chip dash-goto-tab" data-tab="apps"><svg class="chip-icon" aria-hidden="true"><use href="#icon-phone"></use></svg>Apps</button>
+      <button class="chip dash-goto-tab" data-tab="archivos" data-submode="image"><svg class="chip-icon" aria-hidden="true"><use href="#icon-folder"></use></svg>Archivos</button>
+      <button class="chip dash-goto-tab" data-tab="archivos" data-submode="qr"><svg class="chip-icon" aria-hidden="true"><use href="#icon-qr"></use></svg>QR</button>
     </div>
   </section>
 
@@ -704,17 +776,6 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
       </div>
       <div id="dash-recent-list"></div>
     </div>
-
-    <div class="card" id="dash-quickaccess-card">
-      <h3 style="font-family:var(--mono);font-size:12.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin:0 0 10px;">Accesos rápidos</h3>
-      <div class="chip-grid">
-        <button class="chip dash-goto-tab" data-tab="url"><svg class="chip-icon" aria-hidden="true"><use href="#icon-link"></use></svg>URLs e IPs</button>
-        <button class="chip dash-goto-tab" data-tab="email"><svg class="chip-icon" aria-hidden="true"><use href="#icon-mail"></use></svg>Correo</button>
-        <button class="chip dash-goto-tab" data-tab="apps"><svg class="chip-icon" aria-hidden="true"><use href="#icon-phone"></use></svg>Apps móviles</button>
-        <button class="chip dash-goto-tab" data-tab="sms"><svg class="chip-icon" aria-hidden="true"><use href="#icon-chat"></use></svg>SMS y teléfono</button>
-        <button class="chip dash-goto-tab" data-tab="archivos"><svg class="chip-icon" aria-hidden="true"><use href="#icon-folder"></use></svg>Archivos y QR</button>
-      </div>
-    </div>
   </section>
 
   <section class="panel" id="panel-guia">
@@ -743,7 +804,8 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
         <div class="stat-row"><span>⚠ Hallazgo leve</span><span class="stat-value">+6 puntos</span></div>
         <div class="stat-row"><span>✓ Comprobado sin problemas</span><span class="stat-value">+0 puntos</span></div>
       </div>
-      <p class="hint mt">Se suman porque <b style="color:var(--text);">varias señales flojas juntas pueden ser tan preocupantes como una señal grave sola</b>. Por ejemplo: un dominio con extensión sospechosa (+16) que además contiene palabras de banca (+16) suma 32 puntos (riesgo medio), aunque ninguno de los dos factores por separado sea crítico.</p>
+      <p class="hint mt">Se suman porque <b style="color:var(--text);">varias señales flojas juntas pueden ser tan preocupantes como una señal grave sola</b>. Por ejemplo: un dominio con extensión sospechosa (+16) que además usa muchos subdominios (+16) suma 32 puntos (riesgo medio), aunque ninguno de los dos factores por separado sea crítico.</p>
+      <p class="hint mt">Con un matiz: <b style="color:var(--text);">un segundo hallazgo del mismo nivel de gravedad cuenta algo menos que el primero</b> (un 60%, luego un 36%, y así sucesivamente), en vez de sumarse siempre a peso completo. Dos hallazgos "críticos" no dan automáticamente el doble de puntos: muchas veces son la misma suplantación vista desde dos ángulos distintos (por ejemplo, un dominio que imita una marca y, además, una ruta que usa palabras como "acceso" junto a esa misma marca), así que sumarlos a peso completo exageraría el riesgo más de lo que la evidencia real justifica.</p>
 
       <h3 style="font-family:var(--mono);font-size:12.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 10px;">Los 5 niveles</h3>
       <div id="niveles-list"></div>
@@ -769,6 +831,15 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
     <h2 class="panel-title">Ajustes</h2>
     <p class="panel-sub">Privacidad, instalación como app, y cómo contactar con el autor.</p>
 
+    <div class="card">
+      <h3 style="font-family:var(--mono);font-size:12.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin:0 0 4px;">Nivel de detalle de los resultados</h3>
+      <p class="hint" style="margin:0 0 4px;">Afecta a cómo se muestran los resultados de todos los análisis, no solo al de ahora mismo. También puedes cambiarlo al momento desde el propio resultado.</p>
+      <div class="mode-switch">
+        <button class="mode-switch-btn" data-mode="basico">🟢 Básico — resultado y qué hacer, sin tecnicismos</button>
+        <button class="mode-switch-btn" data-mode="avanzado">🔵 Avanzado — todos los factores técnicos</button>
+      </div>
+    </div>
+
     <div class="tabbtn-inline" role="tablist">
       <button class="active" data-mode="privacidad">🔒 Privacidad</button>
       <button data-mode="instalar">📲 Instalación</button>
@@ -782,7 +853,7 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
       </label>
       <p class="hint" style="margin:6px 0 0 24px;">Los resultados se te siguen mostrando en pantalla igual que siempre, solo se deja de escribir aquí. Útil si estás investigando algo que prefieres que no quede ni siquiera en este navegador.</p>
       <div style="border-top:1px dashed var(--line);margin:18px 0 14px;"></div>
-      <p class="hint" style="margin:0 0 10px;">Tu historial se guarda solo en este navegador (<code>localStorage</code>), nunca en un servidor de Vigía. Puedes revisarlo o borrarlo del todo desde <b style="color:var(--text);">Mis análisis</b>.</p>
+      <p class="hint" style="margin:0 0 10px;">Tu historial se guarda solo en este navegador (<code>localStorage</code>), nunca en un servidor de Vigía. Puedes revisarlo o borrarlo del todo desde <b style="color:var(--text);">Análisis</b>.</p>
       <button class="btn ghost dash-goto-tab" data-tab="historial">Ver y gestionar mi historial →</button>
     </div>
 
@@ -1284,63 +1355,118 @@ function activateTab(name, subMode){
   if(activeBtn) activeBtn.scrollIntoView({behavior:'smooth', inline:'center', block:'nearest'});
 }
 tabButtons.forEach(b=>b.addEventListener('click', ()=>activateTab(b.dataset.tab)));
+document.addEventListener('click', e=>{
+  const t = e.target.closest && e.target.closest('.result-mode-quick-toggle');
+  if(t) toggleResultMode();
+});
 document.querySelectorAll('.dash-goto-tab').forEach(b=>b.addEventListener('click', ()=>activateTab(b.dataset.tab, b.dataset.submode)));
 
 /* ---------- Inicio y Analizar: enrutado directo a cada módulo (y, si aplica, sub-pestaña) ---------- */
 function goToModule(route, subMode){
   activateTab(route, subMode);
 }
-document.querySelectorAll('#symptom-grid .symptom-card[data-route], #analizar-grid .symptom-card[data-route]').forEach(card=>{
+document.querySelectorAll('#analizar-grid .symptom-card[data-route]').forEach(card=>{
   card.addEventListener('click', ()=> goToModule(card.dataset.route, card.dataset.submode));
 });
 
-/* ---------- "No sé qué es" — cuestionario guiado de reglas fijas (sin IA, ver Guía → FAQ) ---------- */
-(function setupTriage(){
-  const unknownBtn = document.getElementById('symptom-unknown');
-  const triageCard = document.getElementById('triage-card');
-  const q1 = document.getElementById('triage-q1');
-  const q2Link = document.getElementById('triage-q2-link');
-  if(!unknownBtn || !triageCard) return;
+/* ---------- Flujo guiado de Inicio: 2 preguntas fijas + campo de pegar integrado ----------
+   Nada de IA ni interpretación de texto libre: son reglas fijas y visibles, coherente con que
+   Vigía nunca simula una capacidad que no tiene realmente (ver Guía → FAQ). El paso final
+   rellena el campo real del módulo destino y lanza su propio botón de analizar, así que el
+   usuario nunca aterriza en una pestaña vacía teniendo que pegar el texto una segunda vez. */
+(function setupWizard(){
+  const PASTE_TARGETS = {
+    url:   { tab:'url',   subMode:null,    inputId:'url-input',   btnId:'url-analyze-btn',   resultsId:'url-results',   label:'Pega aquí el enlace' },
+    eml:   { tab:'email', subMode:null,    inputId:'eml-text',    btnId:'eml-analyze-btn',   resultsId:'email-results', label:'Pega aquí el correo completo (o al menos el texto y el remitente)' },
+    sms:   { tab:'sms',   subMode:'text',  inputId:'sms-text',    btnId:'sms-analyze-btn',   resultsId:'sms-results',   label:'Pega aquí el mensaje que has recibido' },
+    phone: { tab:'sms',   subMode:'phone', inputId:'phone-input', btnId:'phone-analyze-btn', resultsId:'sms-results',   label:'Escribe o pega el número de teléfono' },
+  };
+  const card = document.getElementById('wizard-card');
+  if(!card) return;
+  const q1 = document.getElementById('wizard-q1');
+  const q2Link = document.getElementById('wizard-q2-link');
+  const pasteStep = document.getElementById('wizard-paste');
+  const fallback = document.getElementById('wizard-fallback');
+  const pasteInput = document.getElementById('wizard-paste-input');
+  const pasteLabel = document.getElementById('wizard-paste-label');
+  let currentPasteTarget = null;
 
-  function resetTriage(){
-    triageCard.style.display = 'none';
-    q1.style.display = '';
-    q2Link.style.display = 'none';
+  function showStep(step){
+    q1.style.display = step==='q1' ? '' : 'none';
+    q2Link.style.display = step==='q2' ? '' : 'none';
+    pasteStep.style.display = step==='paste' ? '' : 'none';
+    fallback.style.display = step==='fallback' ? '' : 'none';
   }
-  unknownBtn.addEventListener('click', ()=>{
-    triageCard.style.display = '';
-    q1.style.display = '';
-    q2Link.style.display = 'none';
-    triageCard.scrollIntoView({behavior:'smooth', block:'nearest'});
-  });
-  document.getElementById('triage-close-btn').addEventListener('click', resetTriage);
 
-  triageCard.querySelectorAll('.triage-opt').forEach(opt=>{
+  function openPaste(key){
+    currentPasteTarget = key;
+    const t = PASTE_TARGETS[key];
+    pasteLabel.textContent = t.label;
+    pasteInput.value = '';
+    pasteInput.classList.remove('field-error');
+    showStep('paste');
+    pasteInput.focus();
+  }
+
+  card.querySelectorAll('.wizard-opt').forEach(opt=>{
     opt.addEventListener('click', ()=>{
-      if(opt.dataset.next === 'q2-link'){
-        q1.style.display = 'none';
-        q2Link.style.display = '';
-        return;
-      }
-      if(opt.dataset.route){
-        resetTriage();
-        goToModule(opt.dataset.route, opt.dataset.submode);
+      if(opt.dataset.next === 'q2-link'){ showStep('q2'); return; }
+      if(opt.dataset.paste){ openPaste(opt.dataset.paste); return; }
+      if(opt.dataset.route){ goToModule(opt.dataset.route, opt.dataset.submode); }
+    });
+  });
+  document.getElementById('wizard-unknown').addEventListener('click', ()=> showStep('fallback'));
+  document.getElementById('wizard-q2-back-btn').addEventListener('click', ()=> showStep('q1'));
+  document.getElementById('wizard-back-btn').addEventListener('click', ()=> showStep('q1'));
+  document.getElementById('wizard-contact-link').addEventListener('click', ()=> goToContactSection());
+
+  document.getElementById('wizard-paste-submit').addEventListener('click', ()=>{
+    const val = pasteInput.value.trim();
+    if(!currentPasteTarget) return;
+    if(!val){
+      // Fallo silencioso detectado en la auditoría de Inicio: pulsar "Analizar" sin haber
+      // pegado nada no daba ningún aviso. Ahora resalta el campo y lo explica en una frase.
+      pasteInput.classList.add('field-error');
+      pasteInput.focus();
+      return;
+    }
+    const t = PASTE_TARGETS[currentPasteTarget];
+    document.getElementById(t.inputId).value = val;
+    activateTab(t.tab, t.subMode);
+    document.getElementById(t.btnId).click();
+    showStep('q1');
+    // El hallazgo más grave de la auditoría de Inicio: al cambiar de pestaña, el scroll se
+    // quedaba en la posición que tenía en Inicio, así que el resultado real quedaba varios
+    // cientos de píxeles por debajo de lo visible — el usuario aterrizaba sobre la descripción
+    // del módulo (que ya conoce) sin ver ninguna respuesta. Ahora se baja explícitamente hasta
+    // el bloque de resultados en cuanto existe contenido real que mostrar.
+    requestAnimationFrame(()=>{
+      const resultsEl = document.getElementById(t.resultsId);
+      if(resultsEl && resultsEl.innerHTML.trim()){
+        resultsEl.scrollIntoView({behavior:'smooth', block:'start'});
       }
     });
   });
+  pasteInput.addEventListener('input', ()=> pasteInput.classList.remove('field-error'));
 })();
 
 /* Flechas de scroll de la barra de pestañas (solo relevantes con ratón/trackpad; en táctil se
-   ocultan por CSS y basta con deslizar). Se deshabilitan solas al llegar a cada extremo. */
+   ocultan por CSS y basta con deslizar) + degradado de borde (visible en cualquier dispositivo,
+   incluido táctil, ver auditoría de Inicio). Ambos se deshabilitan/ocultan solos al llegar al
+   final de la barra. */
 (function setupNavScrollButtons(){
   const navEl = document.querySelector('nav.tabs');
   const btnLeft = document.getElementById('nav-scroll-left');
   const btnRight = document.getElementById('nav-scroll-right');
+  const edgeFade = document.getElementById('nav-edge-fade');
   if(!navEl || !btnLeft || !btnRight) return;
   function updateState(){
     const maxScroll = navEl.scrollWidth - navEl.clientWidth;
-    btnLeft.disabled = navEl.scrollLeft <= 2;
-    btnRight.disabled = navEl.scrollLeft >= maxScroll - 2;
+    const atStart = navEl.scrollLeft <= 2;
+    const atEnd = navEl.scrollLeft >= maxScroll - 2;
+    btnLeft.disabled = atStart;
+    btnRight.disabled = atEnd;
+    if(edgeFade) edgeFade.style.opacity = (maxScroll <= 2 || atEnd) ? '0' : '1';
   }
   btnLeft.addEventListener('click', ()=> navEl.scrollBy({left:-160, behavior:'smooth'}));
   btnRight.addEventListener('click', ()=> navEl.scrollBy({left:160, behavior:'smooth'}));
@@ -1419,11 +1545,127 @@ async function sha256Hex(bytes){
 
 /* Convierte hallazgos (findings) con severidades en una puntuación 0-100 y una etiqueta */
 const SEVERITY_WEIGHT = { high: 34, med: 16, low: 6, ok: 0 };
+// Rendimientos decrecientes por gravedad: cada hallazgo adicional del MISMO nivel pesa un 60%
+// del anterior de ese nivel, en vez de sumarse siempre a peso completo. Una segunda señal
+// "grave" suele ser el mismo problema de fondo (p. ej. suplantación de marca) visto desde otro
+// ángulo, no una prueba independiente adicional — sumarla a peso completo infla el resultado
+// más de lo que la evidencia real justifica. El descuento es automático y uniforme (no depende
+// de mapear a mano qué pares de hallazgos concretos están relacionados entre los 8 módulos),
+// para mantener el cálculo tan explicable como hasta ahora: "cada factor suma según su
+// gravedad, pero el segundo del mismo tipo cuenta algo menos que el primero".
+const SEVERITY_DECAY = 0.6;
 function computeScore(findings){
+  const seen = {};
   let score = 0;
-  findings.forEach(f=>{ if(f.sev!=='ok') score += SEVERITY_WEIGHT[f.sev]; });
-  return Math.min(100, score);
+  findings.forEach(f=>{
+    if(f.sev==='ok') return;
+    const n = seen[f.sev] || 0;
+    score += SEVERITY_WEIGHT[f.sev] * Math.pow(SEVERITY_DECAY, n);
+    seen[f.sev] = n + 1;
+  });
+  return Math.min(100, Math.round(score));
 }
+/* ---------------- Modo Básico / Avanzado de resultados ---------------- */
+// Global, persistido, con acceso rápido desde cada resultado. Por defecto "básico"
+// (público objetivo no técnico); nunca se recalcula ni se vuelve a guardar en el
+// historial al cambiar de modo — es puramente una capa de visibilidad CSS
+// (.only-basico / .only-avanzado) sobre contenido ya renderizado, así que alternar
+// modo es instantáneo y no duplica entradas de historial ni relanza análisis.
+function getResultMode(){
+  try{ return localStorage.getItem('vigia_result_mode') === 'avanzado' ? 'avanzado' : 'basico'; }catch(e){ return 'basico'; }
+}
+function setResultMode(mode){
+  try{ localStorage.setItem('vigia_result_mode', mode); }catch(e){}
+  document.body.classList.toggle('mode-avanzado', mode === 'avanzado');
+  document.querySelectorAll('.mode-switch-btn').forEach(b=>b.classList.toggle('active', b.dataset.mode===mode));
+}
+function toggleResultMode(){
+  setResultMode(getResultMode()==='avanzado' ? 'basico' : 'avanzado');
+}
+
+// "Qué hacer" por nivel de riesgo y módulo — texto genérico y corto, revisado a mano
+// para los 5 módulos (a diferencia de la lista de señales simplificadas, que de
+// momento solo está reescrita módulo a módulo empezando por URLs; ver ACTION_CHECKLISTS
+// más abajo vs. el campo "basic" de cada finding).
+const ACTION_CHECKLISTS = {
+  url: {
+    critico: ['No abras el enlace.', 'No introduzcas contraseñas.', 'No introduzcas datos bancarios.'],
+    alto:    ['Evita abrir el enlace hasta confirmarlo por otra vía.', 'No introduzcas contraseñas ni datos bancarios si llegas a abrirlo.'],
+    medio:   ['Verifica el origen del enlace antes de abrirlo.', 'Si lo abres, no introduzcas datos personales ni de pago.'],
+    bajo:    ['No se han detectado señales graves, pero confirma el remitente antes de confiar del todo.'],
+    ninguno: ['No se han detectado señales de riesgo en el propio texto del enlace. Aun así, comprueba que viene de quien dice venir antes de introducir datos.'],
+  },
+  email: {
+    critico: ['No hagas clic en ningún enlace de este correo.', 'No descargues ni abras los archivos adjuntos.', 'No respondas ni facilites ningún dato.'],
+    alto:    ['Evita hacer clic en los enlaces o abrir adjuntos hasta confirmarlo.', 'No facilites contraseñas ni datos bancarios.'],
+    medio:   ['Verifica al remitente por un canal distinto antes de actuar sobre este correo.', 'No introduzcas datos personales desde los enlaces del mensaje.'],
+    bajo:    ['No se han detectado señales graves, pero revisa el remitente con calma antes de confiar del todo.'],
+    ninguno: ['No se han detectado señales de riesgo relevantes. Aun así, desconfía si el correo te pide algo urgente o inusual.'],
+  },
+  apps: {
+    critico: ['No instales ni sigas usando esta aplicación.', 'Si ya la tienes instalada, desinstálala.', 'Revisa qué permisos le has concedido y revócalos.'],
+    alto:    ['Evita instalarla hasta confirmar la identidad real del editor.', 'Si ya la usas, revisa y limita los permisos concedidos.'],
+    medio:   ['Verifica el editor y los permisos solicitados antes de confiar en ella.', 'Concede solo los permisos imprescindibles para lo que la app necesita hacer.'],
+    bajo:    ['No se han detectado señales graves, pero revisa los permisos que pide antes de usarla con normalidad.'],
+    ninguno: ['No se han detectado señales de riesgo relevantes. Aun así, concede solo los permisos que la app realmente necesite.'],
+  },
+  sms: {
+    critico: ['No respondas a este mensaje ni llames al número.', 'No hagas clic en ningún enlace que incluya.', 'No facilites ningún dato ni código de verificación.'],
+    alto:    ['Evita responder o hacer clic en el enlace hasta confirmarlo.', 'No facilites códigos de verificación ni datos bancarios.'],
+    medio:   ['Verifica al remitente o el número por un canal oficial antes de actuar.', 'No introduzcas datos personales a partir de este mensaje.'],
+    bajo:    ['No se han detectado señales graves, pero confirma el origen antes de confiar del todo.'],
+    ninguno: ['No se han detectado señales de riesgo relevantes. Aun así, nunca compartas un código de verificación con nadie.'],
+  },
+  archivos: {
+    critico: ['No abras ni ejecutes este archivo.', 'Si ya lo has abierto, desconecta el dispositivo de la red y analízalo con un antivirus.', 'No lo reenvíes a nadie más.'],
+    alto:    ['Evita abrir el archivo hasta analizarlo con un antivirus actualizado.', 'No lo ejecutes ni actives macros si es un documento ofimático.'],
+    medio:   ['Analízalo con un antivirus antes de abrirlo con normalidad.', 'Si es un documento, no actives macros ni contenido "editable" sin verificar antes su origen.'],
+    bajo:    ['No se han detectado señales graves, pero conviene analizarlo con un antivirus antes de confiar del todo.'],
+    ninguno: ['No se han detectado señales de riesgo relevantes en este archivo. Aun así, confirma que viene de una fuente que reconoces.'],
+  },
+};
+function scoreTier(score){
+  if(score >= 60) return 'critico';
+  if(score >= 35) return 'alto';
+  if(score >= 15) return 'medio';
+  if(score > 0)   return 'bajo';
+  return 'ninguno';
+}
+function renderActionChecklist(score, moduleType){
+  const list = (ACTION_CHECKLISTS[moduleType] || ACTION_CHECKLISTS.url)[scoreTier(score)];
+  const heading = score >= 15 ? '✅ Qué hacer' : '💡 Recomendación';
+  return `<div class="action-checklist only-basico">
+    <h3 style="font-family:var(--mono);font-size:12.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin:0 0 8px;">${heading}</h3>
+    <ul class="action-list">${list.map(a=>`<li>${score>=15?'❌ ':'• '}${escapeHtml(a)}</li>`).join('')}</ul>
+  </div>`;
+}
+// Lista de señales en lenguaje llano (Modo Básico): usa el texto "basic" que cada
+// finding pueda traer ya reescrito a mano; si un módulo todavía no lo tiene curado,
+// cae en el título técnico existente (ya revisado en sesiones anteriores) en vez de
+// inventar una simplificación nueva sin verificar. El botón "Explícamelo..." añade un
+// tercer nivel opcional (campo "eli5", con analogías) para quien necesita algo más
+// que lenguaje llano — de momento solo curado a mano para el módulo de URLs; el resto
+// cae en "basic" y, en último caso, en el título técnico.
+function renderFindingsBasic(findings){
+  const concerning = findings.filter(f=>f.sev!=='ok');
+  if(!concerning.length){
+    return `<div class="basic-findings only-basico"><p class="basic-safe">✅ No hemos encontrado señales preocupantes.</p></div>`;
+  }
+  const n = concerning.length;
+  const items = concerning.map(f=>`<li>${escapeHtml(f.basic || f.title)}</li>`).join('');
+  const eli5Items = concerning.map(f=>`<li>${escapeHtml(f.eli5 || f.basic || f.title)}</li>`).join('');
+  return `<div class="basic-findings only-basico">
+    <p class="basic-count">Hemos encontrado ${n} señal${n===1?'':'es'} preocupante${n===1?'':'s'}.</p>
+    <ol class="basic-signal-list">${items}</ol>
+    <details class="eli5-details">
+      <summary class="eli5-summary">🧑‍🏫 Explícamelo como si no supiera de ciberseguridad</summary>
+      <ul class="eli5-list">${eli5Items}</ul>
+    </details>
+  </div>`;
+}
+
+setResultMode(getResultMode()); // aplica la clase mode-avanzado en <body> según lo guardado (o básico por defecto)
+
 function scoreLabel(score){
   if(score >= 60) return {label:'Riesgo crítico', color:'var(--danger)'};
   if(score >= 35) return {label:'Riesgo alto', color:'var(--danger)'};
@@ -1516,12 +1758,19 @@ function renderExplanation(findings){
    ✗ crítico) y añade debajo la explicación didáctica del más relevante.
    Al vivir aquí, todos los módulos de Vigía heredan este formato enriquecido
    sin tener que tocar cada motor de análisis por separado. */
-function renderFindings(findings){
+function renderFindings(findings, moduleType){
   const good = findings.filter(f=>f.sev==='ok');
   const warn = findings.filter(f=>f.sev==='low' || f.sev==='med');
   const bad  = findings.filter(f=>f.sev==='high');
   const bullets = [...good, ...warn, ...bad].map(renderFinding).join('');
-  return `<div class="factors-list">${bullets}</div>${renderExplanation(findings)}`;
+  const score = computeScore(findings);
+  return renderActionChecklist(score, moduleType)
+    + renderFindingsBasic(findings)
+    + `<div class="factors-list only-avanzado">${bullets}${renderExplanation(findings)}</div>`
+    + `<button type="button" class="btn ghost result-mode-quick-toggle mt">
+         <span class="only-basico">Ver detalles técnicos →</span>
+         <span class="only-avanzado">← Volver a resultado sencillo</span>
+       </button>`;
 }
 
 /* ---------------- Historial local ---------------- */
@@ -1693,7 +1942,7 @@ function renderDashboard(){
 
   // Últimos análisis (los más recientes de todo el historial, no solo de hoy)
   if(!hist.length){
-    recentEl.innerHTML = '<p class="hint">Todavía no hay análisis guardados. Empieza por cualquiera de los accesos rápidos de abajo.</p>';
+    recentEl.innerHTML = '<p class="hint">Todavía no hay análisis guardados. Empieza desde <b style="color:var(--text);">Inicio</b> o <b style="color:var(--text);">Analizar</b>, en la barra de arriba.</p>';
   } else {
     const kindLabel = {url:'URL', email:'Correo', app:'App', sms:'SMS/Tel', archivo:'Archivo'};
     recentEl.innerHTML = hist.slice(0,8).map(h=>{
@@ -1708,23 +1957,11 @@ function renderDashboard(){
     }).join('');
   }
 
-  // Primera visita (sin historial todavía): la promesa de Vigía es "pega algo y compruébalo
-  // en segundos", así que "Accesos rápidos" —lo único accionable de todo el Dashboard— se
-  // sube justo debajo de los contadores en vez de dejarlo al final de una pantalla larga de
-  // tarjetas vacías. En cuanto hay al menos un análisis guardado, vuelve a su sitio habitual
-  // (después de "Últimos análisis"). Idempotente: no pasa nada si ya estaba en su sitio.
-  const quickAccessCard = document.getElementById('dash-quickaccess-card');
-  const intelCard = document.getElementById('dash-intel-card');
-  const recentCard = document.getElementById('dash-recent-card');
-  if(quickAccessCard && intelCard && recentCard){
-    if(!hist.length){
-      if(intelCard.previousElementSibling !== quickAccessCard){
-        intelCard.parentNode.insertBefore(quickAccessCard, intelCard);
-      }
-    } else if(recentCard.nextElementSibling !== quickAccessCard){
-      recentCard.parentNode.insertBefore(quickAccessCard, recentCard.nextElementSibling);
-    }
-  }
+  // "Accesos rápidos" vivía aquí antes de que existiera la pestaña "Analizar" dedicada a
+  // exactamente eso; se retiró de Mis análisis por redundante (dos caminos al mismo sitio
+  // dentro de una barra de 5 pestañas es ruido, no ayuda). El hueco que dejó el CTA en el
+  // primer uso (sin historial) ya lo cubre la propia pestaña "Inicio", que es la de entrada
+  // por defecto y no depende de que el usuario llegue primero a Mis análisis.
 
   renderIntelCenter(hist);
 }
@@ -1852,9 +2089,9 @@ function renderIntelCenter(hist){
   if(!el) return;
 
   // En el primer uso (sin historial todavía) no tiene sentido pintar 13 tarjetas repitiendo,
-  // cada una con su propia frase, que "todavía no hay datos": es la pantalla de bienvenida
-  // real de la app y una pared de vacío no ayuda a nadie. Un único mensaje explica lo mismo
-  // en un vistazo, y "Accesos rápidos" (reordenado más arriba en este caso) hace el resto.
+  // cada una con su propia frase, que "todavía no hay datos": es contenido secundario y una
+  // pared de vacío no ayuda a nadie. Un único mensaje explica lo mismo en un vistazo — el
+  // punto de entrada real para el primer análisis es la pestaña "Inicio", no este panel.
   if(!hist.length){
     el.innerHTML = `<div class="card" style="text-align:center;padding:22px 16px;">
       <p class="hint" style="margin:0;">Aquí verás patrones repetidos entre tus análisis —dominios, IPs, remitentes, trackers...— en cuanto guardes el primero. De momento no hay nada que agregar.</p>
@@ -2181,6 +2418,10 @@ document.querySelectorAll('#panel-guia .tabbtn-inline button').forEach(btn=>{
   });
 });
 
+document.querySelectorAll('.mode-switch-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=> setResultMode(btn.dataset.mode));
+});
+
 document.querySelectorAll('#panel-ajustes .tabbtn-inline button').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     document.querySelectorAll('#panel-ajustes .tabbtn-inline button').forEach(b=>b.classList.remove('active'));
@@ -2278,7 +2519,7 @@ document.getElementById('glosario-search').addEventListener('input', (e)=>render
 
 const FAQ = [
   { q:'¿Quién ha hecho Vigía? ¿Está creado por Inteligencia Artificial?', a:'Vigía es un proyecto personal de Jorge Bayán Escobar, creado conjuntamente con ayuda de IA. No es una herramienta generada de forma automática ni sin supervisión. La IA ha asistido a escribir e iterar el código, pero cada decisión de fondo la toma el autor: qué se construye y qué se descarta, cómo se valida cada función antes de incluirse, y la propia filosofía de la app (local-first, sin dependencias frágiles, sin simular resultados que no se puedan garantizar de verdad). Buena parte de las funciones se han validado con pruebas reales antes de entregarse, por ejemplo, certificados X.509 generados a mano para probar el analizador de apps, o los hashes de integridad (SRI) de las librerías externas, que el propio autor generó y verificó con sus propias herramientas. Es, en resumen, un desarrollo asistido por IA pero dirigido, revisado y decidido por una persona, no una app "hecha sola".' },
-  { q:'¿Qué es Vigía exactamente?', a:'Una app que analiza URLs, correos, SMS, apps, imágenes, documentos y más, en busca de señales conocidas de phishing, malware y fraude. Funciona como apoyo antes de abrir algo que te genera dudas, no como un antivirus completo.' },
+  { q:'¿Qué es Vigía exactamente?', a:'Una app que analiza URLs, correos, SMS, apps, imágenes, documentos y más, en busca de señales conocidas de phishing, malware y fraude. Pegas o subes lo que te genera dudas, y Vigía lo analiza al momento en tu propio navegador, sin que nada salga de tu dispositivo salvo que tú lo pidas expresamente (por ejemplo, para ver a dónde lleva realmente un enlace acortado) — y siempre de forma puntual, nunca automática. Funciona como apoyo antes de abrir algo que te genera dudas, no como un antivirus completo.' },
   { q:'¿Vigía sustituye a un antivirus o a mi banco avisándome de fraudes?', a:'No. Vigía es un complemento heurístico: te ayuda a detectar señales de riesgo con la información que le das, pero no analiza el comportamiento en tiempo real de tu dispositivo ni tiene una base de datos oficial de amenazas conocidas como sí tienen los antivirus.' },
   { q:'¿Qué tipo de amenazas NO puede detectar Vigía?', a:'Al analizar solo la estructura de lo que le das (sin ejecutar nada ni observar comportamiento en tiempo real), a Vigía se le escapan por diseño cosas como: malware polimórfico que cambia de forma para evadir cada análisis; payloads que se descargan después de superar la primera comprobación; vulnerabilidades de día cero (zero-day) aún desconocidas; campañas de phishing dirigido (spear-phishing) muy elaboradas y personalizadas sin los patrones típicos; o una amenaza ya activa en internet hoy mismo pero con una estructura "limpia" (sin typosquatting, sin TLD sospechoso). Es una capa de detección temprana de patrones conocidos, no un motor antivirus con inteligencia de amenazas en tiempo real. Combínalo siempre con tu propio criterio y con un antivirus/MTD real en tu dispositivo.' },
   { q:'¿Vigía funciona sin conexión a internet? ¿Y para instalarla o llegar a ella?', a:'Para abrir Vigía por primera vez, o para instalarla como app, siempre hace falta conexión, igual que para entrar en cualquier página web. Una vez que la has cargado al menos una vez, la app "recuerda" su propia interfaz y el motor de análisis básico (URLs, SMS, cálculo de hashes, heurísticas de texto…), así que muchos análisis pueden seguir funcionando después sin conexión. Pero ojo: eso NO incluye las consultas a servicios de terceros (comprobar un WHOIS, resolver un DNS, geolocalizar una IP, consultar VirusTotal) ni las herramientas que se cargan bajo demanda la primera vez que las usas (exportar a PDF, leer un QR desde imagen, descomprimir un ZIP, hacer OCR en una captura). Todo eso sigue necesitando conexión cada vez, esté o no instalada la app.' },
@@ -2546,7 +2787,7 @@ document.addEventListener('click', async (e)=>{
       findings.push({sev:'low', title:'No se pudo consultar RDAP (WHOIS)', desc:'El registro de este dominio puede no exponer RDAP públicamente, o bloquear peticiones directas desde el navegador (' + (err.message||'error') + ').'});
     }
   }
-  box.innerHTML = renderFindings(findings);
+  box.innerHTML = renderFindings(findings, 'url');
   btn.disabled = false;
   btn.textContent = originalText;
 });
@@ -2584,7 +2825,7 @@ function analyzeSingleUrl(raw){
 
   // 1. Protocolo sin cifrar
   if(u.protocol === 'http:'){
-    findings.push({sev:'med', title:'Conexión sin cifrar (HTTP)', desc:'El sitio no usa HTTPS, por lo que los datos viajarían sin cifrar. Legítimo en muy pocos casos hoy en día.'});
+    findings.push({sev:'med', title:'Conexión sin cifrar (HTTP)', basic:'La conexión no está cifrada (no usa HTTPS).', eli5:'Es como enviar una postal en vez de una carta cerrada: cualquiera que esté en el camino podría leer lo que escribes, incluidas contraseñas.', desc:'El sitio no usa HTTPS, por lo que los datos viajarían sin cifrar. Legítimo en muy pocos casos hoy en día.'});
   } else if(u.protocol === 'https:'){
     findings.push({sev:'ok', title:'HTTPS válido', desc:'La conexión con este dominio va cifrada. Esto protege los datos en tránsito, pero no dice nada sobre si el propio sitio es de confianza. Un sitio de phishing también puede tener HTTPS.'});
   }
@@ -2592,7 +2833,7 @@ function analyzeSingleUrl(raw){
   // 2. Host como dirección IP literal
   const isIpHost = /^(\d{1,3}\.){3}\d{1,3}$/.test(host) || (/^\[?[0-9a-f:]+\]?$/i.test(host) && host.includes(':'));
   if(isIpHost){
-    findings.push({sev:'high', title:'El dominio es una dirección IP', desc:'Los enlaces legítimos casi nunca usan una IP directa en vez de un nombre de dominio. Es una técnica común para evadir listas de bloqueo.'});
+    findings.push({sev:'high', title:'El dominio es una dirección IP', basic:'El enlace usa una dirección numérica en vez de un nombre de dominio, algo muy raro en un sitio legítimo.', eli5:'Es como si alguien te diera solo un número de teléfono suelto, sin nombre en la agenda, en vez de decirte quién es. Los sitios de confianza casi siempre usan un nombre, no un número pelado.', desc:'Los enlaces legítimos casi nunca usan una IP directa en vez de un nombre de dominio. Es una técnica común para evadir listas de bloqueo.'});
   } else {
     findings.push({sev:'ok', title:'Usa un nombre de dominio, no una IP directa', desc:'Los enlaces que ocultan una IP literal en vez de un dominio son mucho más frecuentes en tráfico malicioso.'});
   }
@@ -2603,10 +2844,10 @@ function analyzeSingleUrl(raw){
   if(hasPunycode){
     let decodedHost = host;
     try{ decodedHost = decodePunycodeHost(host); }catch(e){}
-    findings.push({sev:'high', title:'Dominio internacionalizado (punycode)', desc:`El dominio usa codificación punycode (xn--), habitual en ataques de homógrafos donde letras de otros alfabetos imitan visualmente a un dominio conocido.${decodedHost!==host?`\nTexto visual real: "${decodedHost}". Compáralo con la marca que crees reconocer.`:''}`});
+    findings.push({sev:'high', title:'Dominio internacionalizado (punycode)', basic:'El dominio usa un truco de codificación para parecerse visualmente a otro conocido.', eli5:'El dominio usa letras que se ven casi iguales a las nuestras pero no son exactamente las mismas — como confundir una letra griega con una nuestra porque en pantalla se ven casi idénticas.', desc:`El dominio usa codificación punycode (xn--), habitual en ataques de homógrafos donde letras de otros alfabetos imitan visualmente a un dominio conocido.${decodedHost!==host?`\nTexto visual real: "${decodedHost}". Compáralo con la marca que crees reconocer.`:''}`});
   }
   if(hasMixed){
-    findings.push({sev:'high', title:'Mezcla de alfabetos en el dominio', desc:'El nombre de dominio combina caracteres de distintos sistemas de escritura, un patrón típico de suplantación visual (homógrafos).'});
+    findings.push({sev:'high', title:'Mezcla de alfabetos en el dominio', basic:'El nombre del dominio mezcla letras de alfabetos distintos para parecerse a otro dominio conocido.', eli5:'Mezcla letras de dos alfabetos distintos que se ven casi iguales en pantalla, como confundir una letra "o" normal con un cero, pero puesto ahí a propósito para despistar.', desc:'El nombre de dominio combina caracteres de distintos sistemas de escritura, un patrón típico de suplantación visual (homógrafos).'});
   }
   if(!hasPunycode && !hasMixed){
     findings.push({sev:'ok', title:'Sin homógrafos ni codificación punycode', desc:'El dominio no combina alfabetos distintos ni usa codificación internacionalizada. Descarta la técnica de suplantación visual más habitual.'});
@@ -2614,18 +2855,18 @@ function analyzeSingleUrl(raw){
 
   // 5. Arroba en la URL
   if(fullUrl.includes('@') && fullUrl.indexOf('@') > fullUrl.indexOf('//')+2){
-    findings.push({sev:'high', title:'Símbolo "@" en la URL', desc:'Todo lo anterior al "@" se ignora como host real. Es una técnica clásica para disfrazar el verdadero destino tras un texto que parece de confianza.'});
+    findings.push({sev:'high', title:'Símbolo "@" en la URL', basic:'La dirección oculta su verdadero destino detrás de un símbolo "@".', eli5:'Todo lo que va antes del símbolo "@" es solo decoración: el sitio real es lo que va después. Es como si te dieran una dirección que empieza con el nombre de tu banco, pero en realidad te lleva a una calle completamente distinta.', desc:'Todo lo anterior al "@" se ignora como host real. Es una técnica clásica para disfrazar el verdadero destino tras un texto que parece de confianza.'});
   }
 
   // 6. Acortador de enlaces
   if(URL_SHORTENERS.includes(host)){
-    findings.push({sev:'med', title:'Servicio acortador de enlaces', desc:'No es posible saber el destino final sin visitarlo. Amplíalo primero con una herramienta de vista previa (ver enlaces de verificación manual) antes de hacer clic.'});
+    findings.push({sev:'med', title:'Servicio acortador de enlaces', basic:'El enlace utiliza una dirección acortada que oculta el destino.', eli5:'Es como recibir un paquete envuelto sin ninguna etiqueta: no sabes qué hay dentro hasta que lo abres. El enlace acortado esconde a dónde te lleva realmente hasta que haces clic.', desc:'No es posible saber el destino final sin visitarlo. Amplíalo primero con una herramienta de vista previa (ver enlaces de verificación manual) antes de hacer clic.'});
   }
 
   // 7. TLD sospechoso
   const tld = host.split('.').pop();
   if(SUSPICIOUS_TLDS.includes(tld)){
-    findings.push({sev:'med', title:`Dominio de nivel superior de riesgo elevado (.${tld})`, desc:'Este TLD es gratuito o muy barato de registrar y se usa desproporcionadamente en campañas de phishing. No es una prueba definitiva, pero suma sospecha.'});
+    findings.push({sev:'med', title:`Dominio de nivel superior de riesgo elevado (.${tld})`, basic:`Usa una extensión de dominio (.${tld}) muy asociada a campañas de phishing.`, eli5:'Algunas terminaciones de dominio son casi gratis y muy fáciles de conseguir sin dar ningún dato real, así que son las favoritas de quien monta una web falsa y la abandona a los pocos días.', desc:'Este TLD es gratuito o muy barato de registrar y se usa desproporcionadamente en campañas de phishing. No es una prueba definitiva, pero suma sospecha.'});
   } else {
     findings.push({sev:'ok', title:`Extensión de dominio habitual (.${tld})`, desc:'Este TLD no está en nuestra lista de extensiones desproporcionadamente asociadas a phishing masivo.'});
   }
@@ -2633,13 +2874,13 @@ function analyzeSingleUrl(raw){
   // 8. Subdominios excesivos
   const subCount = host.split('.').length - 2;
   if(subCount >= 3){
-    findings.push({sev:'med', title:'Número inusual de subdominios', desc:`El host tiene ${subCount+2} niveles (${host}). Se usa a veces para simular una marca en un subdominio mientras el dominio real queda escondido al final.`});
+    findings.push({sev:'med', title:'Número inusual de subdominios', basic:'Tiene un número inusual de partes en el dominio, una técnica para camuflar el dominio real.', eli5:'El dominio tiene tantas partes seguidas que es fácil perderse — el nombre en el que confías puede estar escondido en medio, no al final, que es la parte que realmente importa.', desc:`El host tiene ${subCount+2} niveles (${host}). Se usa a veces para simular una marca en un subdominio mientras el dominio real queda escondido al final.`});
   }
 
   // 9. Guiones múltiples
   const hyphens = (host.match(/-/g)||[]).length;
   if(hyphens >= 3){
-    findings.push({sev:'low', title:'Muchos guiones en el dominio', desc:'Los dominios con varios guiones seguidos suelen generarse automáticamente para campañas de phishing masivo.'});
+    findings.push({sev:'low', title:'Muchos guiones en el dominio', basic:'El dominio tiene muchos guiones seguidos, típico de generación automática masiva.', eli5:'Tantos guiones seguidos no los escribe una persona a mano: son típicos de programas que generan automáticamente cientos de dominios parecidos de golpe.', desc:'Los dominios con varios guiones seguidos suelen generarse automáticamente para campañas de phishing masivo.'});
   }
 
   // 10. Typosquatting contra marcas conocidas
@@ -2660,7 +2901,7 @@ function analyzeSingleUrl(raw){
   }
   let brandMismatchFound = false;
   if(brandHit){
-    findings.push({sev:'high', title:`Posible imitación del dominio de "${brandHit.brand}"`, desc:`El fragmento "${brandHit.token}" dentro de "${host}" se parece mucho a "${brandHit.brand}" (distancia de edición ${brandHit.dist}). Es el patrón típico de typosquatting: cambiar una letra para engañar a simple vista.`});
+    findings.push({sev:'high', title:`Posible imitación del dominio de "${brandHit.brand}"`, basic:`El nombre intenta parecerse al de "${brandHit.brand}".`, eli5:`Es parecido a escribir "${brandHit.brand}" pero cambiar una letra por otra para engañarte a simple vista, como cambiar una "o" por un cero.`, desc:`El fragmento "${brandHit.token}" dentro de "${host}" se parece mucho a "${brandHit.brand}" (distancia de edición ${brandHit.dist}). Es el patrón típico de typosquatting: cambiar una letra para engañar a simple vista.`});
     brandMismatchFound = true;
   }
   // Marca mencionada literalmente pero en un dominio que no le pertenece
@@ -2670,7 +2911,7 @@ function analyzeSingleUrl(raw){
     if(hostNoTld.replace(/[-.]/g,'').includes(brand)){
       const looksOfficial = isKnownOfficialDomain(host, brand);
       if(!looksOfficial){
-        findings.push({sev:'high', title:`Nombre de marca "${brand}" dentro de un dominio ajeno`, desc:`El dominio "${host}" incluye el nombre "${brand}" pero no es su dominio oficial. Es habitual meter el nombre de la marca en un subdominio o como palabra suelta para generar confianza falsa.`});
+        findings.push({sev:'high', title:`Nombre de marca "${brand}" dentro de un dominio ajeno`, basic:`El dominio utilizado es diferente del oficial de "${brand}", aunque incluya su nombre.`, eli5:`El nombre "${brand}" está ahí, pero metido en una dirección que no le pertenece — como si alguien pusiera el logo de tu banco en la puerta de una tienda que no tiene nada que ver con él.`, desc:`El dominio "${host}" incluye el nombre "${brand}" pero no es su dominio oficial. Es habitual meter el nombre de la marca en un subdominio o como palabra suelta para generar confianza falsa.`});
         brandMismatchFound = true;
       }
       break;
@@ -2685,7 +2926,7 @@ function analyzeSingleUrl(raw){
   const hostAndPath = (hostNoTld + ' ' + u.pathname).toLowerCase();
   const bankingHit = bankingWords.filter(w=>hostAndPath.includes(w));
   if(bankingHit.length){
-    findings.push({sev: brandMismatchFound ? 'med' : 'low', title:'Contiene palabras asociadas a banca', desc:`Incluye términos como "${bankingHit.join(', ')}". No es sospechoso por sí solo, pero combinado con otras señales (como imitar una marca) es un patrón muy propio del phishing bancario.`});
+    findings.push({sev:'low', title:'Contiene palabras asociadas a banca', basic:'Incluye palabras relacionadas con banca o pagos en el propio dominio o dirección.', eli5:'Menciona dinero, cuentas o pagos sin ser necesariamente la web de un banco — como un cartel en la calle que dice "oferta bancaria" sin que haya ningún banco real detrás.', desc:`Incluye términos como "${bankingHit.join(', ')}". No es sospechoso por sí solo, pero combinado con otras señales (como imitar una marca, ya contabilizada aparte) es un patrón muy propio del phishing bancario.`});
   }
 
   // 11. Palabras de urgencia/credenciales combinadas con marca en la ruta
@@ -2693,21 +2934,21 @@ function analyzeSingleUrl(raw){
   const credWords = ['login','signin','verify','secure','account','update','confirm','password','wallet','billing'];
   const credHit = credWords.filter(w=>pathAndQuery.includes(w));
   if(credHit.length && (brandHit || BRANDS.some(b=>hostNoTld.includes(b)))){
-    findings.push({sev:'med', title:'Ruta con palabras de credenciales junto a nombre de marca', desc:`La URL combina términos como "${credHit.join(', ')}" con el nombre de una marca conocida, un patrón muy común en páginas de phishing que imitan formularios de acceso.`});
+    findings.push({sev:'med', title:'Ruta con palabras de credenciales junto a nombre de marca', basic:'Combina palabras como "acceso" o "verificar" con el nombre de una marca conocida, típico de una página que imita un formulario de acceso.', eli5:'La dirección combina palabras como "entrar" o "verificar" junto al nombre de una marca conocida — el patrón exacto de una página hecha para que metas tu contraseña pensando que es la de verdad.', desc:`La URL combina términos como "${credHit.join(', ')}" con el nombre de una marca conocida, un patrón muy común en páginas de phishing que imitan formularios de acceso.`});
   }
 
   // 12. Longitud y parámetros excesivos
   if(fullUrl.length > 120){
-    findings.push({sev:'low', title:'URL inusualmente larga', desc:'Las URLs muy largas a veces se usan para ocultar el dominio real al principio de una barra de direcciones truncada en móvil.'});
+    findings.push({sev:'low', title:'URL inusualmente larga', basic:'Es una dirección inusualmente larga, a veces usada para ocultar el dominio real.', eli5:'Una dirección tan larga es difícil de leer entera, sobre todo en el móvil — y eso es precisamente lo que se busca: que no llegues a ver la parte que delataría el engaño.', desc:'Las URLs muy largas a veces se usan para ocultar el dominio real al principio de una barra de direcciones truncada en móvil.'});
   }
   const paramCount = [...u.searchParams].length;
   if(paramCount >= 7){
-    findings.push({sev:'low', title:'Gran cantidad de parámetros en la URL', desc:'Muchos parámetros de seguimiento no son señal directa de riesgo, pero conviene revisar si alguno contiene datos sensibles expuestos.'});
+    findings.push({sev:'low', title:'Gran cantidad de parámetros en la URL', basic:'Tiene muchos parámetros añadidos al final de la dirección.', eli5:'Tiene muchísimos añadidos al final de la dirección — no es peligroso por sí solo, pero a veces se usa para colar información sin que te des cuenta.', desc:'Muchos parámetros de seguimiento no son señal directa de riesgo, pero conviene revisar si alguno contiene datos sensibles expuestos.'});
   }
 
   // 13. Doble extensión / TLD falso en subdominio
   if(/\.(com|net|org|es|gov|edu|mx|ar|co)[-.]/.test(host) && !host.startsWith('www.')){
-    findings.push({sev:'med', title:'Posible TLD falso incrustado', desc:'El dominio contiene una extensión conocida (p. ej. ".com-") en medio del nombre, una técnica para aparentar un dominio legítimo seguido de texto adicional real.'});
+    findings.push({sev:'med', title:'Posible TLD falso incrustado', basic:'El dominio imita el patrón de una extensión conocida (como ".com") en mitad del nombre.', eli5:'Incluye algo como ".com" en mitad del nombre, no al final — como poner un sello oficial falso en un sitio que no lo es, para que lo veas de reojo y te fíes sin mirar dos veces.', desc:'El dominio contiene una extensión conocida (p. ej. ".com-") en medio del nombre, una técnica para aparentar un dominio legítimo seguido de texto adicional real.'});
   }
 
   if(findings.length === 0){
@@ -2717,7 +2958,7 @@ function analyzeSingleUrl(raw){
   // 14. Entropía del dominio (detección de dominios generados algorítmicamente, tipo DGA)
   const domainEntropy = shannonEntropy(new TextEncoder().encode(hostFlat));
   if(hostFlat.length >= 8 && domainEntropy >= 3.6){
-    findings.push({sev:'med', title:`Entropía elevada en el nombre de dominio (${domainEntropy.toFixed(2)} bits/carácter)`, desc:'Un nombre con distribución de caracteres muy uniforme (poco "pronunciable") es típico de dominios generados algorítmicamente (DGA), usados por malware y campañas automatizadas para esquivar listas de bloqueo.'});
+    findings.push({sev:'med', title:`Entropía elevada en el nombre de dominio (${domainEntropy.toFixed(2)} bits/carácter)`, basic:'El nombre del dominio parece generado automáticamente, sin relación con una palabra reconocible.', eli5:'El nombre del dominio parece un conjunto de letras al azar, sin ninguna palabra real detrás — muy típico de programas que generan dominios nuevos automáticamente cada pocas horas.', desc:'Un nombre con distribución de caracteres muy uniforme (poco "pronunciable") es típico de dominios generados algorítmicamente (DGA), usados por malware y campañas automatizadas para esquivar listas de bloqueo.'});
   }
 
   // 15. Huella estructural local (no criptográfica) — para detectar patrones repetidos en tu Historial
@@ -2731,7 +2972,7 @@ function analyzeSingleUrl(raw){
 
 function renderUrlResult(res){
   if(res.error){
-    return `<div class="card"><div class="hint" style="font-family:var(--mono);margin-bottom:8px;">${escapeHtml(res.raw)}</div>${renderFindings(res.findings)}</div>`;
+    return `<div class="card"><div class="hint" style="font-family:var(--mono);margin-bottom:8px;">${escapeHtml(res.raw)}</div>${renderFindings(res.findings, 'url')}</div>`;
   }
   const score = computeScore(res.findings);
   const brand = extractBrandTag(res.findings);
@@ -2761,7 +3002,7 @@ function renderUrlResult(res){
     ${renderVerdict(score, 'Basado en el patrón del texto de la URL, no en si el dominio está activo ahora mismo. Para confirmarlo, usa "Consultar DNS, ASN, WHOIS y si existe" más abajo.')}
     <div class="result-block">
       <h3>Hallazgos (${res.findings.length})</h3>
-      ${renderFindings(res.findings)}
+      ${renderFindings(res.findings, 'url')}
     </div>
     <div class="result-block">
       <h3>${isShortener ? '⚠ Enlace acortado: dirección final' : 'Dirección final y saltos de redirección'}</h3>
@@ -2853,7 +3094,7 @@ function renderChainHops(data){
     const finalRes = analyzeSingleUrl(finalUrl);
     if(!finalRes.error){
       const finalScore = computeScore(finalRes.findings);
-      finalAnalysisHtml = `<div class="mt"><h3 style="font-family:var(--mono);font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Análisis heurístico del destino final</h3>${renderVerdict(finalScore)}${renderFindings(finalRes.findings)}</div>`;
+      finalAnalysisHtml = `<div class="mt"><h3 style="font-family:var(--mono);font-size:12px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;">Análisis heurístico del destino final</h3>${renderVerdict(finalScore)}${renderFindings(finalRes.findings, 'url')}</div>`;
     }
   }
 
@@ -2968,7 +3209,7 @@ async function lookupIpGeoInfo(ip){
 
 function renderIpResult(res){
   if(res.error){
-    return `<div class="card"><div class="hint" style="font-family:var(--mono);margin-bottom:8px;">${escapeHtml(res.ip)}</div>${renderFindings(res.findings)}</div>`;
+    return `<div class="card"><div class="hint" style="font-family:var(--mono);margin-bottom:8px;">${escapeHtml(res.ip)}</div>${renderFindings(res.findings, 'url')}</div>`;
   }
   const score = computeScore(res.findings);
   saveHistory('url', res.ip, score);
@@ -2990,7 +3231,7 @@ function renderIpResult(res){
       ${exportButtonHtml(uid)}
     </div>
     ${renderVerdict(score)}
-    <div class="result-block"><h3>Hallazgos (${res.findings.length})</h3>${renderFindings(res.findings)}</div>
+    <div class="result-block"><h3>Hallazgos (${res.findings.length})</h3>${renderFindings(res.findings, 'url')}</div>
     ${res.isV4 ? `<div class="result-block">
       <h3>Geolocalización y organización (opcional)</h3>
       <p class="hint">Con tu permiso, se consulta un servicio externo (ipapi.co) para ver el país, ciudad aproximada y el proveedor/organización asociados a esta IP.</p>
@@ -3139,7 +3380,7 @@ document.getElementById('webrtc-leak-btn').addEventListener('click', async ()=>{
     box.innerHTML = `<div class="card">
       <div class="row" style="justify-content:flex-end;margin-bottom:4px;">${exportButtonHtml(uid)}</div>
       ${renderVerdict(score)}
-      <div class="result-block"><h3>Hallazgos (${findings.length})</h3>${renderFindings(findings)}</div>
+      <div class="result-block"><h3>Hallazgos (${findings.length})</h3>${renderFindings(findings, 'url')}</div>
       <p class="disclaimer"><b>Alcance:</b> comprueba fugas de IP por WebRTC en este navegador y las compara con tu IP pública vista por HTTP. No mide qué servidores DNS usa tu sistema. Para eso, usa la herramienta especializada de arriba.</p>
     </div>`;
     pulseSignal(score);
@@ -3502,7 +3743,7 @@ document.addEventListener('click', async (e)=>{
     btn.innerHTML = '<span class="spinner"></span> consultando DNS y verificando…';
     try{
       const res = await runFullEmailAuthCheck(uid);
-      box.innerHTML = res && res.findings.length ? renderFindings(res.findings) : '<p class="hint">No se pudo determinar nada adicional (sin dominio de remitente reconocible).</p>';
+      box.innerHTML = res && res.findings.length ? renderFindings(res.findings, 'email') : '<p class="hint">No se pudo determinar nada adicional (sin dominio de remitente reconocible).</p>';
       const authFail = res ? extractAuthFailTags(res.findings) : [];
       const ctx = emailAuthCache[uid];
       if(authFail.length && ctx && ctx.historyTs) augmentHistoryEntry(ctx.historyTs, {authFail});
@@ -3896,7 +4137,7 @@ document.getElementById('eml-analyze-btn').addEventListener('click', ()=>{
   out.innerHTML = `<div class="card">
     <div class="row" style="justify-content:flex-end;margin-bottom:4px;">${exportButtonHtml(uid)}</div>
     ${renderVerdict(score)}
-    <div class="result-block"><h3>Hallazgos (${res.findings.length})</h3>${renderFindings(res.findings)}</div>
+    <div class="result-block"><h3>Hallazgos (${res.findings.length})</h3>${renderFindings(res.findings, 'email')}</div>
   </div>${res.urlSection}
   <div class="card">${res.authSection}</div>
   <div class="card">${res.receivedSection}</div>
@@ -3984,7 +4225,7 @@ document.getElementById('sender-analyze-btn').addEventListener('click', ()=>{
       ${exportButtonHtml(pdfUid)}
     </div>
     ${renderVerdict(score)}
-    <div class="result-block"><h3>Hallazgos (${findings.length})</h3>${renderFindings(findings)}</div>
+    <div class="result-block"><h3>Hallazgos (${findings.length})</h3>${renderFindings(findings, 'email')}</div>
     ${domain ? `<div class="result-block">
       <h3>Comprobación de servidores de correo (MX)</h3>
       <p class="hint">Con tu permiso, se consulta un resolutor DNS público (Cloudflare) para ver si "${escapeHtml(domain)}" tiene servidores de correo configurados. Un dominio sin MX y sin web reales no puede recibir ni enviar correo de forma legítima, fuerte indicio de dominio inventado o inactivo.</p>
@@ -4077,7 +4318,7 @@ document.getElementById('shot-analyze-btn').addEventListener('click', async ()=>
     out.innerHTML = `<div class="card">
       <div class="row" style="justify-content:flex-end;margin-bottom:4px;">${exportButtonHtml(uid)}</div>
       ${renderVerdict(score, 'Basado en el texto reconocido por OCR, sin encabezados técnicos, el análisis de remitente es limitado.')}
-      <div class="result-block"><h3>Hallazgos (${res.findings.length})</h3>${renderFindings(res.findings)}</div>
+      <div class="result-block"><h3>Hallazgos (${res.findings.length})</h3>${renderFindings(res.findings, 'email')}</div>
       <div class="result-block"><h3>Texto reconocido</h3><textarea rows="5" readonly>${escapeHtml(text)}</textarea></div>
     </div>${res.urlSection}`;
     pulseSignal(score);
@@ -4245,7 +4486,7 @@ document.getElementById('app-analyze-btn').addEventListener('click', ()=>{
   out.innerHTML = `<div class="card">
     <div class="row" style="justify-content:flex-end;margin-bottom:4px;">${exportButtonHtml(uid)}</div>
     ${renderVerdict(score)}
-    <div class="result-block"><h3>Hallazgos (${findings.length})</h3>${renderFindings(findings)}</div>
+    <div class="result-block"><h3>Hallazgos (${findings.length})</h3>${renderFindings(findings, 'apps')}</div>
     <p class="disclaimer"><b>Recuerda:</b> este es un análisis heurístico de contexto declarado, pensado como <b>complemento</b> a tu solución MTD/EMM. No reemplaza el análisis estático/dinámico real del binario ni la telemetría de dispositivo.</p>
   </div>`;
   pulseSignal(score);
@@ -4750,7 +4991,7 @@ document.getElementById('appfile-analyze-btn').addEventListener('click', async (
     out.innerHTML = `<div class="card">
       <div class="row" style="justify-content:flex-end;margin-bottom:4px;">${exportButtonHtml(uid)}</div>
       ${renderVerdict(score)}
-      <div class="result-block"><h3>Hallazgos (${res.findings.length})</h3>${renderFindings(res.findings)}</div>
+      <div class="result-block"><h3>Hallazgos (${res.findings.length})</h3>${renderFindings(res.findings, 'apps')}</div>
       ${renderHashBlock(hash)}
       <p class="disclaimer"><b>Alcance:</b> extracción heurística de metadatos del paquete (${isApk?'APK':'IPA'}): permisos y permisos peligrosos, librerías/SDKs de terceros, trackers, SDKs de publicidad, Firebase, dominios embebidos, certificado de firma y detección de protectores/empaquetadores conocidos. No incluye análisis de código, comportamiento en ejecución, ni verificación criptográfica completa de la firma. Úsalo como apoyo, no como veredicto final de tu MTD.</p>
     </div>`;
@@ -4901,7 +5142,7 @@ function renderIosResult(app){
       ${exportButtonHtml(uid)}
     </div>
     ${renderVerdict(score)}
-    <div class="result-block"><h3>Hallazgos (${findings.length})</h3>${renderFindings(findings)}</div>
+    <div class="result-block"><h3>Hallazgos (${findings.length})</h3>${renderFindings(findings, 'apps')}</div>
     <div class="result-block">
       <h3>Dónde ver los permisos y el rastreo reales</h3>
       <p class="hint">Apple no publica los permisos/rastreadores por API. Ábrelo en la ficha oficial y revisa la sección "Privacidad de la app":</p>
@@ -4945,7 +5186,7 @@ function renderAndroidResult(parsed){
       ${exportButtonHtml(uid)}
     </div>
     ${renderVerdict(score)}
-    <div class="result-block"><h3>Hallazgos (${findings.length})</h3>${renderFindings(findings)}</div>
+    <div class="result-block"><h3>Hallazgos (${findings.length})</h3>${renderFindings(findings, 'apps')}</div>
     <div class="result-block">
       <h3>Dónde ver los permisos y rastreadores reales</h3>
       <p class="hint">Google no expone esta información por API pública. Consulta la sección "Seguridad de los datos" en la ficha oficial, y el informe independiente de εxodus (proyecto sin ánimo de lucro especializado en detectar rastreadores en apps Android):</p>
@@ -5112,7 +5353,7 @@ function analyzeConnectionLog(appName, rawText){
 function renderConnectionResult(host, findings){
   return `<div class="finding-wrap" style="margin-bottom:6px;">
     <div class="hint" style="font-family:var(--mono);font-size:12px;margin-bottom:4px;color:var(--text);">${escapeHtml(host)}</div>
-    ${renderFindings(findings)}
+    ${renderFindings(findings, 'apps')}
   </div>`;
 }
 
@@ -5390,7 +5631,7 @@ document.getElementById('sms-analyze-btn').addEventListener('click', ()=>{
   out.innerHTML = `<div class="card">
     <div class="row" style="justify-content:flex-end;margin-bottom:4px;">${exportButtonHtml(uid)}</div>
     ${renderVerdict(score)}
-    <div class="result-block"><h3>Hallazgos (${res.findings.length})</h3>${renderFindings(res.findings)}</div>
+    <div class="result-block"><h3>Hallazgos (${res.findings.length})</h3>${renderFindings(res.findings, 'sms')}</div>
     <p class="disclaimer"><b>Recuerda:</b> nunca compartas un código de verificación recibido por SMS, ni siquiera con quien dice representar a tu banco.</p>
   </div>${res.urlSection}${res.binSection}`;
   pulseSignal(score);
@@ -5477,7 +5718,7 @@ document.getElementById('phone-analyze-btn').addEventListener('click', ()=>{
       ${exportButtonHtml(uid)}
     </div>
     ${renderVerdict(score)}
-    <div class="result-block"><h3>Hallazgos (${findings.length})</h3>${renderFindings(findings)}</div>
+    <div class="result-block"><h3>Hallazgos (${findings.length})</h3>${renderFindings(findings, 'sms')}</div>
     <div class="result-block">
       <h3>Verificación manual recomendada</h3>
       <p class="hint">El formato no basta para confirmar si un número concreto está siendo usado para fraude ahora mismo. Contrástalo en directorios comunitarios:</p>
@@ -6009,7 +6250,7 @@ document.getElementById('image-analyze-btn').addEventListener('click', async ()=
         ${exportButtonHtml(uid)}
       </div>
       ${renderVerdict(score)}
-      <div class="result-block"><h3>Hallazgos (${res.findings.length})</h3>${renderFindings(res.findings)}</div>
+      <div class="result-block"><h3>Hallazgos (${res.findings.length})</h3>${renderFindings(res.findings, 'archivos')}</div>
       ${renderHashBlock(hash)}
     </div>${renderFileHyperlinks(res.urls)}
     <p class="disclaimer">Análisis heurístico local: cabeceras, datos tras el final del archivo, metadatos EXIF y (en SVG) código fuente. No sustituye un antivirus ni una sandbox especializada en esteganografía.</p>`;
@@ -6050,7 +6291,7 @@ document.getElementById('doc-analyze-btn').addEventListener('click', async ()=>{
         ${exportButtonHtml(uid)}
       </div>
       ${renderVerdict(score)}
-      <div class="result-block"><h3>Hallazgos (${res.findings.length})</h3>${renderFindings(res.findings)}</div>
+      <div class="result-block"><h3>Hallazgos (${res.findings.length})</h3>${renderFindings(res.findings, 'archivos')}</div>
       ${renderHashBlock(hash)}
     </div>${renderFileHyperlinks(res.hyperlinks)}
     <p class="disclaimer">Análisis heurístico local: macros, acciones automáticas, plantillas/objetos remotos e hipervínculos. No sustituye un antivirus ni un sandbox de detonación de documentos. Trata con especial cautela cualquier documento con macros de origen desconocido.</p>`;
@@ -6184,7 +6425,7 @@ function renderQrOutcome(decodedText, imgLabel){
     </div>
     <div class="hint" style="font-family:var(--mono);margin:8px 0 10px;word-break:break-all;padding:8px;background:#0C1424;border-radius:6px;">${escapeHtml(decodedText)}</div>
     ${renderVerdict(score)}
-    <div class="result-block"><h3>Hallazgos (${findings.length})</h3>${renderFindings(findings)}</div>
+    <div class="result-block"><h3>Hallazgos (${findings.length})</h3>${renderFindings(findings, 'archivos')}</div>
   </div>${extraHtml}`;
 }
 
@@ -6537,7 +6778,7 @@ document.getElementById('exe-analyze-btn').addEventListener('click', async ()=>{
         ${exportButtonHtml(uid)}
       </div>
       ${renderVerdict(score)}
-      <div class="result-block"><h3>Hallazgos (${res.findings.length})</h3>${renderFindings(res.findings)}</div>
+      <div class="result-block"><h3>Hallazgos (${res.findings.length})</h3>${renderFindings(res.findings, 'archivos')}</div>
       ${res.extraText ? `<div class="result-block"><h3>${escapeHtml(res.extraTitle)}</h3><textarea rows="4" readonly>${escapeHtml(res.extraText)}</textarea></div>` : ''}
       ${renderHashBlock(hash)}
     </div>${renderFileHyperlinks(res.urls)}
@@ -6768,7 +7009,7 @@ document.getElementById('archive-analyze-btn').addEventListener('click', async (
         ${exportButtonHtml(uid)}
       </div>
       ${renderVerdict(score)}
-      <div class="result-block"><h3>Hallazgos (${res.findings.length})</h3>${renderFindings(res.findings)}</div>
+      <div class="result-block"><h3>Hallazgos (${res.findings.length})</h3>${renderFindings(res.findings, 'archivos')}</div>
       ${renderHashBlock(hash)}
     </div>${renderArchiveListing(res.listing)}
     <p class="disclaimer">Análisis heurístico local del contenedor. Revisa individualmente cualquier archivo interno sospechoso en el sub-módulo correspondiente (imágenes, ejecutables/scripts, documentos) antes de abrirlo.</p>`;
