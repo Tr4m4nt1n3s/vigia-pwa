@@ -770,10 +770,10 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
 
     <details class="card" id="dash-intel-card">
       <summary style="cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:baseline;">
-        <h3 style="font-family:var(--mono);font-size:13px;color:var(--text);text-transform:uppercase;letter-spacing:.06em;margin:0;">🧠 Ver estadísticas avanzadas</h3>
-        <span class="hint" style="font-size:11px;">INTEL</span>
+        <h3 style="font-family:var(--mono);font-size:13px;color:var(--text);text-transform:uppercase;letter-spacing:.06em;margin:0;">🔁 Patrones detectados</h3>
+        <span class="hint" style="font-size:11px;">VER MÁS</span>
       </summary>
-      <p class="hint" style="font-size:12px;margin:12px 0;">Patrones agregados de tus análisis guardados (hasta las últimas 300 entradas), recalculados con los mismos motores que el resto de Vigía. Nada de esto se envía a ningún sitio.</p>
+      <p class="hint" style="font-size:12px;margin:12px 0;">Vigía ha detectado estos patrones repetidos en tus últimos análisis (hasta las últimas 300 entradas guardadas): dominios, IPs, remitentes... Nada de esto se envía a ningún sitio.</p>
       <div class="subgrid" id="dash-intel-grid" style="gap:10px;"></div>
     </details>
 
@@ -855,6 +855,11 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
     </div>
 
     <div class="card" id="ajustes-privacidad-block">
+      <div style="background:rgba(0,229,255,.06);border:1px solid rgba(0,229,255,.25);border-radius:10px;padding:14px 16px;margin-bottom:16px;">
+        <h3 style="font-family:var(--mono);font-size:13px;color:var(--text);margin:0 0 8px;">🔐 Tu información permanece en tu dispositivo</h3>
+        <p class="hint" style="margin:0 0 6px;color:var(--text);">Los análisis se realizan directamente en tu navegador. Vigía no recibe tus archivos, correos ni mensajes.</p>
+        <p class="hint" style="margin:0;">Algunas comprobaciones opcionales (por ejemplo, ver a dónde lleva realmente un enlace acortado, o consultar quién es el propietario de un dominio) necesitan preguntarle a un servicio externo. Vigía te lo indicará antes de hacerlo, y solo ocurre si tú lo pides expresamente pulsando ese botón concreto — nunca de forma automática.</p>
+      </div>
       <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text);">
         <input type="checkbox" id="private-mode-toggle" style="width:16px;height:16px;accent-color:var(--signal);cursor:pointer;">
         🕶️ Modo privado: no guardar nuevos análisis en el historial
@@ -1974,7 +1979,7 @@ function renderDashboard(){
   renderIntelCenter(hist);
 }
 
-/* ---------------- Centro de Inteligencia (mini-SIEM sobre el historial local) ---------------- */
+/* ---------------- Patrones detectados (antes "Centro de Inteligencia" — mini-SIEM sobre el historial local, renombrado en la auditoría UX a un nombre que describe lo que hace, no el concepto técnico que lo inspira) ---------------- */
 
 // Los 5 módulos de análisis usan exactamente estos 5 valores de "kind" en el historial
 // (confirmado en cada saveHistory() de la app) — mapeo directo, sin heurística añadida.
@@ -2121,14 +2126,14 @@ function renderIntelCenter(hist){
     renderIntelWidget('Actividad por módulo', '📊', activityItems, {truncate:30, emptyText:'Aún no hay análisis registrados.'}),
     renderIntelWidget('Distribución de riesgo global', '🚦', riskItems, {truncate:30, emptyText:'Aún no hay análisis registrados.'}),
     renderIntelWidget('Dominios más analizados', '🌐', intel.domains, {truncate:26}),
-    renderIntelWidget('Marcas más imitadas / typosquatting', '🎭', intel.brands, {emptyText:'Sin coincidencias todavía.', truncate:26}),
+    renderIntelWidget('Marcas más imitadas (webs que copian a otra)', '🎭', intel.brands, {emptyText:'Sin coincidencias todavía.', truncate:26}),
     renderIntelWidget('Patrones repetidos (URLs)', '🔁', intel.patterns, {truncate:34, emptyText:'Aún no hay suficientes análisis de URL para detectar patrones repetidos.'}),
     renderIntelWidget('IPs repetidas', '📍', intel.ips, {emptyText:'Ninguna IP analizada más de una vez todavía.'}),
-    renderIntelWidget('Hashes de archivo repetidos', '#️⃣', intel.hashes.map(([h,c])=>[h.slice(0,14)+'…', c]), {emptyText:'Sin archivos repetidos todavía. Se compara el SHA-256 de lo que analices en el módulo Archivos.'}),
+    renderIntelWidget('Archivos repetidos', '#️⃣', intel.hashes.map(([h,c])=>[h.slice(0,14)+'…', c]), {emptyText:'Sin archivos repetidos todavía. Vigía compara una huella digital única de lo que analices en el módulo Archivos.'}),
     renderIntelWidget('Correo: dominios de remitente repetidos', '✉️', intel.emailDomains, {truncate:26, emptyText:'Ningún dominio de remitente repetido todavía.'}),
-    renderIntelWidget('Correo: fallos de SPF/DKIM/DMARC', '🔏', intel.emailAuthFails, {emptyText:'Sin verificaciones de autenticación con fallos todavía. Usa "Verificar SPF/DKIM/DMARC" dentro de un análisis de correo para que este dato se recoja.'}),
+    renderIntelWidget('Correo: verificaciones de autenticidad fallidas', '🔏', intel.emailAuthFails, {emptyText:'Sin verificaciones de autenticación con fallos todavía. Usa "Verificar SPF / DKIM / DMARC" dentro de un análisis de correo para que este dato se recoja.'}),
     renderIntelWidget('Apps: editores/desarrolladores sospechosos', '🕵️', intel.editors, {truncate:26, emptyText:'Sin editores marcados como sospechosos todavía.'}),
-    renderIntelWidget('Apps: trackers/SDKs más comunes', '📡', intel.trackers, {truncate:26, emptyText:'Analiza un .apk/.ipa o un registro de conexiones para poblar este dato.'}),
+    renderIntelWidget('Apps: rastreadores/publicidad más comunes', '📡', intel.trackers, {truncate:26, emptyText:'Analiza un .apk / .ipa o un registro de conexiones para poblar este dato.'}),
     renderIntelWidget('SMS: remitentes con nombre repetidos', '🏷️', intel.smsSenders, {truncate:26, emptyText:'Ningún remitente de SMS repetido todavía.'}),
     renderIntelWidget('Teléfono: números repetidos', '📞', intel.phoneNumbers, {truncate:26, emptyText:'Ningún número de teléfono analizado más de una vez todavía.'}),
   ].join('');
@@ -2189,7 +2194,7 @@ function exportButtonHtml(uid){
 
 /* Hash SHA-256 compartido por los 4 analizadores de archivos (imágenes, documentos,
    ejecutables/scripts, comprimidos) — usado tanto en pantalla como en el
-   Centro de Inteligencia del Dashboard para detectar archivos repetidos. */
+   apartado "Patrones detectados" del Dashboard para detectar archivos repetidos. */
 async function computeFileHash(file){
   try{
     const buf = await file.arrayBuffer();
@@ -2480,7 +2485,7 @@ const GLOSARIO = [
   { t:'OTP / Código de verificación', i:'🔑', cat:'General', d:'Un código de un solo uso que te envían por SMS o app para confirmar que eres tú. Nunca debes compartirlo con nadie, ni siquiera con quien dice ser tu banco.' },
   { t:'VPN', i:'🛡️', cat:'General', d:'Una conexión que cifra tu tráfico y oculta tu IP real, normalmente para mayor privacidad al navegar.' },
   { t:'Antivirus / MTD', i:'🧯', cat:'General', d:'Software que analiza y bloquea amenazas en tu dispositivo. "MTD" (Mobile Threat Defense) es la versión pensada para móviles. Vigía es un complemento a estas herramientas, no un sustituto.' },
-  { t:'SIEM', i:'📊', cat:'General', d:'Sistema que usan los equipos de seguridad profesionales para reunir y analizar en un solo sitio todas las alertas de una organización. El "Centro de Inteligencia" del Dashboard de Vigía se inspira en esta idea, a pequeña escala.' },
+  { t:'SIEM', i:'📊', cat:'General', d:'Sistema que usan los equipos de seguridad profesionales para reunir y analizar en un solo sitio todas las alertas de una organización. El apartado "Patrones detectados" del Dashboard de Vigía se inspira en esta idea, a pequeña escala.' },
 
   // --- Términos añadidos tras las ampliaciones de correo, SMS, apps móviles, URLs y fugas de IP/DNS ---
   { t:'SPF (Sender Policy Framework)', i:'📤', cat:'Técnico', d:'Lista publicada por un dominio con los servidores autorizados a enviar correo en su nombre. Si un email dice venir de "tubanco.com" pero no sale de uno de esos servidores, el SPF debería marcarlo como sospechoso.' },
@@ -2531,7 +2536,7 @@ const FAQ = [
   { q:'¿Vigía sustituye a un antivirus o a mi banco avisándome de fraudes?', a:'No. Vigía es un complemento heurístico: te ayuda a detectar señales de riesgo con la información que le das, pero no analiza el comportamiento en tiempo real de tu dispositivo ni tiene una base de datos oficial de amenazas conocidas como sí tienen los antivirus.' },
   { q:'¿Qué tipo de amenazas NO puede detectar Vigía?', a:'Al analizar solo la estructura de lo que le das (sin ejecutar nada ni observar comportamiento en tiempo real), a Vigía se le escapan por diseño cosas como: malware polimórfico que cambia de forma para evadir cada análisis; payloads que se descargan después de superar la primera comprobación; vulnerabilidades de día cero (zero-day) aún desconocidas; campañas de phishing dirigido (spear-phishing) muy elaboradas y personalizadas sin los patrones típicos; o una amenaza ya activa en internet hoy mismo pero con una estructura "limpia" (sin typosquatting, sin TLD sospechoso). Es una capa de detección temprana de patrones conocidos, no un motor antivirus con inteligencia de amenazas en tiempo real. Combínalo siempre con tu propio criterio y con un antivirus/MTD real en tu dispositivo.' },
   { q:'¿Vigía funciona sin conexión a internet? ¿Y para instalarla o llegar a ella?', a:'Para abrir Vigía por primera vez, o para instalarla como app, siempre hace falta conexión, igual que para entrar en cualquier página web. Una vez que la has cargado al menos una vez, la app "recuerda" su propia interfaz y el motor de análisis básico (URLs, SMS, cálculo de hashes, heurísticas de texto…), así que muchos análisis pueden seguir funcionando después sin conexión. Pero ojo: eso NO incluye las consultas a servicios de terceros (comprobar un WHOIS, resolver un DNS, geolocalizar una IP, consultar VirusTotal) ni las herramientas que se cargan bajo demanda la primera vez que las usas (exportar a PDF, leer un QR desde imagen, descomprimir un ZIP, hacer OCR en una captura). Todo eso sigue necesitando conexión cada vez, esté o no instalada la app.' },
-  { q:'¿Mis datos se guardan en algún servidor?', a:'No. El historial de tus análisis se guarda únicamente en este navegador (localStorage), en tu propio dispositivo. Puedes borrarlo cuando quieras desde la pestaña Historial, o activar ahí mismo el "modo privado" para que los análisis dejen de guardarse desde ese momento.' },
+  { q:'¿Mis datos se guardan en algún servidor?', a:'No. Todo el análisis ocurre en tu propio navegador: cuando pegas o subes algo, Vigía nunca lo envía a ningún servidor propio, ni siquiera para analizarlo. El historial de tus análisis se guarda únicamente en este navegador (localStorage), en tu propio dispositivo. Puedes borrarlo cuando quieras desde la pestaña Análisis, o activar ahí mismo el "modo privado" para que los análisis dejen de guardarse desde ese momento. La única excepción son las comprobaciones opcionales que pulsas tú mismo (como resolver un enlace acortado o consultar un dominio), que sí consultan a un servicio externo — Vigía siempre te lo indica antes.' },
   { q:'Un análisis me ha dado "sin señales relevantes", ¿significa que es 100% seguro?', a:'No. Significa que no se ha detectado ninguno de los patrones que Vigía sabe reconocer, pero ningún analizador automático puede garantizar seguridad absoluta. Sigue aplicando el sentido común.' },
   { q:'¿Qué hago si un análisis me da un riesgo alto o crítico?', a:'No abras el enlace, no descargues el archivo, ni introduzcas datos personales. Si ya lo hiciste antes de analizarlo, cambia tus contraseñas y contacta con tu banco o la entidad implicada si compartiste datos sensibles.' },
   { q:'¿Por qué a veces me pide un código de verificación (OTP) que nunca debo compartir?', a:'Porque compartir ese código es, en la práctica, dar acceso a tu cuenta a quien te lo pida. Ninguna entidad legítima te lo pedirá nunca por teléfono, SMS o chat.' },
@@ -3805,19 +3810,19 @@ function analyzeEmailSource(source){
   if(fromAddr){
     for(const brand of BRANDS){
       if(displayName.includes(brand) && fromDomain && !fromDomain.includes(brand)){
-        findings.push({sev:'high', title:`El nombre mostrado imita a "${brand}" pero el dominio no coincide`, desc:`El remitente se muestra como "${escapeHtml(fromHeader)}", pero la dirección real es de "${fromDomain}". Es la técnica de suplantación de nombre visible más común.`});
+        findings.push({sev:'high', title:`El nombre mostrado imita a "${brand}" pero el dominio no coincide`, basic:`El correo dice ser de "${brand}", pero la dirección real detrás del nombre es otra.`, eli5:`Es como si alguien pusiera "Tu banco" en el remitente de una carta, pero al mirar el sobre la dirección de vuelta fuera la de un desconocido. El nombre se puede escribir como se quiera; la dirección real es lo único que no se puede fingir tan fácilmente.`, desc:`El remitente se muestra como "${escapeHtml(fromHeader)}", pero la dirección real es de "${fromDomain}". Es la técnica de suplantación de nombre visible más común.`});
         break;
       }
     }
   } else {
-    findings.push({sev:'low', title:'No se detectó cabecera "From" con formato reconocible', desc:'Si pegaste solo el cuerpo del correo sin encabezados, este análisis de remitente será limitado.'});
+    findings.push({sev:'low', title:'No se detectó cabecera "From" con formato reconocible', basic:'No se ha podido leer con claridad quién envía el correo, así que este análisis es más limitado.', eli5:'Es como intentar identificar quién te escribió una carta sin poder ver el remitente en el sobre — se puede leer el contenido, pero falta un dato importante para confirmar quién la mandó de verdad.', desc:'Si pegaste solo el cuerpo del correo sin encabezados, este análisis de remitente será limitado.'});
   }
 
   if(replyDomain && fromDomain && replyDomain !== fromDomain){
-    findings.push({sev:'high', title:'"Responder a" apunta a un dominio distinto del remitente', desc:`El correo dice venir de "${fromDomain}" pero las respuestas se redirigen a "${replyDomain}". Es una señal muy típica de phishing: el atacante quiere recibir tus respuestas en otro buzón.`});
+    findings.push({sev:'high', title:'"Responder a" apunta a un dominio distinto del remitente', basic:'Si respondes a este correo, la respuesta iría a una dirección distinta de la que aparenta enviarlo.', eli5:'Es como una carta que dice venir de tu banco, pero que en letra pequeña pide que le contestes a un apartado de correos completamente distinto — quien la escribió quiere tus respuestas en otro sitio.', desc:`El correo dice venir de "${fromDomain}" pero las respuestas se redirigen a "${replyDomain}". Es una señal muy típica de phishing: el atacante quiere recibir tus respuestas en otro buzón.`});
   }
   if(returnDomain && fromDomain && returnDomain !== fromDomain){
-    findings.push({sev:'med', title:'"Return-Path" no coincide con el remitente visible', desc:`El sobre técnico del correo (Return-Path: ${returnDomain}) difiere del dominio mostrado (${fromDomain}). Puede indicar envío desde infraestructura de terceros o suplantación.`});
+    findings.push({sev:'med', title:'"Return-Path" no coincide con el remitente visible', basic:'El dato técnico que indica de dónde sale realmente el correo no coincide con el remitente que ves.', eli5:'Cada correo lleva un dato técnico oculto, como el matasellos de una carta, que dice desde qué oficina salió de verdad. Aquí ese matasellos no coincide con la dirección que aparece escrita en el sobre.', desc:`El sobre técnico del correo (Return-Path: ${returnDomain}) difiere del dominio mostrado (${fromDomain}). Puede indicar envío desde infraestructura de terceros o suplantación.`});
   }
 
   // Dominio del remitente contra typosquatting de marca
@@ -3826,7 +3831,7 @@ function analyzeEmailSource(source){
     for(const brand of BRANDS){
       const dist = levenshtein(domCore, brand);
       if(dist>0 && dist<=2 && brand.length>=4){
-        findings.push({sev:'high', title:`El dominio del remitente imita a "${brand}"`, desc:`"${fromDomain}" se parece mucho a "${brand}" (distancia ${dist}). Revisa letra por letra antes de confiar en este remitente.`});
+        findings.push({sev:'high', title:`El dominio del remitente imita a "${brand}"`, basic:`El dominio del remitente se parece mucho a "${brand}" pero no es exactamente el mismo.`, eli5:`Es parecido a escribir "${brand}" pero cambiar una letra por otra para que a simple vista pase desapercibido, como cambiar una "o" por un cero.`, desc:`"${fromDomain}" se parece mucho a "${brand}" (distancia ${dist}). Revisa letra por letra antes de confiar en este remitente.`});
         break;
       }
     }
@@ -3836,7 +3841,7 @@ function analyzeEmailSource(source){
   const lowerSource = source.toLowerCase();
   const urgencyHits = URGENCY_WORDS.filter(w=>lowerSource.includes(w));
   if(urgencyHits.length >= 1){
-    findings.push({sev: urgencyHits.length>=3?'high':'med', title:'Lenguaje de urgencia o presión', desc:`Se detectaron frases como: ${urgencyHits.slice(0,5).join(', ')}. El phishing suele presionar para que actúes sin pensar.`});
+    findings.push({sev: urgencyHits.length>=3?'high':'med', title:'Lenguaje de urgencia o presión', basic:'Usa frases que meten prisa, del tipo "actúa ya" o "tu cuenta será bloqueada".', eli5:'Es la misma táctica que un vendedor a domicilio que dice "oferta solo hoy": cuanta más prisa te meten, menos tiempo tienes para pararte a pensar si es de verdad.', desc:`Se detectaron frases como: ${urgencyHits.slice(0,5).join(', ')}. El phishing suele presionar para que actúes sin pensar.`});
   }
 
   // Manipulación emocional / ingeniería social, categorizada por técnica de persuasión
@@ -3844,22 +3849,22 @@ function analyzeEmailSource(source){
   const emotionLabels = {miedo:'Miedo / amenaza', autoridad:'Autoridad / suplantación de organismo', codicia:'Codicia / premio', escasez:'Escasez / plazo artificial', curiosidad:'Curiosidad / gancho social'};
   const emotionCats = Object.keys(emotionHits);
   if(emotionCats.length){
-    findings.push({sev: emotionCats.length>=2?'high':'med', title:`Técnicas de manipulación emocional detectadas (${emotionCats.length})`, desc: emotionCats.map(c=>`${emotionLabels[c]}: ${emotionHits[c].slice(0,3).join(', ')}`).join('\n') + '\nEstas categorías son las palancas de persuasión más usadas en ingeniería social. Su presencia es un patrón de texto, no una prueba definitiva de fraude.'});
+    findings.push({sev: emotionCats.length>=2?'high':'med', title:`Técnicas de manipulación emocional detectadas (${emotionCats.length})`, basic:'El texto usa trucos emocionales típicos del engaño, como miedo, autoridad falsa o la promesa de un premio.', eli5:'Es como un vendedor que mezcla varios trucos a la vez: te asusta un poco, te dice que "viene de arriba" y encima te promete un regalo — cuantos más trucos junta, más probable es que esté fabricado para convencerte rápido.', desc: emotionCats.map(c=>`${emotionLabels[c]}: ${emotionHits[c].slice(0,3).join(', ')}`).join('\n') + '\nEstas categorías son las palancas de persuasión más usadas en ingeniería social. Su presencia es un patrón de texto, no una prueba definitiva de fraude.'});
   }
 
   // Saludo genérico
   if(/estimado(a)? (cliente|usuario)|dear customer|dear user/i.test(source)){
-    findings.push({sev:'low', title:'Saludo genérico, no personalizado', desc:'Las comunicaciones legítimas de servicios donde ya eres cliente suelen usar tu nombre. Un saludo genérico es una señal débil pero frecuente en campañas masivas.'});
+    findings.push({sev:'low', title:'Saludo genérico, no personalizado', basic:'Te trata como "cliente" o "usuario" en vez de usar tu nombre, aunque diga conocerte.', eli5:'Una empresa que ya tiene tus datos suele dirigirse a ti por tu nombre, igual que un cartero que conoce a los vecinos. Un saludo genérico suena más a una carta impresa igual para miles de personas a la vez.', desc:'Las comunicaciones legítimas de servicios donde ya eres cliente suelen usar tu nombre. Un saludo genérico es una señal débil pero frecuente en campañas masivas.'});
   }
 
   // Adjuntos de riesgo mencionados por nombre
   const riskyAttach = source.match(/\b[\w-]+\.(exe|scr|bat|vbs|jar|msi|ps1|cmd|pif|lnk|hta|wsf)\b/gi) || [];
   if(riskyAttach.length){
-    findings.push({sev:'high', title:'Se menciona un archivo adjunto de tipo ejecutable', desc:`Nombre(s) detectado(s): ${[...new Set(riskyAttach)].join(', ')}. Los ejecutables por correo son una vía clásica de instalación de malware; nunca los abras si no esperabas ese archivo.`});
+    findings.push({sev:'high', title:'Se menciona un archivo adjunto de tipo ejecutable', basic:'Menciona un archivo adjunto que, al abrirlo, instalaría un programa en tu dispositivo.', eli5:'No es un documento para leer, es más parecido a una caja que instala algo nuevo en tu ordenador o móvil en cuanto la abres — por eso nunca conviene abrir uno que no esperabas.', desc:`Nombre(s) detectado(s): ${[...new Set(riskyAttach)].join(', ')}. Los ejecutables por correo son una vía clásica de instalación de malware; nunca los abras si no esperabas ese archivo.`});
   }
   const doubleExt = source.match(/[\w.-]+\.(pdf|doc|jpg|png)\.(exe|scr|js|bat)\b/gi) || [];
   if(doubleExt.length){
-    findings.push({sev:'high', title:'Adjunto con doble extensión', desc:'Un nombre como "factura.pdf.exe" oculta la extensión real tras una falsa. Es una técnica clásica para camuflar ejecutables como documentos.'});
+    findings.push({sev:'high', title:'Adjunto con doble extensión', basic:'El nombre del archivo adjunto está disfrazado para parecer un documento, pero en realidad es un programa.', eli5:'Es como un caramelo envuelto en el papel de otro distinto: "factura.pdf.exe" parece un PDF a simple vista, pero el final real ".exe" es el que manda, y ese es el que instala algo en tu dispositivo.', desc:'Un nombre como "factura.pdf.exe" oculta la extensión real tras una falsa. Es una técnica clásica para camuflar ejecutables como documentos.'});
   }
 
   // Enlaces del cuerpo
@@ -3868,7 +3873,7 @@ function analyzeEmailSource(source){
   if(urls.length){
     const analyzed = urls.slice(0,8).map(u=>analyzeSingleUrl(u));
     const anyHigh = analyzed.some(r=>!r.error && r.findings.some(f=>f.sev==='high'));
-    findings.push({sev: anyHigh?'high':'low', title:`${urls.length} enlace(s) detectado(s) en el cuerpo`, desc: anyHigh ? 'Al menos uno de los enlaces del correo activó una alerta alta en el análisis de URL (ver detalle abajo).' : 'Se listan y analizan por separado abajo con el mismo motor de URLs.'});
+    findings.push({sev: anyHigh?'high':'low', title:`${urls.length} enlace(s) detectado(s) en el cuerpo`, basic: anyHigh ? 'El correo incluye enlaces y al menos uno de ellos dio señales serias de riesgo (los tienes analizados por separado más abajo).' : 'El correo incluye enlaces; están analizados por separado más abajo.', eli5: anyHigh ? 'Se han revisado los enlaces que trae el correo con el mismo detector que usa Vigía para direcciones web, y al menos uno de ellos hizo saltar una alarma seria.' : 'Se han revisado los enlaces que trae el correo con el mismo detector que usa Vigía para direcciones web, uno por uno.', desc: anyHigh ? 'Al menos uno de los enlaces del correo activó una alerta alta en el análisis de URL (ver detalle abajo).' : 'Se listan y analizan por separado abajo con el mismo motor de URLs.'});
     urlSection = `<div class="result-block"><h3>Enlaces encontrados en el correo</h3>${analyzed.map(renderUrlResult).join('')}</div>`;
   }
 
@@ -3879,7 +3884,7 @@ function analyzeEmailSource(source){
   /* Cliente de correo declarado */
   const mailClient = classifyMailClient(headers);
   if(mailClient){
-    findings.push({sev:'low', title: mailClient.label ? `Enviado aparentemente con: ${mailClient.label}` : 'Cliente de correo no reconocido declarado', desc:`Cabecera detectada: "${mailClient.raw}". Es un dato fácilmente falsificable por quien envía el correo. Úsalo solo como contexto adicional, nunca como prueba por sí solo.`});
+    findings.push({sev:'low', title: mailClient.label ? `Enviado aparentemente con: ${mailClient.label}` : 'Cliente de correo no reconocido declarado', basic:'El correo declara haberse enviado con un programa concreto, pero ese dato lo puede escribir cualquiera y no prueba nada por sí solo.', eli5:'Es como el membrete de una carta: puede decir lo que quiera quien la escribe, así que por sí solo no demuestra de dónde viene de verdad.', desc:`Cabecera detectada: "${mailClient.raw}". Es un dato fácilmente falsificable por quien envía el correo. Úsalo solo como contexto adicional, nunca como prueba por sí solo.`});
   }
 
   /* Cadena de saltos (Received) + línea de tiempo */
@@ -3890,7 +3895,7 @@ function analyzeEmailSource(source){
   const importantHeaderNames = ['From','To','Reply-To','Return-Path','Subject','Date','Message-ID','X-Mailer','User-Agent','Content-Type'];
   const missingHeaders = importantHeaderNames.filter(n=>!getHeaderValue(headers, n));
   if(headers.length && (missingHeaders.includes('Message-ID') || missingHeaders.includes('Date'))){
-    findings.push({sev:'low', title:'Faltan cabeceras técnicas habituales', desc:`Ausentes: ${missingHeaders.filter(n=>n==='Message-ID'||n==='Date').join(', ')}. Casi todo correo legítimo generado por un servidor real las incluye. Su ausencia es una señal débil pero digna de nota.`});
+    findings.push({sev:'low', title:'Faltan cabeceras técnicas habituales', basic:'Faltan algunos datos técnicos que casi todo correo real suele llevar.', eli5:'Es un poco como una carta sin matasellos ni número de registro: no significa automáticamente que sea falsa, pero es un detalle que casi siempre está presente en el correo genuino y aquí no aparece.', desc:`Ausentes: ${missingHeaders.filter(n=>n==='Message-ID'||n==='Date').join(', ')}. Casi todo correo legítimo generado por un servidor real las incluye. Su ausencia es una señal débil pero digna de nota.`});
   }
   const headersTable = headers.length ? `<div class="result-block"><h3>Todas las cabeceras detectadas (${headers.length})</h3><div class="headers-table">${headers.map(h=>`<div class="hdr-row"><span class="hdr-name">${escapeHtml(h.name)}</span><span class="hdr-val">${escapeHtml(h.value.length>300?h.value.slice(0,300)+'…':h.value)}</span></div>`).join('')}</div></div>` : '';
 
@@ -4184,20 +4189,20 @@ function analyzeSenderAddress(addr){
   }
 
   if(DISPOSABLE_DOMAINS.includes(domain)){
-    findings.push({sev:'med', title:'Dominio de correo desechable/temporal', desc:`"${domain}" es un proveedor de correos de usar-y-tirar. Muy común en cuentas creadas para fraude, registros falsos o para evitar ser rastreado. No es señal definitiva, pero conviene desconfiar si dice representar a una empresa.`});
+    findings.push({sev:'med', title:'Dominio de correo desechable/temporal', basic:'Se envió desde un correo "de usar y tirar", pensado para desaparecer a los pocos minutos u horas.', eli5:'Es como un teléfono de prepago que se tira después de una sola llamada: se usa para que nadie pueda rastrear quién hay detrás. Una empresa real casi nunca escribe desde uno de estos.', desc:`"${domain}" es un proveedor de correos de usar-y-tirar. Muy común en cuentas creadas para fraude, registros falsos o para evitar ser rastreado. No es señal definitiva, pero conviene desconfiar si dice representar a una empresa.`});
   }
 
   if(FREE_WEBMAIL_DOMAINS.includes(domain)){
     for(const brand of BRANDS){
       if(brand.length>=4 && local.toLowerCase().replace(/[._-]/g,'').includes(brand)){
-        findings.push({sev:'high', title:`Nombre de marca "${brand}" en un correo gratuito genérico`, desc:`La dirección usa un proveedor gratuito (${domain}) pero el nombre de usuario imita a "${brand}". Las empresas legítimas prácticamente nunca contactan de forma oficial desde una cuenta @${domain}.`});
+        findings.push({sev:'high', title:`Nombre de marca "${brand}" en un correo gratuito genérico`, basic:`El nombre de usuario incluye "${brand}", pero se envía desde una cuenta gratuita como cualquiera puede crear, no desde el dominio real de esa empresa.`, eli5:`Es como si alguien se hiciera una tarjeta de visita gratis con el logo de una empresa conocida pegado encima: cualquiera puede poner ese nombre en la parte visible, pero la empresa real no reparte tarjetas así.`, desc:`La dirección usa un proveedor gratuito (${domain}) pero el nombre de usuario imita a "${brand}". Las empresas legítimas prácticamente nunca contactan de forma oficial desde una cuenta @${domain}.`});
         break;
       }
     }
   }
 
   if(/\+.*@/.test(clean)){
-    findings.push({sev:'low', title:'Dirección con "alias +"', desc:'El signo "+" en la parte local es una función legítima de muchos proveedores (para filtrar correo), no es en sí una señal de riesgo, solo un dato informativo.'});
+    findings.push({sev:'low', title:'Dirección con "alias +"', basic:'La dirección incluye un signo "+", una función normal de muchos proveedores de correo, no una señal de peligro.', eli5:'Es como añadir una coletilla a tu propio nombre para organizarte mejor, no algo que haga un estafador — mucha gente lo usa a propósito para filtrar su correo.', desc:'El signo "+" en la parte local es una función legítima de muchos proveedores (para filtrar correo), no es en sí una señal de riesgo, solo un dato informativo.'});
   }
 
   if(findings.length===0){
@@ -4426,20 +4431,20 @@ function analyzeAppManual({name, id, publisher, category, source, perms}){
   const findings = [];
 
   if(!id || !/^[a-zA-Z][a-zA-Z0-9_]*(\.[a-zA-Z][a-zA-Z0-9_]*)+$/.test(id)){
-    findings.push({sev:'low', title:'Identificador de paquete con formato inusual', desc:'Los ID de paquete legítimos suelen seguir el formato "com.empresa.app". Un formato irregular no es concluyente, pero conviene confirmarlo en la ficha oficial de la tienda.'});
+    findings.push({sev:'low', title:'Identificador de paquete con formato inusual', basic:'El identificador interno de la app tiene un formato poco habitual para una app legítima.', eli5:'Es como un número de matrícula con un formato raro que no sigue el patrón normal — no significa que el coche esté robado, pero llama la atención y merece un segundo vistazo.', desc:'Los ID de paquete legítimos suelen seguir el formato "com.empresa.app". Un formato irregular no es concluyente, pero conviene confirmarlo en la ficha oficial de la tienda.'});
   }
 
   const sourceRisk = {
     'store-oficial': null,
     'mdm': null,
-    'store-terceros': {sev:'med', title:'Instalada desde una tienda de terceros', desc:'Las tiendas alternativas no siempre aplican los mismos controles de revisión que Google Play o App Store. Verifica la reputación de la tienda.'},
-    'apk-lateral': {sev:'high', title:'Instalación lateral (sideload) de APK', desc:'Cargar un APK fuera de una tienda oficial evita las revisiones automáticas de Play Protect. Es la vía de entrada más común para malware móvil.'},
-    'enlace-directo': {sev:'high', title:'Instalada desde un enlace directo (SMS/correo)', desc:'Los enlaces de instalación directa recibidos por SMS o correo son una técnica frecuente de smishing dirigida a instalar apps maliciosas o de espionaje.'},
+    'store-terceros': {sev:'med', title:'Instalada desde una tienda de terceros', basic:'Se instaló desde una tienda de apps alternativa, no desde Google Play ni la App Store.', eli5:'Es como comprar en un mercadillo en vez de en la tienda oficial de la marca: puede que todo esté bien, pero nadie revisa lo que se vende ahí con el mismo cuidado.', desc:'Las tiendas alternativas no siempre aplican los mismos controles de revisión que Google Play o App Store. Verifica la reputación de la tienda.'},
+    'apk-lateral': {sev:'high', title:'Instalación lateral (sideload) de APK', basic:'La app se instaló manualmente desde un archivo, saltándose por completo las revisiones de una tienda oficial.', eli5:'Es como dejar entrar a alguien por la ventana de atrás en vez de por la puerta principal con vigilante: nadie ha comprobado antes quién es.', desc:'Cargar un APK fuera de una tienda oficial evita las revisiones automáticas de Play Protect. Es la vía de entrada más común para malware móvil.'},
+    'enlace-directo': {sev:'high', title:'Instalada desde un enlace directo (SMS/correo)', basic:'La app se instaló siguiendo un enlace recibido por SMS o correo, no desde una tienda oficial.', eli5:'Es como aceptar un paquete que te trae un desconocido a la puerta porque un mensaje te dijo que lo esperaras, en vez de ir tú mismo a recogerlo a la tienda de confianza.', desc:'Los enlaces de instalación directa recibidos por SMS o correo son una técnica frecuente de smishing dirigida a instalar apps maliciosas o de espionaje.'},
   };
   if(sourceRisk[source]) findings.push(sourceRisk[source]);
 
   if(!publisher || publisher.trim().length < 2){
-    findings.push({sev:'low', title:'Editor/desarrollador no especificado', desc:'Comprueba en la ficha de la tienda quién publica realmente la app y si tiene otras aplicaciones con buena reputación.'});
+    findings.push({sev:'low', title:'Editor/desarrollador no especificado', basic:'No se indica quién es el editor o desarrollador real de la app.', eli5:'Es como un producto sin ninguna marca ni fabricante en la etiqueta — no significa que esté mal hecho, pero no hay a quién preguntar si algo falla.', desc:'Comprueba en la ficha de la tienda quién publica realmente la app y si tiene otras aplicaciones con buena reputación.'});
   } else {
     findings.push(...checkNameImpersonation(publisher, 'El editor/desarrollador declarado'));
     findings.push(...checkBrandDeveloperMismatch(`${name} ${id}`, publisher));
@@ -4447,21 +4452,21 @@ function analyzeAppManual({name, id, publisher, category, source, perms}){
 
   const highRiskGranted = perms.filter(p=>HIGH_RISK_PERMS.includes(p));
   if(highRiskGranted.length){
-    findings.push({sev:'high', title:'Permisos de muy alto impacto solicitados', desc:`Solicita: ${highRiskGranted.join(', ')}. Estos permisos permiten leer pantalla, simular toques o instalar software adicional. Son los más abusados por troyanos bancarios y spyware.${adviceBlock(highRiskGranted, HIGH_RISK_PERM_ADVICE)}`});
+    findings.push({sev:'high', title:'Permisos de muy alto impacto solicitados', basic:'Pide permisos muy delicados, como leer lo que aparece en tu pantalla o simular toques por ti.', eli5:'Es como darle a alguien un mando a distancia de tu propio cuerpo: podría mover tus manos por ti sin que te des cuenta, incluso para tocar botones de tu banco.', desc:`Solicita: ${highRiskGranted.join(', ')}. Estos permisos permiten leer pantalla, simular toques o instalar software adicional. Son los más abusados por troyanos bancarios y spyware.${adviceBlock(highRiskGranted, HIGH_RISK_PERM_ADVICE)}`});
   }
 
   const lowNeed = CATEGORY_LOW_NEED[category] || [];
   const mismatched = perms.filter(p=>lowNeed.includes(p));
   if(mismatched.length){
-    findings.push({sev:'med', title:'Permisos incoherentes con la categoría declarada', desc:`Para una app de tipo "${category}" resulta llamativo que pida: ${mismatched.join(', ')}. Pedir más acceso del que su función necesita es un patrón de riesgo, aunque no siempre indica malicia.`});
+    findings.push({sev:'med', title:'Permisos incoherentes con la categoría declarada', basic:'Pide acceso a cosas que no encajan con lo que la app dice hacer.', eli5:'Es como una app de linterna que te pide acceso a tus contactos y tus mensajes — para encender una luz no hace falta nada de eso, así que llama la atención que lo pida.', desc:`Para una app de tipo "${category}" resulta llamativo que pida: ${mismatched.join(', ')}. Pedir más acceso del que su función necesita es un patrón de riesgo, aunque no siempre indica malicia.`});
   }
 
   if(perms.includes('SMS') && perms.includes('Contactos') && category!=='social'){
-    findings.push({sev:'high', title:'Combinación SMS + Contactos fuera de una app de mensajería', desc:'Esta combinación es habitual en malware que se propaga enviando SMS a la agenda de contactos de la víctima.'});
+    findings.push({sev:'high', title:'Combinación SMS + Contactos fuera de una app de mensajería', basic:'Pide acceso a tus SMS y a tus contactos a la vez, sin ser una app de mensajería.', eli5:'Es la combinación exacta que necesitaría alguien que quisiera enviar mensajes en tu nombre a toda tu agenda sin que te enteres — por eso las apps que no son de mensajería casi nunca deberían pedir ambas cosas juntas.', desc:'Esta combinación es habitual en malware que se propaga enviando SMS a la agenda de contactos de la víctima.'});
   }
 
   if(name && BRANDS.some(b=>name.toLowerCase().includes(b)) && (source==='apk-lateral' || source==='enlace-directo' || source==='store-terceros')){
-    findings.push({sev:'high', title:'Nombre de marca conocida fuera de canal oficial', desc:'El nombre de la app hace referencia a una marca reconocida pero no se instaló desde una tienda oficial. Es un patrón habitual de apps falsas que suplantan bancos o servicios populares.'});
+    findings.push({sev:'high', title:'Nombre de marca conocida fuera de canal oficial', basic:'Usa el nombre de una marca conocida, pero no viene de una tienda oficial.', eli5:'Es como comprar unas zapatillas "de marca" a un vendedor ambulante en vez de en la tienda oficial: el nombre puede ser el mismo, pero nadie garantiza que lo de dentro también lo sea.', desc:'El nombre de la app hace referencia a una marca reconocida pero no se instaló desde una tienda oficial. Es un patrón habitual de apps falsas que suplantan bancos o servicios populares.'});
   }
 
   if(findings.length===0){
@@ -4663,7 +4668,7 @@ function renderLibraryFindings(hits, findings){
   for(const [name,cat] of hits) (byCat[cat] = byCat[cat]||[]).push(name);
   for(const cat of Object.keys(byCat)){
     const sev = (cat==='ads'||cat==='tracker') ? 'low' : 'ok';
-    findings.push({sev, title:`${LIB_CAT_LABEL[cat]||cat}: ${byCat[cat].length}`, desc: byCat[cat].join(', ')});
+    findings.push({sev, title:`${LIB_CAT_LABEL[cat]||cat}: ${byCat[cat].length}`, basic:`La app incluye componentes de terceros de tipo "${LIB_CAT_LABEL[cat]||cat}", que pueden recopilar datos de uso o mostrar anuncios.`, eli5:'Es como un electrodoméstico que trae piezas fabricadas por otras empresas dentro: no es raro, casi todas las apps las usan, pero conviene saber que están ahí porque a veces recogen datos de cómo usas la app.', desc: byCat[cat].join(', ')});
   }
 }
 function renderDomainFindings(domains, findings){
@@ -4675,7 +4680,7 @@ function renderDomainFindings(domains, findings){
   const trackerDomains = classified.filter(c=>c.cat);
   const otherDomains = classified.filter(c=>!c.cat);
   if(trackerDomains.length){
-    findings.push({sev:'low', title:`${trackerDomains.length} dominio(s) de rastreador/publicidad conocido(s)`, desc: trackerDomains.map(c=>`${c.d} (${c.cat})`).join(', ')});
+    findings.push({sev:'low', title:`${trackerDomains.length} dominio(s) de rastreador/publicidad conocido(s)`, basic:'La app se conecta a servicios conocidos de seguimiento o publicidad.', eli5:'Es como si la app, además de hacer lo que promete, avisara en silencio a otras empresas de que la estás usando — muy común, pero significa que tu actividad no se queda solo entre tú y la app.', desc: trackerDomains.map(c=>`${c.d} (${c.cat})`).join(', ')});
   }
   findings.push({sev:'ok', title:`${domains.length} dominio(s) distintos encontrados en total`, desc: (otherDomains.length?otherDomains:classified).slice(0,40).map(c=>c.d).join(', ') + ((otherDomains.length||classified.length)>40?'…':'')});
 }
@@ -4785,7 +4790,7 @@ async function analyzeApkFile(file){
 
   const manifestEntry = zip.file('AndroidManifest.xml');
   if(manifestEntry && zipEntryTooLarge(manifestEntry)){
-    findings.push({sev:'high', title:'AndroidManifest.xml con tamaño descomprimido anómalo', desc:'Esta entrada declara, sin necesidad de descomprimirla, un tamaño real muy por encima de lo esperado para un manifiesto de Android. Vigía no la descomprime para no agotar memoria; es en sí misma una señal de "bomba de descompresión" (zip bomb).'});
+    findings.push({sev:'high', title:'AndroidManifest.xml con tamaño descomprimido anómalo', basic:'Un archivo interno clave declara un tamaño imposible de grande, un truco típico para saturar quien intenta abrirlo.', eli5:'Es como una maleta que en la etiqueta pesa 2 kilos pero, si la abrieras, pesaría toneladas — por eso Vigía ni siquiera intenta abrirla, y el simple hecho de que mienta sobre su tamaño ya es sospechoso.', desc:'Esta entrada declara, sin necesidad de descomprimirla, un tamaño real muy por encima de lo esperado para un manifiesto de Android. Vigía no la descomprime para no agotar memoria; es en sí misma una señal de "bomba de descompresión" (zip bomb).'});
   } else if(manifestEntry){
     const buf = await manifestEntry.async('arraybuffer');
     manifestStrings = extractStrings(buf, 5);
@@ -4794,7 +4799,7 @@ async function analyzeApkFile(file){
       if(!packageName && /^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*){1,}$/i.test(s) && !s.startsWith('android.') && !s.includes('schemas.android')) packageName = s;
     }
   } else {
-    findings.push({sev:'med', title:'No se encontró AndroidManifest.xml', desc:'El archivo no parece un APK válido o está estructurado de forma atípica.'});
+    findings.push({sev:'med', title:'No se encontró AndroidManifest.xml', basic:'El archivo no tiene la estructura interna que debería tener un APK de verdad.', eli5:'Es como abrir una caja que dice contener un electrodoméstico y no encontrar ninguna de las piezas que debería traer — algo no encaja en cómo está construido el archivo.', desc:'El archivo no parece un APK válido o está estructurado de forma atípica.'});
   }
   if(packageName) findings.push({sev:'ok', title:`Paquete detectado: ${packageName}`, desc:'Extraído por coincidencia de patrón en el manifiesto binario (heurístico, puede no ser 100% exacto).'});
 
@@ -4805,16 +4810,16 @@ async function analyzeApkFile(file){
   const dangerousPerms = allPerms.filter(p=>DANGEROUS_PERM_RE.test(p));
   if(dangerousPerms.length){
     const highest = dangerousPerms.filter(p=>/(ACCESSIBILITY|DEVICE_ADMIN|SYSTEM_ALERT_WINDOW|REQUEST_INSTALL_PACKAGES|MANAGE_EXTERNAL_STORAGE)/.test(p));
-    findings.push({sev: highest.length?'high':'med', title:`${dangerousPerms.length} permiso(s) peligroso(s) detectado(s)`, desc: dangerousPerms.map(p=>p.replace('android.permission.','')).join(', ') + adviceBlock(dangerousPerms.map(p=>p.replace('android.permission.','')), PERMISSION_ADVICE)});
+    findings.push({sev: highest.length?'high':'med', title:`${dangerousPerms.length} permiso(s) peligroso(s) detectado(s)`, basic:'Pide permisos sensibles, como leer tus mensajes, tu ubicación o acceder a funciones del sistema.', eli5:'Son permisos que le dan a la app las llaves de habitaciones normalmente cerradas de tu móvil — tus mensajes, tu cámara, tu ubicación. No es señal automática de fraude, pero conviene que encajen con lo que la app dice hacer.', desc: dangerousPerms.map(p=>p.replace('android.permission.','')).join(', ') + adviceBlock(dangerousPerms.map(p=>p.replace('android.permission.','')), PERMISSION_ADVICE)});
   }
 
   /* Firma clásica (META-INF) y certificado X.509 */
   if(!names.some(n=>n.startsWith('META-INF/'))){
-    findings.push({sev:'high', title:'No se detectó carpeta META-INF (firma)', desc:'Un APK sin metadatos de firma visibles puede estar corrupto, mal empaquetado, o haber sido manipulado para eliminar rastros de firma original.'});
+    findings.push({sev:'high', title:'No se detectó carpeta META-INF (firma)', basic:'Al archivo le falta la parte que debería identificar quién lo firmó.', eli5:'Es como un documento oficial sin ningún sello ni firma al final — puede que solo esté mal generado, pero también es lo que pasaría si alguien lo hubiera manipulado y borrado el rastro de quién lo hizo de verdad.', desc:'Un APK sin metadatos de firma visibles puede estar corrupto, mal empaquetado, o haber sido manipulado para eliminar rastros de firma original.'});
   }
   const sigFile = names.find(n=>/^META-INF\/.*\.(RSA|DSA|EC)$/i.test(n));
   if(sigFile && zipEntryTooLarge(zip.file(sigFile))){
-    findings.push({sev:'high', title:'Archivo de firma con tamaño descomprimido anómalo', desc:`"${sigFile}" declara un tamaño real muy por encima de lo esperado para un certificado de firma. Vigía no lo descomprime; es en sí misma una señal de "bomba de descompresión".`});
+    findings.push({sev:'high', title:'Archivo de firma con tamaño descomprimido anómalo', basic:'El archivo de firma declara un tamaño imposible de grande, un truco típico para saturar quien intenta abrirlo.', eli5:'Igual que con el manifiesto: la etiqueta dice un peso pequeño pero por dentro sería enorme — Vigía no lo abre, y esa mentira sobre el tamaño ya es en sí misma una señal de alarma.', desc:`"${sigFile}" declara un tamaño real muy por encima de lo esperado para un certificado de firma. Vigía no lo descomprime; es en sí misma una señal de "bomba de descompresión".`});
   } else if(sigFile){
     try{
       const sigBuf = new Uint8Array(await zip.file(sigFile).async('arraybuffer'));
@@ -4822,9 +4827,9 @@ async function analyzeApkFile(file){
       if(cert){
         const fingerprint = await sha256Hex(sigBuf.slice(cert.start, cert.end));
         findings.push({sev:'ok', title:'Certificado de firma (v1) leído', desc:`Emisor: ${cert.issuer}\nSujeto: ${cert.subject}\nValidez: ${cert.notBefore} → ${cert.notAfter}\nSerie: ${cert.serialHex}\nHuella SHA-256: ${fingerprint}${cert.selfSigned?'\n(Autofirmado, normal en Android: no usa una CA como TLS.)':''}`});
-        if(cert.isDebugCert) findings.push({sev:'high', title:'Firmado con certificado de depuración (debug) de Android', desc:'Coincide con el patrón del keystore de depuración por defecto de Android Studio (CN=Android Debug). Una app publicada así nunca debería llegar a producción: cualquiera puede firmar apps con esa misma clave de depuración estándar y hacerlas pasar por actualizaciones.'});
+        if(cert.isDebugCert) findings.push({sev:'high', title:'Firmado con certificado de depuración (debug) de Android', basic:'La app está firmada con un certificado de pruebas para desarrolladores, no uno real de producción.', eli5:'Es como si un producto llegara a la tienda todavía con la etiqueta de "prototipo de fábrica" pegada — ese certificado es público y cualquiera puede usarlo, así que no demuestra que la app venga de quien dice ser.', desc:'Coincide con el patrón del keystore de depuración por defecto de Android Studio (CN=Android Debug). Una app publicada así nunca debería llegar a producción: cualquiera puede firmar apps con esa misma clave de depuración estándar y hacerlas pasar por actualizaciones.'});
         const notAfterDate = new Date(cert.notAfter.replace(' UTC','Z').replace(' ','T'));
-        if(!isNaN(notAfterDate) && notAfterDate < new Date()) findings.push({sev:'med', title:'Certificado de firma caducado', desc:`Caducó el ${cert.notAfter}. No impide instalar la app en Android (a diferencia de TLS), pero es una señal de mantenimiento descuidado o de un paquete antiguo.`});
+        if(!isNaN(notAfterDate) && notAfterDate < new Date()) findings.push({sev:'med', title:'Certificado de firma caducado', basic:'El certificado con el que se firmó la app ya ha caducado.', eli5:'Es como un carné de identidad vencido: no significa que la persona sea falsa, pero es un descuido de mantenimiento que no debería pasar en algo que se sigue distribuyendo.', desc:`Caducó el ${cert.notAfter}. No impide instalar la app en Android (a diferencia de TLS), pero es una señal de mantenimiento descuidado o de un paquete antiguo.`});
         // Verificación de identidad: ¿el firmante del certificado (Sujeto) coincide con la marca que el paquete dice representar?
         const certIdentity = cert.subjectO || cert.subjectCN || '';
         if(certIdentity && !cert.isDebugCert){
@@ -4832,14 +4837,14 @@ async function analyzeApkFile(file){
           if(packageName) findings.push(...checkBrandDeveloperMismatch(packageName, certIdentity));
         }
       } else {
-        findings.push({sev:'low', title:'No se pudo interpretar el certificado del archivo de firma', desc:`Se encontró ${sigFile}, pero su estructura PKCS#7/X.509 no coincidió con el patrón esperado (heurístico, puede fallar con variantes poco comunes).`});
+        findings.push({sev:'low', title:'No se pudo interpretar el certificado del archivo de firma', basic:'Hay un archivo de firma, pero Vigía no ha conseguido leer su contenido correctamente.', eli5:'Es como encontrar un sello en un documento pero no poder distinguir bien qué pone — no es señal de peligro por sí sola, simplemente esta comprobación concreta no ha podido completarse.', desc:`Se encontró ${sigFile}, pero su estructura PKCS#7/X.509 no coincidió con el patrón esperado (heurístico, puede fallar con variantes poco comunes).`});
       }
-    }catch(e){ findings.push({sev:'low', title:'Error leyendo el archivo de firma', desc: sigFile}); }
+    }catch(e){ findings.push({sev:'low', title:'Error leyendo el archivo de firma', basic:'No se ha podido leer el archivo de firma de la app.', eli5:'Es como intentar leer un documento dañado: la comprobación de quién firmó la app no se ha podido completar por un problema técnico al leerlo.', desc: sigFile}); }
   }
   if(hasApkSigBlockV2(fileBytes)) findings.push({sev:'ok', title:'Incluye APK Signing Block (firma v2/v3)', desc:'Además de (o en vez de) la firma clásica, el paquete usa el esquema de firma moderno de Android, más robusto frente a manipulación del ZIP.'});
 
   const dexNames = names.filter(n=>/^classes\d*\.dex$/.test(n));
-  if(dexNames.length > 3) findings.push({sev:'low', title:`App con múltiples archivos .dex (${dexNames.length})`, desc:'Habitual en apps grandes (multidex). No es señal de riesgo por sí sola, solo un dato informativo.'});
+  if(dexNames.length > 3) findings.push({sev:'low', title:`App con múltiples archivos .dex (${dexNames.length})`, basic:'El código de la app está dividido en varios archivos, algo habitual en apps grandes.', eli5:'Es como un libro tan largo que viene repartido en varios tomos en vez de uno solo — normal cuando hay mucho contenido, no es en sí una señal de alarma.', desc:'Habitual en apps grandes (multidex). No es señal de riesgo por sí sola, solo un dato informativo.'});
 
   /* Librerías, SDKs de publicidad, Firebase y dominios (búsqueda de cadenas en dex/recursos) */
   let haystack = manifestStrings.join('\n');
@@ -4864,9 +4869,9 @@ async function analyzeApkFile(file){
   /* Packers / protectores comerciales y librerías nativas */
   const lowerNames = names.map(n=>n.toLowerCase()).join('\n');
   const packerHits = APK_PACKER_SIGNATURES.filter(p=>lowerNames.includes(p.frag));
-  if(packerHits.length) findings.push({sev:'high', title:`Posible empaquetador/protector comercial: ${packerHits.map(p=>p.name).join(', ')}`, desc:'Se han encontrado archivos característicos de sistemas de "hardening"/empaquetado (加固), usados tanto para proteger apps legítimas contra ingeniería inversa como, en ocasiones, para ocultar código malicioso o apps repaquetadas ilegalmente. No es una condena automática, pero dificulta cualquier análisis estático. Trátalo con más cautela.'});
+  if(packerHits.length) findings.push({sev:'high', title:`Posible empaquetador/protector comercial: ${packerHits.map(p=>p.name).join(', ')}`, basic:'La app está protegida con una herramienta que oculta cómo funciona por dentro, dificultando también su análisis.', eli5:'Es como una caja envuelta en varias capas de papel opaco: se usa tanto para proteger un regalo legítimo como para esconder algo que no se quiere que se vea a simple vista. No es una condena, pero complica saber con certeza qué hay dentro.', desc:'Se han encontrado archivos característicos de sistemas de "hardening"/empaquetado (加固), usados tanto para proteger apps legítimas contra ingeniería inversa como, en ocasiones, para ocultar código malicioso o apps repaquetadas ilegalmente. No es una condena automática, pero dificulta cualquier análisis estático. Trátalo con más cautela.'});
   const nativeLibs = [...new Set(names.filter(n=>/^lib\/[^/]+\/.+\.so$/.test(n)).map(n=>n.split('/').pop()))];
-  if(nativeLibs.length) findings.push({sev:'low', title:`${nativeLibs.length} librería(s) nativa(s) (.so)`, desc: nativeLibs.slice(0,25).join(', ') + (nativeLibs.length>25?'…':'')});
+  if(nativeLibs.length) findings.push({sev:'low', title:`${nativeLibs.length} librería(s) nativa(s) (.so)`, basic:'La app incluye código compilado directamente para el procesador del dispositivo, algo habitual en apps con funciones avanzadas.', eli5:'Es una parte del programa escrita en un lenguaje más cercano a la máquina, normal en apps que necesitan ir rápido (juegos, cámara, etc.) — no es una señal de alarma por sí sola.', desc: nativeLibs.slice(0,25).join(', ') + (nativeLibs.length>25?'…':'')});
 
   const sizeMB = (file.size/1024/1024).toFixed(1);
   findings.push({sev:'ok', title:`Tamaño del paquete: ${sizeMB} MB`, desc:`${names.length} archivos dentro del paquete.`});
@@ -4886,7 +4891,7 @@ async function analyzeIpaFile(file){
   let bundleId = '', usageDescriptions = [], plistText = '', appFolder = '';
 
   if(plistEntry && zipEntryTooLarge(zip.file(plistEntry))){
-    findings.push({sev:'high', title:'Info.plist con tamaño descomprimido anómalo', desc:'Esta entrada declara, sin necesidad de descomprimirla, un tamaño real muy por encima de lo esperado para un Info.plist. Vigía no la descomprime para no agotar memoria; es en sí misma una señal de "bomba de descompresión" (zip bomb).'});
+    findings.push({sev:'high', title:'Info.plist con tamaño descomprimido anómalo', basic:'Un archivo interno clave declara un tamaño imposible de grande, un truco típico para saturar quien intenta abrirlo.', eli5:'Es como una maleta que en la etiqueta pesa 2 kilos pero, si la abrieras, pesaría toneladas — por eso Vigía ni siquiera intenta abrirla.', desc:'Esta entrada declara, sin necesidad de descomprimirla, un tamaño real muy por encima de lo esperado para un Info.plist. Vigía no la descomprime para no agotar memoria; es en sí misma una señal de "bomba de descompresión" (zip bomb).'});
   } else if(plistEntry){
     appFolder = plistEntry.split('/')[1];
     const text = await zip.file(plistEntry).async('string');
@@ -4898,10 +4903,10 @@ async function analyzeIpaFile(file){
       let m;
       while((m = usageRe.exec(text))) usageDescriptions.push(m[1].replace('UsageDescription','').replace(/^NS/,''));
     } else {
-      findings.push({sev:'low', title:'Info.plist en formato binario', desc:'No se pudo leer como XML directamente; solo se listan metadatos generales del paquete.'});
+      findings.push({sev:'low', title:'Info.plist en formato binario', basic:'Un archivo interno de configuración está en un formato que Vigía no puede leer directamente.', eli5:'Es como recibir un documento en un formato que tu programa no puede abrir del todo — no significa que esté manipulado, solo que hay menos detalles disponibles para analizar.', desc:'No se pudo leer como XML directamente; solo se listan metadatos generales del paquete.'});
     }
   } else {
-    findings.push({sev:'med', title:'No se encontró Info.plist dentro de Payload/*.app', desc:'El archivo no parece un .ipa con estructura estándar.'});
+    findings.push({sev:'med', title:'No se encontró Info.plist dentro de Payload/*.app', basic:'El archivo no tiene la estructura interna que debería tener una app de iOS de verdad.', eli5:'Es como abrir una caja que dice contener un electrodoméstico y no encontrar ninguna de las piezas que debería traer.', desc:'El archivo no parece un .ipa con estructura estándar.'});
   }
 
   if(bundleId) findings.push({sev:'ok', title:`Bundle ID detectado: ${bundleId}`, desc:'Extraído de Info.plist.'});
@@ -4910,15 +4915,15 @@ async function analyzeIpaFile(file){
   if(usageDescriptions.length){
     const DANGEROUS_IOS = ['Camera','Microphone','LocationAlways','LocationWhenInUse','Contacts','PhotoLibrary','FaceID','Motion','Bluetooth','HealthShare','HealthUpdate','CallKit'];
     const dangerousIos = usageDescriptions.filter(u=>DANGEROUS_IOS.some(d=>u.includes(d)));
-    findings.push({sev: usageDescriptions.length>=4?'med':'low', title:`${usageDescriptions.length} permiso(s) de privacidad declarado(s)`, desc: usageDescriptions.join(', ')});
-    if(dangerousIos.length) findings.push({sev:'med', title:`${dangerousIos.length} permiso(s) sensible(s) entre los declarados`, desc: dangerousIos.join(', ') + adviceBlock(dangerousIos, PERMISSION_ADVICE)});
+    findings.push({sev: usageDescriptions.length>=4?'med':'low', title:`${usageDescriptions.length} permiso(s) de privacidad declarado(s)`, basic:'La app declara acceso a varias funciones sensibles del dispositivo, como cámara, micrófono o ubicación.', eli5:'Son las mismas cosas que le pedirías a un invitado antes de dejarle entrar en ciertas habitaciones de tu casa: cuantas más pida sin necesitarlas para su función, más conviene preguntarse por qué.', desc: usageDescriptions.join(', ')});
+    if(dangerousIos.length) findings.push({sev:'med', title:`${dangerousIos.length} permiso(s) sensible(s) entre los declarados`, basic:'Entre lo que pide hay permisos especialmente delicados, como cámara, micrófono o ubicación constante.', eli5:'Estos son los permisos que dan más acceso a tu vida privada — verlos aquí no es señal de fraude, pero conviene comprobar que tienen sentido para lo que la app dice hacer.', desc: dangerousIos.join(', ') + adviceBlock(dangerousIos, PERMISSION_ADVICE)});
   }
 
   /* Certificados / firma: en iOS no hay X.509 accesible de forma fiable sin el perfil de aprovisionamiento
      (Apple re-firma las apps de la App Store), así que se usa este como fuente principal. */
   const hasProvisioning = names.includes('Payload/'+appFolder+'/embedded.mobileprovision');
   if(hasProvisioning){
-    findings.push({sev:'med', title:'Incluye perfil de aprovisionamiento embebido', desc:'Suele indicar una build de desarrollo/ad-hoc distribuida fuera de la App Store (p. ej. TestFlight o distribución empresarial), lo que reduce las revisiones de Apple aplicadas.'});
+    findings.push({sev:'med', title:'Incluye perfil de aprovisionamiento embebido', basic:'La app parece una versión de desarrollo o de distribución interna, no una descarga normal de la App Store.', eli5:'Es como un producto que aún no ha pasado por el control de calidad final de la fábrica: puede que esté bien, pero no ha recibido el mismo nivel de revisión que uno que ya salió a la venta oficial.', desc:'Suele indicar una build de desarrollo/ad-hoc distribuida fuera de la App Store (p. ej. TestFlight o distribución empresarial), lo que reduce las revisiones de Apple aplicadas.'});
     try{
       const provBuf = await zip.file('Payload/'+appFolder+'/embedded.mobileprovision').async('string');
       const teamMatch = provBuf.match(/<key>TeamName<\/key>\s*<string>([^<]+)<\/string>/);
@@ -4932,8 +4937,8 @@ async function analyzeIpaFile(file){
       if(expMatch) provDesc += `Caduca: ${expMatch[1]}\n`;
       if(deviceN) provDesc += `Dispositivos aprovisionados: ${deviceN}`;
       if(provDesc) findings.push({sev:'ok', title:'Datos del perfil de aprovisionamiento', desc: provDesc.trim()});
-      if(allDevices) findings.push({sev:'high', title:'Perfil de distribución empresarial (In-House)', desc:'Permite instalar en cualquier dispositivo sin pasar por la App Store ni un límite de UDIDs registrados, típico de distribución corporativa interna, pero también un vector habitual para distribuir apps fraudulentas fuera de la revisión de Apple.'});
-      if(getTaskAllow) findings.push({sev:'med', title:'Build de desarrollo (get-task-allow = true)', desc:'Permite adjuntar un depurador al proceso. Normal en builds de desarrollo/TestFlight interno, pero no debería aparecer en una build de producción distribuida ampliamente.'});
+      if(allDevices) findings.push({sev:'high', title:'Perfil de distribución empresarial (In-House)', basic:'La app se puede instalar en cualquier iPhone sin pasar por la App Store, usando un permiso pensado para uso interno de empresas.', eli5:'Es como una llave maestra pensada para que una empresa reparta su propia app entre sus empleados, sin pasar por la tienda oficial — legítima en ese contexto, pero también una vía muy usada para distribuir apps fraudulentas fuera de cualquier revisión.', desc:'Permite instalar en cualquier dispositivo sin pasar por la App Store ni un límite de UDIDs registrados, típico de distribución corporativa interna, pero también un vector habitual para distribuir apps fraudulentas fuera de la revisión de Apple.'});
+      if(getTaskAllow) findings.push({sev:'med', title:'Build de desarrollo (get-task-allow = true)', basic:'La app permite que una herramienta externa se conecte a ella para depurarla, algo propio de versiones de prueba.', eli5:'Es como dejar una puerta trasera abierta pensada para el técnico durante las obras — normal mientras se está construyendo la app, pero no debería seguir abierta en la versión que llega al público.', desc:'Permite adjuntar un depurador al proceso. Normal en builds de desarrollo/TestFlight interno, pero no debería aparecer en una build de producción distribuida ampliamente.'});
     }catch(e){}
   } else {
     findings.push({sev:'ok', title:'Sin perfil de aprovisionamiento embebido', desc:'Habitual en una build exportada/reempaquetada desde la App Store. Apple gestiona la firma final de las apps de la tienda; Vigía no puede extraer un certificado X.509 fiable sin el perfil de aprovisionamiento.'});
@@ -4960,7 +4965,7 @@ async function analyzeIpaFile(file){
       const execStrings = extractStrings(buf.byteLength>6_000_000 ? buf.slice(0,6_000_000) : buf, 6);
       haystack += '\n' + execStrings.join('\n');
       const hookHits = IOS_HOOK_SIGNATURES.filter(sig=>execStrings.some(s=>s.includes(sig)));
-      if(hookHits.length) findings.push({sev:'high', title:`Señales de instrumentación/hooking en el binario: ${hookHits.join(', ')}`, desc:'Cadenas asociadas a frameworks de inyección/jailbreak (Frida, Cydia Substrate, etc.). Puede deberse a herramientas de testing dejadas por error, o a una app modificada/repaquetada. Trátalo con cautela si no esperabas verlo aquí.'});
+      if(hookHits.length) findings.push({sev:'high', title:`Señales de instrumentación/hooking en el binario: ${hookHits.join(', ')}`, basic:'El programa contiene rastros de herramientas capaces de modificar cómo funciona una app desde fuera.', eli5:'Es como encontrar herramientas de cerrajero dentro de un producto terminado — a veces son restos olvidados de pruebas internas, pero también son las mismas herramientas que se usarían para manipular una app y hacerla pasar por otra cosa.', desc:'Cadenas asociadas a frameworks de inyección/jailbreak (Frida, Cydia Substrate, etc.). Puede deberse a herramientas de testing dejadas por error, o a una app modificada/repaquetada. Trátalo con cautela si no esperabas verlo aquí.'});
     }catch(e){}
   }
   renderDomainFindings(extractDomains(haystack).slice(0,60), findings);
@@ -5032,7 +5037,7 @@ function checkPackageBrandImpersonation(pkg){
       if(seg.length < brand.length-2 || seg.length > brand.length+2) continue;
       const dist = levenshtein(seg, brand);
       if(dist>0 && dist<=2){
-        findings.push({sev:'high', title:`El identificador imita a la marca "${brand}"`, desc:`El fragmento "${seg}" dentro de "${pkg}" se parece mucho a "${brand}" (distancia ${dist}). Es un patrón típico de apps falsas que suplantan a una marca conocida en tiendas de terceros o enlaces directos.`});
+        findings.push({sev:'high', title:`El identificador imita a la marca "${brand}"`, basic:`El identificador interno de la app se parece mucho a "${brand}" sin ser exactamente igual.`, eli5:`Es parecido a escribir "${brand}" pero cambiar una letra por otra para que a simple vista parezca la misma, como cambiar una "o" por un cero — un patrón muy usado por apps falsas que quieren pasar por una marca conocida.`, desc:`El fragmento "${seg}" dentro de "${pkg}" se parece mucho a "${brand}" (distancia ${dist}). Es un patrón típico de apps falsas que suplantan a una marca conocida en tiendas de terceros o enlaces directos.`});
         break outer;
       }
     }
@@ -5056,7 +5061,7 @@ function checkNameImpersonation(text, fieldLabel){
       if(w.length < brand.length-2 || w.length > brand.length+2) continue;
       const dist = levenshtein(w, brand);
       if(dist>0 && dist<=2){
-        findings.push({sev:'high', title:`${fieldLabel||'El nombre declarado'} imita a la marca "${brand}"`, desc:`"${w}" dentro de "${text}" se parece mucho a "${brand}" (distancia ${dist} carácter${dist>1?'es':''}). Un editor o desarrollador con un nombre casi idéntico (pero no exacto) a una marca conocida es un patrón muy habitual en apps falsas.`});
+        findings.push({sev:'high', title:`${fieldLabel||'El nombre declarado'} imita a la marca "${brand}"`, basic:`El nombre declarado se parece mucho a "${brand}" sin ser exactamente igual.`, eli5:`Es como una tarjeta de visita casi idéntica a la de una empresa conocida, pero con una letra distinta — un truco habitual para que confundas al vendedor real con uno falso.`, desc:`"${w}" dentro de "${text}" se parece mucho a "${brand}" (distancia ${dist} carácter${dist>1?'es':''}). Un editor o desarrollador con un nombre casi idéntico (pero no exacto) a una marca conocida es un patrón muy habitual en apps falsas.`});
         break outer;
       }
     }
@@ -5074,7 +5079,7 @@ function checkBrandDeveloperMismatch(nameOrId, developer){
   for(const brand of BRANDS){
     if(brand.length<4) continue;
     if(lowerCombined.includes(brand) && !devLower.includes(brand)){
-      return [{sev:'med', title:`Hace referencia a "${brand}", pero el editor declarado no la menciona`, desc:`El editor/desarrollador que aparece es "${developer}". Esto no confirma nada por sí solo (algunas empresas usan una razón social distinta a su marca comercial), pero antes de confiar comprueba en la ficha oficial de la tienda que ese editor es realmente quien publica ${brand}.`}];
+      return [{sev:'med', title:`Hace referencia a "${brand}", pero el editor declarado no la menciona`, basic:`La app dice tener que ver con "${brand}", pero quien la publica no menciona esa marca en ningún sitio.`, eli5:`Es como un puesto de feria con el cartel de una marca famosa, pero cuyo dueño real, cuando le preguntas, no tiene nada que ver con esa marca — no siempre es una estafa, pero conviene comprobarlo antes de confiar.`, desc:`El editor/desarrollador que aparece es "${developer}". Esto no confirma nada por sí solo (algunas empresas usan una razón social distinta a su marca comercial), pero antes de confiar comprueba en la ficha oficial de la tienda que ese editor es realmente quien publica ${brand}.`}];
     }
   }
   return [];
@@ -5121,11 +5126,11 @@ function renderIosResult(app){
   if(updated){
     const monthsSince = (Date.now() - updated.getTime()) / (1000*60*60*24*30);
     if(monthsSince > 18){
-      findings.push({sev:'low', title:`Sin actualizaciones desde hace ${Math.round(monthsSince)} meses`, desc:'Una app que no se actualiza desde hace mucho tiempo puede tener vulnerabilidades sin corregir. No es señal de fraude por sí sola.'});
+      findings.push({sev:'low', title:`Sin actualizaciones desde hace ${Math.round(monthsSince)} meses`, basic:'La app lleva mucho tiempo sin recibir ninguna actualización.', eli5:'Es como un local que lleva años sin renovar ni hacer mantenimiento: no significa que dentro pase algo malo, pero un abandono así aumenta el riesgo de que queden fallos sin arreglar.', desc:'Una app que no se actualiza desde hace mucho tiempo puede tener vulnerabilidades sin corregir. No es señal de fraude por sí sola.'});
     }
   }
   if((app.averageUserRating||0) > 0 && (app.userRatingCount||0) < 50){
-    findings.push({sev:'low', title:'Muy pocas valoraciones', desc:`Solo ${app.userRatingCount||0} valoraciones registradas. Un número muy bajo dificulta confiar en la reputación pública de la app.`});
+    findings.push({sev:'low', title:'Muy pocas valoraciones', basic:'Muy pocas personas la han valorado todavía, así que es difícil fiarse de su reputación pública.', eli5:'Es como un restaurante nuevo con solo dos reseñas: puede que sea excelente, pero todavía no hay suficiente gente que lo haya probado como para estar seguro.', desc:`Solo ${app.userRatingCount||0} valoraciones registradas. Un número muy bajo dificulta confiar en la reputación pública de la app.`});
   }
   if(findings.length===0){
     findings.push({sev:'ok', title:'Sin señales de impersonación en el identificador', desc:'El bundle ID no coincide con patrones de suplantación de marcas conocidas.'});
@@ -5509,17 +5514,17 @@ function analyzeSmsText(sender, text){
 
   const hits = SMISHING_PATTERNS.filter(p=>lower.includes(p));
   if(hits.length){
-    findings.push({sev: hits.length>=2?'high':'med', title:'Frases típicas de smishing detectadas', desc:`Coincide con: ${hits.slice(0,5).join(', ')}. Estos temas (paquetería, multas, premios, bloqueo de cuenta) son los señuelos más usados en campañas de SMS fraudulentos en España.`});
+    findings.push({sev: hits.length>=2?'high':'med', title:'Frases típicas de smishing detectadas', basic:'El mensaje usa frases muy típicas de estafas por SMS, como avisos de paquetería, multas o premios.', eli5:'Son los mismos cebos de siempre, repetidos una y otra vez porque funcionan: "tu paquete está retenido", "has ganado un premio", "tu cuenta se bloqueará" — cuantas más frases de este tipo junte el mensaje, más probable es que sea un anzuelo.', desc:`Coincide con: ${hits.slice(0,5).join(', ')}. Estos temas (paquetería, multas, premios, bloqueo de cuenta) son los señuelos más usados en campañas de SMS fraudulentos en España.`});
   }
 
   /* 1. Lenguaje de presión / urgencia / autoridad */
   const urgencyHits = URGENCY_WORDS.filter(w=>lower.includes(w));
   if(urgencyHits.length){
-    findings.push({sev: urgencyHits.length>=2?'high':'med', title:'Lenguaje de presión o urgencia', desc:`Frases como: ${urgencyHits.slice(0,5).join(', ')}. La presión temporal, la amenaza de consecuencias o la invocación de un organismo oficial buscan que actúes sin verificar. Es la técnica de ingeniería social más común en smishing.`});
+    findings.push({sev: urgencyHits.length>=2?'high':'med', title:'Lenguaje de presión o urgencia', basic:'El mensaje mete prisa, con frases del tipo "actúa ya" o amenazas de una consecuencia inmediata.', eli5:'Es la misma táctica que un vendedor a domicilio que dice "oferta solo hoy": cuanta más prisa te meten, menos tiempo tienes para pararte a pensar si es de verdad.', desc:`Frases como: ${urgencyHits.slice(0,5).join(', ')}. La presión temporal, la amenaza de consecuencias o la invocación de un organismo oficial buscan que actúes sin verificar. Es la técnica de ingeniería social más común en smishing.`});
   }
 
   if(/\b(c[oó]digo|otp|clave de un solo uso)\b/i.test(text) && /\b(no lo compartas|comparte|env[ií]a|reenv[ií]a|dicta|facilita)\b/i.test(text)){
-    findings.push({sev:'high', title:'Se pide compartir o reenviar un código', desc:'Ninguna entidad legítima te pedirá nunca que reenvíes o dictes un código de verificación por SMS, teléfono o chat. Si te lo piden, es fraude con total seguridad.'});
+    findings.push({sev:'high', title:'Se pide compartir o reenviar un código', basic:'El mensaje pide que compartas o reenvíes un código de verificación.', eli5:'Un código de verificación es como la llave de una puerta que solo debe usar el dueño: ninguna entidad real te la pedirá jamás por SMS o teléfono. Si alguien te la pide, quiere entrar en tu cuenta, no ayudarte.', desc:'Ninguna entidad legítima te pedirá nunca que reenvíes o dictes un código de verificación por SMS, teléfono o chat. Si te lo piden, es fraude con total seguridad.'});
   }
 
   /* 3. Spoofing del remitente: coincidencia exacta de marca + coincidencia aproximada (Levenshtein) */
@@ -5528,7 +5533,7 @@ function analyzeSmsText(sender, text){
   if(sender && !senderIsNumeric && senderNorm.length){
     const exactBrand = BRANDS.find(b=>b.length>=4 && senderNorm.includes(b));
     if(exactBrand){
-      findings.push({sev:'low', title:'El remitente declarado incluye el nombre de una marca', desc:'Los remitentes de SMS con nombre de marca (sender ID alfanumérico) son fácilmente falsificables. Cualquiera puede enviar un SMS que se muestre como "BBVA" o "Correos" sin ser esa entidad.'});
+      findings.push({sev:'low', title:'El remitente declarado incluye el nombre de una marca', basic:'El nombre que aparece como remitente incluye el de una marca conocida, pero eso es fácil de falsificar.', eli5:'Es como el remitente escrito a mano en un sobre: cualquiera puede escribir "Tu Banco" ahí, no significa que la carta venga realmente de tu banco.', desc:'Los remitentes de SMS con nombre de marca (sender ID alfanumérico) son fácilmente falsificables. Cualquiera puede enviar un SMS que se muestre como "BBVA" o "Correos" sin ser esa entidad.'});
     } else {
       let closest = null, closestDist = Infinity;
       for(const b of BRANDS){
@@ -5537,17 +5542,17 @@ function analyzeSmsText(sender, text){
         if(dist < closestDist){ closestDist = dist; closest = b; }
       }
       if(closest && closestDist>=1 && closestDist<=2){
-        findings.push({sev:'high', title:`Remitente muy parecido a la marca "${closest}", pero no idéntico`, desc:`"${sender}" se diferencia de "${closest}" en solo ${closestDist} carácter(es) (distancia de edición ${closestDist}). Es el mismo patrón que el typosquatting en dominios, aplicado al nombre del remitente, diseñado para pasar desapercibido a simple vista.`});
+        findings.push({sev:'high', title:`Remitente muy parecido a la marca "${closest}", pero no idéntico`, basic:`El nombre del remitente se parece mucho a "${closest}" pero no es exactamente igual.`, eli5:`Es parecido a escribir "${closest}" pero cambiar una letra por otra para que a simple vista pase desapercibido, como cambiar una "o" por un cero.`, desc:`"${sender}" se diferencia de "${closest}" en solo ${closestDist} carácter(es) (distancia de edición ${closestDist}). Es el mismo patrón que el typosquatting en dominios, aplicado al nombre del remitente, diseñado para pasar desapercibido a simple vista.`});
       }
     }
   }
 
   /* 5. Enlaces ocultos: caracteres invisibles/de control, o URLs con espacios insertados para evadir filtros */
   if(HIDDEN_CHAR_RE.test(text)){
-    findings.push({sev:'high', title:'Caracteres invisibles o de control Unicode en el mensaje', desc:'El texto contiene caracteres de ancho cero o de control de dirección de escritura. Se usan para camuflar enlaces, alterar visualmente cómo se lee una palabra/dominio, o evadir filtros antispam basados en texto. No es algo que aparezca en SMS legítimos.'});
+    findings.push({sev:'high', title:'Caracteres invisibles o de control Unicode en el mensaje', basic:'El mensaje contiene caracteres ocultos que no se ven pero que alteran cómo se lee el texto.', eli5:'Es como tinta invisible mezclada en una carta normal: no la ves a simple vista, pero está ahí para camuflar algo, normalmente para que un enlace o una palabra se lean distinto de lo que realmente son.', desc:'El texto contiene caracteres de ancho cero o de control de dirección de escritura. Se usan para camuflar enlaces, alterar visualmente cómo se lee una palabra/dominio, o evadir filtros antispam basados en texto. No es algo que aparezca en SMS legítimos.'});
   }
   if(/\b[a-z]{3,}\s+\.\s*[a-z]{2,}\s*\.\s*[a-z]{2,4}\b/i.test(text) || /\bh\s*t\s*t\s*p\s*s?\s*:\s*\/\s*\//i.test(text)){
-    findings.push({sev:'med', title:'Posible enlace ofuscado con espacios', desc:'Se detecta un patrón tipo "h t t p s" o un dominio con espacios insertados entre las partes, una técnica para evitar que los filtros automáticos de SMS/spam reconozcan el enlace como tal.'});
+    findings.push({sev:'med', title:'Posible enlace ofuscado con espacios', basic:'El mensaje incluye un enlace escrito con espacios de más, como si quisiera pasar desapercibido para los filtros automáticos.', eli5:'Es como escribir una palabra prohibida separando las letras para que el corrector automático no la detecte — el enlace sigue funcionando para una persona, pero engaña a los sistemas que buscan enlaces sospechosos.', desc:'Se detecta un patrón tipo "h t t p s" o un dominio con espacios insertados entre las partes, una técnica para evitar que los filtros automáticos de SMS/spam reconozcan el enlace como tal.'});
   }
 
   const urls = extractSmsLinks(text);
@@ -5555,20 +5560,20 @@ function analyzeSmsText(sender, text){
   if(urls.length){
     const analyzed = urls.map(u=>analyzeSingleUrl(u));
     const anyHigh = analyzed.some(r=>!r.error && r.findings.some(f=>f.sev==='high'));
-    findings.push({sev: anyHigh?'high':'med', title:`${urls.length} enlace(s) detectado(s) en el mensaje`, desc:'Los SMS fraudulentos casi siempre incluyen un enlace, a menudo acortado. Se analiza abajo con el mismo motor del módulo de URLs, incluyendo la opción de ver a dónde redirige realmente.'});
+    findings.push({sev: anyHigh?'high':'med', title:`${urls.length} enlace(s) detectado(s) en el mensaje`, basic: anyHigh ? 'El mensaje incluye enlaces y al menos uno de ellos dio señales serias de riesgo (los tienes analizados por separado más abajo).' : 'El mensaje incluye enlaces; están analizados por separado más abajo.', eli5:'Casi todos los SMS fraudulentos llevan un enlace, muchas veces acortado para no dejar ver a dónde lleva de verdad. Se ha revisado con el mismo detector que usa Vigía para direcciones web.', desc:'Los SMS fraudulentos casi siempre incluyen un enlace, a menudo acortado. Se analiza abajo con el mismo motor del módulo de URLs, incluyendo la opción de ver a dónde redirige realmente.'});
     urlSection = `<div class="result-block"><h3>Enlaces encontrados en el SMS</h3>${analyzed.map(renderUrlResult).join('')}</div>`;
   }
   /* 2. Acortadores, incluso sin "https://" delante (habitual en SMS reales) */
   const bareDomains = extractDomains(text);
   const shortenerHits = bareDomains.filter(d=>URL_SHORTENERS.includes(d));
   if(shortenerHits.length && !urls.some(u=>shortenerHits.some(s=>u.includes(s)))){
-    findings.push({sev:'med', title:'Enlace acortado sin protocolo explícito', desc:`Se menciona "${shortenerHits.join(', ')}" sin "https://" delante, habitual en SMS reales para ahorrar caracteres. No es posible saber el destino final sin visitarlo; usa una herramienta de vista previa antes de hacer clic.`});
+    findings.push({sev:'med', title:'Enlace acortado sin protocolo explícito', basic:'Menciona un enlace acortado que oculta a dónde lleva realmente.', eli5:'Es como recibir un paquete envuelto sin ninguna etiqueta: no sabes qué hay dentro hasta que lo abres. El enlace acortado esconde a dónde te lleva realmente hasta que haces clic.', desc:`Se menciona "${shortenerHits.join(', ')}" sin "https://" delante, habitual en SMS reales para ahorrar caracteres. No es posible saber el destino final sin visitarlo; usa una herramienta de vista previa antes de hacer clic.`});
   }
 
   /* 4. Números de tarificación especial mencionados en el propio texto */
   const premiumHits = findPremiumNumbersInText(text);
   if(premiumHits.length){
-    findings.push({sev:'high', title:`Número(s) de tarificación especial mencionados: ${premiumHits.join(', ')}`, desc:'El mensaje pide llamar o enviar un SMS a un número de coste elevado (prefijos españoles 803/806/807/905, o un código corto). Es un señuelo habitual para generar cargos en la factura sin que la víctima lo note hasta después.'});
+    findings.push({sev:'high', title:`Número(s) de tarificación especial mencionados: ${premiumHits.join(', ')}`, basic:'Pide llamar o enviar un SMS a un número de coste muy elevado.', eli5:'Es como un cartel que te invita a llamar a un número que cobra por minuto mucho más de lo normal — el objetivo es que hagas esa llamada o envíes ese SMS sin fijarte en el coste hasta que llega la factura.', desc:'El mensaje pide llamar o enviar un SMS a un número de coste elevado (prefijos españoles 803/806/807/905, o un código corto). Es un señuelo habitual para generar cargos en la factura sin que la víctima lo note hasta después.'});
   }
 
   /* 6. BIN bancario: secuencia con forma de número de tarjeta y checksum de Luhn válido */
@@ -5578,7 +5583,7 @@ function analyzeSmsText(sender, text){
     const card = cardHits[0];
     const bin = card.slice(0,8);
     const network = classifyBinNetwork(card);
-    findings.push({sev:'high', title:'El mensaje contiene un número con formato de tarjeta de pago', desc:`Se ha detectado una secuencia de ${card.length} dígitos que supera la validación de checksum de tarjetas (Luhn)${network?`, compatible con el formato de ${network}`:''}. Ningún banco legítimo pide el número completo de tu tarjeta por SMS. Si esta cifra viene de ti mismo (p. ej. reenviaste un dato por error), elimínala del mensaje antes de reenviarlo a nadie.`});
+    findings.push({sev:'high', title:'El mensaje contiene un número con formato de tarjeta de pago', basic:'El texto incluye una secuencia de dígitos con la forma de un número de tarjeta bancaria.', eli5:'Ningún banco de verdad te pide el número completo de tu tarjeta por SMS — es como si un banco real te pidiera que dejaras tu tarjeta en un buzón de la calle, algo que jamás haría.', desc:`Se ha detectado una secuencia de ${card.length} dígitos que supera la validación de checksum de tarjetas (Luhn)${network?`, compatible con el formato de ${network}`:''}. Ningún banco legítimo pide el número completo de tu tarjeta por SMS. Si esta cifra viene de ti mismo (p. ej. reenviaste un dato por error), elimínala del mensaje antes de reenviarlo a nadie.`});
     const binUid = 'bin' + Math.random().toString(36).slice(2,10);
     binSection = `<div class="result-block">
       <h3>Identificar el banco emisor a partir del BIN (opcional)</h3>
@@ -5668,12 +5673,12 @@ function analyzePhoneNumber(raw){
   const digitsOnly = cleaned.replace(/^\+/,'');
 
   if(!/^\+?\d{4,15}$/.test(cleaned)){
-    findings.push({sev:'med', title:'Formato no reconocible como número de teléfono', desc:'Revisa que solo contenga dígitos, espacios, guiones o un "+" inicial con el prefijo del país.'});
+    findings.push({sev:'med', title:'Formato no reconocible como número de teléfono', basic:'El texto introducido no tiene la forma de un número de teléfono válido.', eli5:'Es como intentar marcar un número con letras mezcladas: antes de analizar nada, hace falta que tenga la forma correcta de un número real.', desc:'Revisa que solo contenga dígitos, espacios, guiones o un "+" inicial con el prefijo del país.'});
     return findings;
   }
 
   if(/^(\d)\1+$/.test(digitsOnly)){
-    findings.push({sev:'med', title:'Número con dígitos repetidos', desc:'Un patrón como 000000000 o 111111111 suele indicar un número de prueba, inválido o deliberadamente falsificado ("spoofing") para mostrar un identificador falso.'});
+    findings.push({sev:'med', title:'Número con dígitos repetidos', basic:'El número está formado por el mismo dígito repetido, como 000000000.', eli5:'Es como una matrícula con todo el mismo número: casi nunca es un coche real, suele ser de pruebas o inventado a propósito para ocultar el número real de quien llama.', desc:'Un patrón como 000000000 o 111111111 suele indicar un número de prueba, inválido o deliberadamente falsificado ("spoofing") para mostrar un identificador falso.'});
   }
 
   if(cleaned.startsWith('+')){
@@ -5682,7 +5687,7 @@ function analyzePhoneNumber(raw){
     for(const len of [3,2,1]){
       const p = rest.slice(0,len);
       if(WANGIRI_PREFIXES[p]){
-        findings.push({sev:'high', title:`Prefijo internacional de riesgo (+${p}, ${WANGIRI_PREFIXES[p]})`, desc:'Este prefijo aparece con frecuencia en estafas de "llamada perdida" (wangiri): te llaman, cuelgan tras un tono, y si devuelves la llamada te cobran tarificación especial internacional. No devuelvas llamadas perdidas de números que no reconozcas.'});
+        findings.push({sev:'high', title:`Prefijo internacional de riesgo (+${p}, ${WANGIRI_PREFIXES[p]})`, basic:'El número empieza con un prefijo internacional muy asociado a la estafa de "llamada perdida".', eli5:'Es el truco de "te llamo, cuelgo enseguida, y espero a que me devuelvas la llamada por curiosidad" — en cuanto devuelves la llamada, te cobran una tarifa internacional muy cara sin que te des cuenta.', desc:'Este prefijo aparece con frecuencia en estafas de "llamada perdida" (wangiri): te llaman, cuelgan tras un tono, y si devuelves la llamada te cobran tarificación especial internacional. No devuelvas llamadas perdidas de números que no reconozcas.'});
         break;
       }
     }
@@ -5691,10 +5696,10 @@ function analyzePhoneNumber(raw){
     }
   } else {
     if(ES_PREMIUM_PREFIXES.some(p=>digitsOnly.startsWith(p))){
-      findings.push({sev:'high', title:'Prefijo español de tarificación especial', desc:`Los números que empiezan por ${ES_PREMIUM_PREFIXES.join(', ')} tienen un coste por minuto o por llamada elevado en España. Legítimos en servicios de pago declarados, pero un señuelo habitual para hacer llamar a la víctima.`});
+      findings.push({sev:'high', title:'Prefijo español de tarificación especial', basic:'Empieza por un prefijo español con tarifa elevada por llamada o por minuto.', eli5:'Es como una cabina de teléfono que cobra mucho más de lo normal por minuto — legal si el servicio lo declara claramente, pero también un cebo típico para hacer que llames sin fijarte en lo que va a costarte.', desc:`Los números que empiezan por ${ES_PREMIUM_PREFIXES.join(', ')} tienen un coste por minuto o por llamada elevado en España. Legítimos en servicios de pago declarados, pero un señuelo habitual para hacer llamar a la víctima.`});
     }
     if(/^[5-9]\d{4,5}$/.test(digitsOnly) && digitsOnly.length<=6){
-      findings.push({sev:'med', title:'Número corto (posible código SMS Premium)', desc:'Los códigos cortos de 5-6 dígitos se usan tanto para servicios legítimos (avisos de bancos, 2FA) como para suscripciones SMS Premium no deseadas. Verifica con tu operador si el código es oficial de la marca que dice representar.'});
+      findings.push({sev:'med', title:'Número corto (posible código SMS Premium)', basic:'Es un número corto de 5-6 dígitos, un formato que usan tanto servicios legítimos como suscripciones no deseadas.', eli5:'Es como un apartado de correos con un número muy corto: algunos son de tu banco enviando avisos, otros son de servicios de suscripción que cobran cada mes sin que te des cuenta.', desc:'Los códigos cortos de 5-6 dígitos se usan tanto para servicios legítimos (avisos de bancos, 2FA) como para suscripciones SMS Premium no deseadas. Verifica con tu operador si el código es oficial de la marca que dice representar.'});
     }
   }
 
@@ -5860,12 +5865,12 @@ function findLastSequence(bytes, seq){
 function checkJpegTrailer(bytes, findings){
   const eoiPos = findLastSequence(bytes, [0xFF,0xD9]);
   if(eoiPos === -1){
-    findings.push({sev:'med', title:'No se encontró el marcador de fin de imagen (EOI)', desc:'Un JPEG válido termina con los bytes FF D9. Su ausencia sugiere un archivo truncado, corrupto, o que no es realmente un JPEG completo.'});
+    findings.push({sev:'med', title:'No se encontró el marcador de fin de imagen (EOI)', basic:'A la imagen le falta la marca técnica que indica dónde termina de verdad.', eli5:'Es como un libro sin la última página, o al que le falta la palabra "FIN" al final — puede que solo esté incompleto o dañado, pero también podría significar que algo se ha añadido o cortado de forma anómala.', desc:'Un JPEG válido termina con los bytes FF D9. Su ausencia sugiere un archivo truncado, corrupto, o que no es realmente un JPEG completo.'});
     return;
   }
   const trailing = bytes.length - (eoiPos + 2);
   if(trailing > 24){
-    findings.push({sev:'high', title:`${trailing} bytes de datos tras el final real de la imagen`, desc:'Después del marcador de fin de imagen (FF D9) no debería haber más contenido. Datos añadidos aquí son la técnica clásica para ocultar archivos dentro de una imagen (esteganografía simple o "polyglot"): el visor de imágenes ignora ese contenido, pero otro programa puede leerlo perfectamente.'});
+    findings.push({sev:'high', title:`${trailing} bytes de datos tras el final real de la imagen`, basic:'Hay datos extra escondidos después del final real de la imagen, invisibles para cualquier visor normal.', eli5:'Es como una postal con un doble fondo: por delante parece una imagen normal, pero tiene algo más pegado por detrás que un visor de fotos no te enseña, aunque otro programa sí podría leerlo.', desc:'Después del marcador de fin de imagen (FF D9) no debería haber más contenido. Datos añadidos aquí son la técnica clásica para ocultar archivos dentro de una imagen (esteganografía simple o "polyglot"): el visor de imágenes ignora ese contenido, pero otro programa puede leerlo perfectamente.'});
   }
 }
 
@@ -5882,24 +5887,24 @@ function checkPngTrailer(bytes, findings){
     pos = chunkEnd;
   }
   if(!foundIEND){
-    findings.push({sev:'med', title:'No se encontró el chunk final IEND', desc:'Un PNG válido termina con un chunk IEND. Su ausencia sugiere un archivo truncado, corrupto, o con una estructura de chunks manipulada.'});
+    findings.push({sev:'med', title:'No se encontró el chunk final IEND', basic:'A la imagen le falta la marca técnica que indica dónde termina de verdad.', eli5:'Es como un libro sin la última página, o al que le falta la palabra "FIN" al final — puede que solo esté incompleto, pero también podría indicar una estructura manipulada.', desc:'Un PNG válido termina con un chunk IEND. Su ausencia sugiere un archivo truncado, corrupto, o con una estructura de chunks manipulada.'});
     return;
   }
   const trailing = bytes.length - pos;
   if(trailing > 8){
-    findings.push({sev:'high', title:`${trailing} bytes de datos tras el chunk IEND`, desc:'Un PNG termina oficialmente en su chunk IEND. Cualquier byte adicional después es contenido "invisible" para un visor de imágenes normal, la misma técnica de esteganografía/polyglot que en JPEG.'});
+    findings.push({sev:'high', title:`${trailing} bytes de datos tras el chunk IEND`, basic:'Hay datos extra escondidos después del final real de la imagen, invisibles para cualquier visor normal.', eli5:'Es como una postal con un doble fondo: por delante parece una imagen normal, pero tiene algo más pegado por detrás que un visor de fotos no te enseña.', desc:'Un PNG termina oficialmente en su chunk IEND. Cualquier byte adicional después es contenido "invisible" para un visor de imágenes normal, la misma técnica de esteganografía/polyglot que en JPEG.'});
   }
 }
 
 function checkGifTrailer(bytes, findings){
   const trailerPos = findLastSequence(bytes, [0x3B]);
   if(trailerPos === -1){
-    findings.push({sev:'med', title:'No se encontró el byte de fin de secuencia GIF (0x3B)', desc:'Puede tratarse de un archivo truncado o corrupto.'});
+    findings.push({sev:'med', title:'No se encontró el byte de fin de secuencia GIF (0x3B)', basic:'A la imagen le falta la marca técnica que indica dónde termina de verdad.', eli5:'Es como un libro sin la última página — puede que el archivo simplemente esté incompleto o dañado.', desc:'Puede tratarse de un archivo truncado o corrupto.'});
     return;
   }
   const trailing = bytes.length - (trailerPos + 1);
   if(trailing > 24){
-    findings.push({sev:'med', title:`${trailing} bytes tras el posible final del GIF`, desc:'Esta comprobación en GIF es orientativa (el byte 0x3B puede aparecer también dentro de los datos de imagen); un valor alto de bytes sobrantes es indicio, no confirmación, de datos ocultos añadidos al archivo.'});
+    findings.push({sev:'med', title:`${trailing} bytes tras el posible final del GIF`, basic:'Parece haber datos extra después del final real de la imagen, aunque esta comprobación es menos fiable en este formato.', eli5:'Es como sospechar que una postal tiene un doble fondo, pero sin poder estar del todo seguros — un indicio a tener en cuenta, no una confirmación.', desc:'Esta comprobación en GIF es orientativa (el byte 0x3B puede aparecer también dentro de los datos de imagen); un valor alto de bytes sobrantes es indicio, no confirmación, de datos ocultos añadidos al archivo.'});
   }
 }
 
@@ -5907,16 +5912,16 @@ function scanPolyglotSignatures(bytes, findings, scopeLabel){
   const text = toLatin1String(bytes);
   const scope = scopeLabel ? ` (dentro de ${scopeLabel})` : '';
   if(text.includes('PK\x03\x04')){
-    findings.push({sev:'high', title:`Cabecera de archivo ZIP embebida${scope}`, desc:'El archivo contiene en algún punto la firma de un archivo ZIP (PK\\x03\\x04). Es la base de los ataques "polyglot" imagen+ZIP: el mismo archivo es a la vez una imagen válida y un ZIP válido, usado para ocultar contenido dentro de una imagen que parece normal.'});
+    findings.push({sev:'high', title:`Cabecera de archivo ZIP embebida${scope}`, basic:'El archivo funciona a la vez como imagen y como archivo comprimido, algo que un archivo normal nunca hace.', eli5:'Es como un sobre que, mirado de una forma, parece una foto, y mirado de otra, es en realidad una caja llena de más cosas — un mismo archivo con dos identidades, usado para esconder contenido dentro de lo que parece una imagen inofensiva.', desc:'El archivo contiene en algún punto la firma de un archivo ZIP (PK\\x03\\x04). Es la base de los ataques "polyglot" imagen+ZIP: el mismo archivo es a la vez una imagen válida y un ZIP válido, usado para ocultar contenido dentro de una imagen que parece normal.'});
   }
   if(/MZ.{0,64}This program cannot be run in DOS mode/s.test(text)){
-    findings.push({sev:'high', title:`Ejecutable de Windows embebido${scope}`, desc:'Se ha encontrado la cadena característica de un ejecutable PE de Windows dentro del archivo. Esto no debería aparecer nunca dentro de una imagen legítima.'});
+    findings.push({sev:'high', title:`Ejecutable de Windows embebido${scope}`, basic:'Dentro del archivo hay un programa de Windows completo escondido.', eli5:'Es como un cuadro que, si lo mirases con rayos X, tuviera un aparato electrónico entero escondido dentro del lienzo — algo que no debería estar ahí en ninguna circunstancia normal.', desc:'Se ha encontrado la cadena característica de un ejecutable PE de Windows dentro del archivo. Esto no debería aparecer nunca dentro de una imagen legítima.'});
   }
   if(/<script[\s>]/i.test(text)){
-    findings.push({sev:'high', title:`Etiqueta <script> embebida${scope}`, desc:'El archivo contiene código HTML/JavaScript. Si un servidor mal configurado sirviera este archivo como HTML, el script podría ejecutarse.'});
+    findings.push({sev:'high', title:`Etiqueta <script> embebida${scope}`, basic:'El archivo contiene código capaz de ejecutarse si se abre de la forma equivocada.', eli5:'Es como una imagen que lleva escondido dentro un resorte que solo se activa si alguien la coloca en el sitio equivocado — en ese caso, ese código podría llegar a ejecutarse.', desc:'El archivo contiene código HTML/JavaScript. Si un servidor mal configurado sirviera este archivo como HTML, el script podría ejecutarse.'});
   }
   if(/<\?php/i.test(text)){
-    findings.push({sev:'high', title:`Código PHP embebido${scope}`, desc:'El archivo contiene una etiqueta de apertura PHP. Es una técnica conocida para ocultar "webshells" dentro de imágenes en servidores vulnerables.'});
+    findings.push({sev:'high', title:`Código PHP embebido${scope}`, basic:'Dentro del archivo hay código de programación de servidor escondido.', eli5:'Es una técnica conocida para esconder un "control remoto" dentro de una imagen aparentemente normal, pensado para activarse si acaba en un servidor mal protegido.', desc:'El archivo contiene una etiqueta de apertura PHP. Es una técnica conocida para ocultar "webshells" dentro de imágenes en servidores vulnerables.'});
   }
 }
 
@@ -5958,7 +5963,7 @@ function analyzeJpegExif(bytes, findings){
       if(tag === 0x8825){ hasGps = true; break; }
     }
     if(hasGps){
-      findings.push({sev:'med', title:'Metadatos EXIF con datos de ubicación GPS', desc:'Esta imagen incluye un bloque de coordenadas GPS en sus metadatos. No es "malicioso", pero es una fuga de privacidad frecuente: cualquiera que reciba el archivo original puede ver dónde se tomó. Considera eliminar los metadatos antes de compartirla.'});
+      findings.push({sev:'med', title:'Metadatos EXIF con datos de ubicación GPS', basic:'La imagen incluye la ubicación exacta donde se tomó, escondida en sus datos internos.', eli5:'Es como si la foto llevara pegada por detrás una nota con la dirección exacta de dónde se hizo, invisible mientras miras la imagen, pero legible por quien sepa buscarla.', desc:'Esta imagen incluye un bloque de coordenadas GPS en sus metadatos. No es "malicioso", pero es una fuga de privacidad frecuente: cualquiera que reciba el archivo original puede ver dónde se tomó. Considera eliminar los metadatos antes de compartirla.'});
     }
   }catch(e){ /* estructura EXIF no estándar: se omite el detalle de GPS, se mantiene el escaneo de cadenas */ }
 
@@ -5968,13 +5973,13 @@ function analyzeJpegExif(bytes, findings){
 /* ---- SVG: análisis como texto/XML ---- */
 function analyzeSvgContent(text, findings){
   const checks = [
-    { re:/<script[\s>]/i, sev:'high', title:'Etiqueta <script> en el SVG', desc:'Los SVG pueden contener JavaScript ejecutable. Si este archivo se abre directamente en un navegador (o se incrusta en una página), ese script puede ejecutarse.' },
-    { re:/\bon(load|error|click|mouseover|mouseenter|focus|begin|end|activate)\s*=/i, sev:'high', title:'Manejador de evento embebido (on*=)', desc:'Atributos como onload= u onclick= ejecutan JavaScript automáticamente al cargar o interactuar con el SVG, sin necesidad de una etiqueta <script>.' },
-    { re:/javascript:/i, sev:'high', title:'URI "javascript:" en el SVG', desc:'Un enlace o referencia con el esquema javascript: ejecuta código al activarse.' },
-    { re:/<foreignObject/i, sev:'med', title:'Elemento <foreignObject>', desc:'Permite incrustar contenido HTML arbitrario dentro del SVG, ampliando mucho la superficie de ataque respecto a un SVG "de imagen" normal.' },
-    { re:/<!ENTITY[^>]+SYSTEM/i, sev:'high', title:'Entidad externa declarada (posible XXE)', desc:'Una entidad SYSTEM externa puede usarse, con un parser XML vulnerable, para leer archivos locales o hacer peticiones no deseadas (ataque XXE).' },
+    { re:/<script[\s>]/i, sev:'high', title:'Etiqueta <script> en el SVG', basic:'El archivo contiene código capaz de ejecutarse por sí solo al abrirlo.', eli5:'Un SVG debería ser solo un dibujo, pero este trae instrucciones activas dentro, como si un cuadro colgado en la pared pudiera moverse solo al mirarlo.', desc:'Los SVG pueden contener JavaScript ejecutable. Si este archivo se abre directamente en un navegador (o se incrusta en una página), ese script puede ejecutarse.' },
+    { re:/\bon(load|error|click|mouseover|mouseenter|focus|begin|end|activate)\s*=/i, sev:'high', title:'Manejador de evento embebido (on*=)', basic:'Tiene instrucciones que se activan solas al cargar o al interactuar con la imagen.', eli5:'Es como un dibujo con un resorte oculto: en cuanto lo abres o pasas el ratón por encima, dispara algo automáticamente sin que lo pidas.', desc:'Atributos como onload= u onclick= ejecutan JavaScript automáticamente al cargar o interactuar con el SVG, sin necesidad de una etiqueta <script>.' },
+    { re:/javascript:/i, sev:'high', title:'URI "javascript:" en el SVG', basic:'Contiene un enlace que, en vez de llevar a una web, ejecuta código directamente.', eli5:'Es como un botón que parece un enlace normal pero en realidad activa un mecanismo interno en cuanto lo tocas.', desc:'Un enlace o referencia con el esquema javascript: ejecuta código al activarse.' },
+    { re:/<foreignObject/i, sev:'med', title:'Elemento <foreignObject>', basic:'La imagen puede incluir contenido de página web completo dentro de sí misma.', eli5:'Es como un cuadro que en realidad tiene una ventanita secreta a otra habitación entera dentro — amplía mucho lo que ese archivo puede llegar a hacer, más allá de ser solo un dibujo.', desc:'Permite incrustar contenido HTML arbitrario dentro del SVG, ampliando mucho la superficie de ataque respecto a un SVG "de imagen" normal.' },
+    { re:/<!ENTITY[^>]+SYSTEM/i, sev:'high', title:'Entidad externa declarada (posible XXE)', basic:'El archivo intenta hacer referencia a contenido externo de forma técnica avanzada, una vía conocida de ataque.', eli5:'Es una trampa técnica que, si el programa que abre el archivo no está bien protegido, puede usarse para asomarse a archivos de tu ordenador que no deberían ser visibles.', desc:'Una entidad SYSTEM externa puede usarse, con un parser XML vulnerable, para leer archivos locales o hacer peticiones no deseadas (ataque XXE).' },
   ];
-  checks.forEach(c=>{ if(c.re.test(text)) findings.push({sev:c.sev, title:c.title, desc:c.desc}); });
+  checks.forEach(c=>{ if(c.re.test(text)) findings.push({sev:c.sev, title:c.title, basic:c.basic, eli5:c.eli5, desc:c.desc}); });
 
   const urls = new Set();
   const hrefRe = /(?:xlink:href|href)\s*=\s*["'](https?:\/\/[^"']+)["']/gi;
@@ -5996,12 +6001,12 @@ async function analyzeImageFile(file){
 
   if(expectedType && sig.type !== expectedType){
     if(dangerousTypes.includes(sig.type)){
-      findings.push({sev:'high', title:`La extensión dice ".${ext}" pero el contenido real es: ${sig.label}`, desc:'El archivo no es una imagen en absoluto, pese a su nombre/extensión. Es la técnica más básica y efectiva para hacer pasar un archivo peligroso por una imagen inofensiva.'});
+      findings.push({sev:'high', title:`La extensión dice ".${ext}" pero el contenido real es: ${sig.label}`, basic:'El archivo dice ser una imagen por su nombre, pero por dentro es otra cosa completamente distinta.', eli5:'Es como una caja etiquetada como "juguete" que en realidad contiene otra cosa muy distinta — el nombre del archivo se puede escribir como se quiera, pero lo que hay dentro no engaña a quien mira de verdad.', desc:'El archivo no es una imagen en absoluto, pese a su nombre/extensión. Es la técnica más básica y efectiva para hacer pasar un archivo peligroso por una imagen inofensiva.'});
     } else {
-      findings.push({sev:'low', title:`Formato real distinto al esperado (${sig.label} en vez de ${expectedType})`, desc:'Sigue siendo un formato de imagen válido; probablemente el archivo fue renombrado o reconvertido sin actualizar su extensión. Informativo, no necesariamente malicioso.'});
+      findings.push({sev:'low', title:`Formato real distinto al esperado (${sig.label} en vez de ${expectedType})`, basic:'Sigue siendo una imagen de verdad, pero de un tipo distinto al que indica su nombre.', eli5:'Es como una prenda con la etiqueta cambiada por error: sigue siendo la misma prenda, solo que la talla escrita no es la correcta — normalmente un simple descuido al renombrar el archivo.', desc:'Sigue siendo un formato de imagen válido; probablemente el archivo fue renombrado o reconvertido sin actualizar su extensión. Informativo, no necesariamente malicioso.'});
     }
   } else if(!expectedType && dangerousTypes.includes(sig.type)){
-    findings.push({sev:'high', title:`Contenido no identificado como imagen: ${sig.label}`, desc:'El archivo no coincide con ningún formato de imagen conocido.'});
+    findings.push({sev:'high', title:`Contenido no identificado como imagen: ${sig.label}`, basic:'El archivo no tiene la estructura de ninguna imagen conocida.', eli5:'Es como abrir lo que parecía un álbum de fotos y encontrarte con páginas en blanco que no corresponden a ninguna foto real — algo no encaja con lo que se esperaba.', desc:'El archivo no coincide con ningún formato de imagen conocido.'});
   }
 
   let urlsToAnalyze = [];
@@ -6041,28 +6046,28 @@ async function analyzeOoxmlZip(file, bytes){
 
   const vbaEntry = names.find(n=>/vbaProject\.bin$/i.test(n));
   if(vbaEntry && zipEntryTooLarge(zip.file(vbaEntry))){
-    findings.push({sev:'high', title:'vbaProject.bin con tamaño descomprimido anómalo', desc:'Esta entrada declara, sin necesidad de descomprimirla, un tamaño real muy por encima de lo esperado para un proyecto de macros. Vigía no la descomprime para no agotar memoria; es en sí misma una señal de "bomba de descompresión" (zip bomb).'});
+    findings.push({sev:'high', title:'vbaProject.bin con tamaño descomprimido anómalo', basic:'Un archivo interno de macros declara un tamaño imposible de grande, un truco típico para saturar quien intenta abrirlo.', eli5:'Es como una maleta que en la etiqueta pesa 2 kilos pero, si la abrieras, pesaría toneladas — por eso Vigía ni siquiera intenta abrirla.', desc:'Esta entrada declara, sin necesidad de descomprimirla, un tamaño real muy por encima de lo esperado para un proyecto de macros. Vigía no la descomprime para no agotar memoria; es en sí misma una señal de "bomba de descompresión" (zip bomb).'});
   } else if(vbaEntry){
     const vbaBuf = await zip.file(vbaEntry).async('arraybuffer');
     const strings = extractBinaryStrings(vbaBuf, 4);
     const upperJoined = strings.join(' ').toUpperCase();
     const hits = OFFICE_AUTOEXEC_KEYWORDS.filter(k=>upperJoined.includes(k.toUpperCase()));
     if(hits.length){
-      findings.push({sev:'high', title:`Macros VBA con posibles palabras clave de autoejecución/sistema`, desc:`Coincidencias encontradas en un escaneo de texto del proyecto de macros: ${hits.slice(0,8).join(', ')}. El código VBA suele comprimirse internamente, así que esta búsqueda es orientativa (puede haber falsos negativos si el texto está comprimido), pero cualquier coincidencia aquí es una señal fuerte de riesgo.`});
+      findings.push({sev:'high', title:`Macros VBA con posibles palabras clave de autoejecución/sistema`, basic:'El documento incluye macros con palabras clave típicas de ejecución automática o acceso al sistema.', eli5:'Es como un documento que trae instrucciones para activarse solo en cuanto lo abres y, además, hablar directamente con el sistema operativo — algo que un documento normal no necesita hacer.', desc:`Coincidencias encontradas en un escaneo de texto del proyecto de macros: ${hits.slice(0,8).join(', ')}. El código VBA suele comprimirse internamente, así que esta búsqueda es orientativa (puede haber falsos negativos si el texto está comprimido), pero cualquier coincidencia aquí es una señal fuerte de riesgo.`});
     } else {
-      findings.push({sev:'med', title:'El documento contiene macros VBA', desc:'Se detectó un proyecto de macros (vbaProject.bin). No se encontraron palabras clave de autoejecución en un escaneo de texto simple, pero el código VBA suele estar comprimido internamente, por lo que esto no descarta que existan macros automáticas. Trata cualquier documento con macros de origen desconocido con precaución.'});
+      findings.push({sev:'med', title:'El documento contiene macros VBA', basic:'El documento incluye macros, pequeños programas que se ejecutan dentro del propio archivo.', eli5:'Es como un documento con un pequeño motor integrado capaz de hacer cosas por su cuenta, no solo mostrar texto — no es peligroso automáticamente, pero conviene tratarlo con cuidado si no esperabas que llevara macros.', desc:'Se detectó un proyecto de macros (vbaProject.bin). No se encontraron palabras clave de autoejecución en un escaneo de texto simple, pero el código VBA suele estar comprimido internamente, por lo que esto no descarta que existan macros automáticas. Trata cualquier documento con macros de origen desconocido con precaución.'});
     }
   }
 
   const contentTypesEntry = names.find(n=>n === '[Content_Types].xml');
   if(contentTypesEntry && zipEntryTooLarge(zip.file(contentTypesEntry))){
-    findings.push({sev:'high', title:'[Content_Types].xml con tamaño descomprimido anómalo', desc:'Esta entrada declara, sin necesidad de descomprimirla, un tamaño real muy por encima de lo esperado para este archivo de metadatos. Vigía no la descomprime; es en sí misma una señal de "bomba de descompresión".'});
+    findings.push({sev:'high', title:'[Content_Types].xml con tamaño descomprimido anómalo', basic:'Un archivo interno de metadatos declara un tamaño imposible de grande, un truco típico para saturar quien intenta abrirlo.', eli5:'Es como una maleta que en la etiqueta pesa 2 kilos pero, si la abrieras, pesaría toneladas — por eso Vigía ni siquiera intenta abrirla.', desc:'Esta entrada declara, sin necesidad de descomprimirla, un tamaño real muy por encima de lo esperado para este archivo de metadatos. Vigía no la descomprime; es en sí misma una señal de "bomba de descompresión".'});
   } else if(contentTypesEntry){
     const ct = await zip.file(contentTypesEntry).async('string');
     const macroEnabled = /macroEnabled/i.test(ct);
     const nonMacroExt = ['docx','xlsx','pptx','dotx','xltx','potx'];
     if(macroEnabled && nonMacroExt.includes(ext)){
-      findings.push({sev:'high', title:`Extensión ".${ext}" pero contenido declarado como "habilitado para macros"`, desc:'El archivo se nombra con una extensión que en teoría no admite macros, pero su declaración interna de tipos de contenido indica lo contrario. Es un patrón usado para intentar burlar filtros que bloquean adjuntos .docm/.xlsm/.pptm por nombre.'});
+      findings.push({sev:'high', title:`Extensión ".${ext}" pero contenido declarado como "habilitado para macros"`, basic:'El nombre del archivo dice que no lleva macros, pero por dentro está preparado para tenerlas.', eli5:'Es como una caja etiquetada "sin pilas" que por dentro sí las lleva — un truco pensado para pasar desapercibido ante filtros que bloquean archivos con macros solo mirando el nombre.', desc:'El archivo se nombra con una extensión que en teoría no admite macros, pero su declaración interna de tipos de contenido indica lo contrario. Es un patrón usado para intentar burlar filtros que bloquean adjuntos .docm/.xlsm/.pptm por nombre.'});
     }
   }
 
@@ -6071,7 +6076,7 @@ async function analyzeOoxmlZip(file, bytes){
   for(const relFile of relsFiles){
     const relEntry = zip.file(relFile);
     if(zipEntryTooLarge(relEntry)){
-      findings.push({sev:'high', title:`Archivo de relaciones con tamaño descomprimido anómalo`, desc:`"${relFile}" declara un tamaño real muy por encima de lo esperado. Vigía no lo descomprime; es en sí misma una señal de "bomba de descompresión".`});
+      findings.push({sev:'high', title:`Archivo de relaciones con tamaño descomprimido anómalo`, basic:'Un archivo interno de estructura declara un tamaño imposible de grande, un truco típico para saturar quien intenta abrirlo.', eli5:'Es como una maleta que en la etiqueta pesa 2 kilos pero, si la abrieras, pesaría toneladas — por eso Vigía ni siquiera intenta abrirla.', desc:`"${relFile}" declara un tamaño real muy por encima de lo esperado. Vigía no lo descomprime; es en sí misma una señal de "bomba de descompresión".`});
       continue;
     }
     const relXml = await relEntry.async('string');
@@ -6088,7 +6093,7 @@ async function analyzeOoxmlZip(file, bytes){
       if(/\/hyperlink$/i.test(type)){
         hyperlinks.add(target);
       } else {
-        findings.push({sev:'high', title:'Referencia externa remota no-hiperenlace', desc:`Relación de tipo "${type.split('/').pop()}" apunta a un recurso externo: ${target}. Si es una plantilla adjunta, un objeto OLE o un "chunk" externo, el documento puede descargar y cargar ese contenido remoto (incluidas macros) al abrirse, sin avisar, técnica conocida como "inyección de plantilla remota".`});
+        findings.push({sev:'high', title:'Referencia externa remota no-hiperenlace', basic:'El documento puede descargar contenido de internet automáticamente al abrirlo, sin avisar.', eli5:'Es como una carta que, al abrirla, envía en secreto un mensajero a buscar algo más en otro sitio antes de que termines de leerla — puede traer contenido adicional, incluidas macros, sin que te des cuenta.', desc:`Relación de tipo "${type.split('/').pop()}" apunta a un recurso externo: ${target}. Si es una plantilla adjunta, un objeto OLE o un "chunk" externo, el documento puede descargar y cargar ese contenido remoto (incluidas macros) al abrirse, sin avisar, técnica conocida como "inyección de plantilla remota".`});
       }
     }
   }
@@ -6105,9 +6110,9 @@ async function analyzeOoxmlZip(file, bytes){
       }
     }
     if(dangerousEmbeds.length){
-      findings.push({sev:'high', title:'Objeto(s) incrustado(s) con contenido ejecutable', desc:`${dangerousEmbeds.join('; ')}. Un objeto OLE incrustado que en realidad es un ejecutable o script es una técnica directa para conseguir que la víctima lo ejecute con un doble clic sobre lo que parece un icono o documento.`});
+      findings.push({sev:'high', title:'Objeto(s) incrustado(s) con contenido ejecutable', basic:'Dentro del documento hay un archivo escondido que en realidad es un programa ejecutable.', eli5:'Es como un documento que lleva pegado, camuflado como un simple icono, un botón que en realidad instala algo en tu ordenador en cuanto lo pulsas.', desc:`${dangerousEmbeds.join('; ')}. Un objeto OLE incrustado que en realidad es un ejecutable o script es una técnica directa para conseguir que la víctima lo ejecute con un doble clic sobre lo que parece un icono o documento.`});
     } else {
-      findings.push({sev:'med', title:`${embeddings.length} objeto(s) OLE incrustado(s)`, desc:'El documento contiene objetos incrustados. Su contenido inmediato no parece ejecutable, pero revisa igualmente qué son antes de abrirlos por separado.'});
+      findings.push({sev:'med', title:`${embeddings.length} objeto(s) OLE incrustado(s)`, basic:'El documento lleva otros archivos adjuntos escondidos dentro.', eli5:'Es como un documento con otros pequeños documentos pegados por dentro, invisibles hasta que los abres uno a uno — no parecen peligrosos a primera vista, pero conviene comprobarlos antes de abrirlos por separado.', desc:'El documento contiene objetos incrustados. Su contenido inmediato no parece ejecutable, pero revisa igualmente qué son antes de abrirlos por separado.'});
     }
   }
 
@@ -6128,11 +6133,11 @@ async function analyzeOoxmlZip(file, bytes){
 
 function analyzeOle2Legacy(bytes, ext){
   const findings = [];
-  findings.push({sev:'low', title:'Formato binario antiguo (OLE Compound File)', desc:'Los documentos .doc/.xls/.ppt clásicos usan un formato binario que Vigía no puede inspeccionar tan a fondo como el formato moderno (.docx/.xlsx/.pptx, basado en ZIP+XML). Trátalos con precaución adicional si vienen de un remitente desconocido.'});
+  findings.push({sev:'low', title:'Formato binario antiguo (OLE Compound File)', basic:'Es un documento del formato clásico de Office, más antiguo y más difícil de inspeccionar a fondo que el actual.', eli5:'Es como un armario antiguo con cajones sellados, más difícil de mirar por dentro que uno moderno de puertas transparentes — no significa que esconda algo malo, pero Vigía puede ver menos detalles que en un documento actual.', desc:'Los documentos .doc/.xls/.ppt clásicos usan un formato binario que Vigía no puede inspeccionar tan a fondo como el formato moderno (.docx/.xlsx/.pptx, basado en ZIP+XML). Trátalos con precaución adicional si vienen de un remitente desconocido.'});
 
   const modernExt = ['docx','xlsx','pptx','dotx'];
   if(modernExt.includes(ext)){
-    findings.push({sev:'high', title:`Extensión moderna ".${ext}" pero contenido binario antiguo (OLE)`, desc:'El archivo lleva una extensión de formato moderno (ZIP+XML) pero su contenido real es el formato binario antiguo. Esta discordancia es una señal de posible manipulación del nombre del archivo.'});
+    findings.push({sev:'high', title:`Extensión moderna ".${ext}" pero contenido binario antiguo (OLE)`, basic:'El nombre del archivo dice ser del formato moderno, pero por dentro es del formato antiguo, algo que no encaja.', eli5:'Es como una caja con la etiqueta de un modelo nuevo, pero que al abrirla contiene la versión vieja del producto — esa incoherencia entre el nombre y el contenido real suele ser señal de que alguien ha tocado el archivo.', desc:'El archivo lleva una extensión de formato moderno (ZIP+XML) pero su contenido real es el formato binario antiguo. Esta discordancia es una señal de posible manipulación del nombre del archivo.'});
   }
 
   const strings = extractBinaryStrings(bytes.buffer, 4);
@@ -6140,7 +6145,7 @@ function analyzeOle2Legacy(bytes, ext){
   const hasMacroMarkers = ['VBA','MACROS','THISDOCUMENT','THISWORKBOOK'].some(k=>upperJoined.includes(k));
   if(hasMacroMarkers){
     const hits = OFFICE_AUTOEXEC_KEYWORDS.filter(k=>upperJoined.includes(k.toUpperCase()));
-    findings.push({sev: hits.length?'high':'med', title:'Indicios de macros VBA en el binario', desc: hits.length
+    findings.push({sev: hits.length?'high':'med', title:'Indicios de macros VBA en el binario', basic:'El documento incluye macros, pequeños programas que se ejecutan dentro del propio archivo.', eli5:'Es como un documento con un pequeño motor integrado capaz de hacer cosas por su cuenta, no solo mostrar texto — conviene tratarlo con cuidado si no esperabas que llevara macros.', desc: hits.length
       ? `Se detectaron marcadores típicos de almacenamiento de macros junto a posibles palabras clave de autoejecución: ${hits.slice(0,8).join(', ')}.`
       : 'Se detectaron marcadores típicos de almacenamiento de macros (VBA/Macros/ThisDocument), aunque no palabras clave concretas de autoejecución en este escaneo de texto simple.'});
   }
@@ -6153,23 +6158,23 @@ function analyzePdfBytes(bytes){
   const findings = [];
   const text = toLatin1String(bytes);
   const keywordMeta = [
-    { key:'/JavaScript', sev:'high', title:n=>`Contiene JavaScript embebido (${n} referencia/s)`, desc:'El JavaScript en PDF puede ejecutarse automáticamente al abrir el documento (o al interactuar con un campo/página) y es uno de los vectores de ataque más comunes en PDFs maliciosos.' },
-    { key:'/JS', sev:'high', title:n=>`Entradas "/JS" detectadas (${n})`, desc:'Marcador asociado a código JavaScript embebido en el documento.' },
-    { key:'/OpenAction', sev:'high', title:n=>`Acción automática al abrir el documento (${n})`, desc:'El PDF ejecuta algo en el instante en que se abre, sin ninguna interacción del usuario. Combinado con JavaScript o /Launch, es un patrón de alto riesgo.' },
-    { key:'/AA', sev:'med', title:n=>`Acciones adicionales vinculadas a eventos (${n})`, desc:'Pueden disparar JavaScript u otras acciones al cambiar de página, cerrar el documento, etc., sin que el usuario lo espere.' },
-    { key:'/Launch', sev:'high', title:n=>`Acción /Launch detectada (${n})`, desc:'Puede indicar al lector que ejecute un programa o archivo externo. Extremadamente inusual en un PDF legítimo.' },
-    { key:'/EmbeddedFile', sev:'med', title:n=>`${n} archivo(s) incrustado(s)`, desc:'Comprueba la extensión real de cualquier archivo incrustado antes de extraerlo: puede ser un ejecutable disfrazado.' },
-    { key:'/RichMedia', sev:'med', title:n=>`Contenido RichMedia incrustado (${n})`, desc:'Multimedia/Flash incrustado, un vector de exploits históricamente relevante en lectores de PDF antiguos.' },
-    { key:'/JBIG2Decode', sev:'low', title:n=>`Usa el filtro JBIG2Decode (${n})`, desc:'Este filtro de compresión ha estado asociado en el pasado a vulnerabilidades de corrupción de memoria en algunos lectores de PDF.' },
-    { key:'/XFA', sev:'low', title:n=>`Contiene formularios XFA (${n})`, desc:'Formularios dinámicos de Adobe; superficie de código adicional que algunos lectores modernos ya no soportan del todo.' },
-    { key:'/GoToR', sev:'med', title:n=>`Referencia a otro PDF externo (${n})`, desc:'Una acción /GoToR enlaza a un archivo externo al abrirse o al hacer clic.' },
-    { key:'/SubmitForm', sev:'med', title:n=>`El formulario puede enviarse a una URL externa (${n})`, desc:'Al rellenar y enviar el formulario, los datos introducidos podrían viajar a un servidor externo.' },
+    { key:'/JavaScript', sev:'high', title:n=>`Contiene JavaScript embebido (${n} referencia/s)`, basic:'El PDF incluye código capaz de ejecutarse por sí solo al abrirlo.', eli5:'Un PDF debería ser un documento estático para leer, pero este trae instrucciones activas dentro, como si las páginas de un libro pudieran moverse solas en cuanto lo abres.', desc:'El JavaScript en PDF puede ejecutarse automáticamente al abrir el documento (o al interactuar con un campo/página) y es uno de los vectores de ataque más comunes en PDFs maliciosos.' },
+    { key:'/JS', sev:'high', title:n=>`Entradas "/JS" detectadas (${n})`, basic:'Se han encontrado marcas técnicas asociadas a código ejecutable dentro del documento.', eli5:'Es otra forma de detectar el mismo tipo de código activo escondido dentro de un documento que debería ser solo texto e imágenes.', desc:'Marcador asociado a código JavaScript embebido en el documento.' },
+    { key:'/OpenAction', sev:'high', title:n=>`Acción automática al abrir el documento (${n})`, basic:'El documento ejecuta algo automáticamente en el mismo instante en que lo abres, sin que hagas nada.', eli5:'Es como una carta que, en cuanto rasgas el sobre, dispara sola un mecanismo interno antes de que llegues a leer una sola palabra.', desc:'El PDF ejecuta algo en el instante en que se abre, sin ninguna interacción del usuario. Combinado con JavaScript o /Launch, es un patrón de alto riesgo.' },
+    { key:'/AA', sev:'med', title:n=>`Acciones adicionales vinculadas a eventos (${n})`, basic:'El documento puede activar acciones automáticas al cambiar de página o al cerrarlo.', eli5:'Es como un libro con trampas escondidas entre ciertas páginas: algo se dispara solo al pasar de una a otra, sin que lo pidas.', desc:'Pueden disparar JavaScript u otras acciones al cambiar de página, cerrar el documento, etc., sin que el usuario lo espere.' },
+    { key:'/Launch', sev:'high', title:n=>`Acción /Launch detectada (${n})`, basic:'El documento puede intentar abrir o ejecutar otro programa de tu ordenador.', eli5:'Es como si un documento de texto, al leerlo, intentara encender por su cuenta otro aparato de la casa sin que se lo hayas pedido — algo que un documento normal jamás debería hacer.', desc:'Puede indicar al lector que ejecute un programa o archivo externo. Extremadamente inusual en un PDF legítimo.' },
+    { key:'/EmbeddedFile', sev:'med', title:n=>`${n} archivo(s) incrustado(s)`, basic:'El documento lleva otro archivo escondido dentro, adjunto de forma invisible.', eli5:'Es como una carta con un sobre secreto pegado por dentro que no se ve a simple vista — conviene comprobar qué es antes de sacarlo.', desc:'Comprueba la extensión real de cualquier archivo incrustado antes de extraerlo: puede ser un ejecutable disfrazado.' },
+    { key:'/RichMedia', sev:'med', title:n=>`Contenido RichMedia incrustado (${n})`, basic:'El documento incluye contenido multimedia interactivo incrustado.', eli5:'Es un tipo de contenido "enriquecido" (vídeo, animación) metido dentro del documento, una vía que en el pasado se ha aprovechado para colar código dañino en lectores antiguos.', desc:'Multimedia/Flash incrustado, un vector de exploits históricamente relevante en lectores de PDF antiguos.' },
+    { key:'/JBIG2Decode', sev:'low', title:n=>`Usa el filtro JBIG2Decode (${n})`, basic:'Usa una técnica de compresión de imagen que en el pasado ha tenido fallos de seguridad conocidos.', eli5:'Es como un método antiguo de comprimir maletas que, en algunos modelos de cerradura, se ha demostrado que se puede forzar — no significa que este documento en concreto sea peligroso, pero es un dato a tener en cuenta.', desc:'Este filtro de compresión ha estado asociado en el pasado a vulnerabilidades de corrupción de memoria en algunos lectores de PDF.' },
+    { key:'/XFA', sev:'low', title:n=>`Contiene formularios XFA (${n})`, basic:'El documento incluye formularios interactivos de un tipo más complejo de lo habitual.', eli5:'Son formularios "inteligentes" que reaccionan mientras los rellenas — añaden complejidad interna al documento, aunque no son señal de peligro por sí solos.', desc:'Formularios dinámicos de Adobe; superficie de código adicional que algunos lectores modernos ya no soportan del todo.' },
+    { key:'/GoToR', sev:'med', title:n=>`Referencia a otro PDF externo (${n})`, basic:'El documento puede enlazar y abrir otro archivo PDF externo al interactuar con él.', eli5:'Es como una nota dentro de un libro que te manda directamente a otro libro distinto en cuanto la tocas, sin avisarte de a dónde vas.', desc:'Una acción /GoToR enlaza a un archivo externo al abrirse o al hacer clic.' },
+    { key:'/SubmitForm', sev:'med', title:n=>`El formulario puede enviarse a una URL externa (${n})`, basic:'Si rellenas el formulario del documento, tus datos podrían enviarse a una dirección externa.', eli5:'Es como rellenar un papel que, sin que lo veas, tiene un buzón trasero conectado a otra parte, y lo que escribes en él viaja hacia allí en vez de quedarse contigo.', desc:'Al rellenar y enviar el formulario, los datos introducidos podrían viajar a un servidor externo.' },
   ];
   let objStmCount = 0;
   keywordMeta.forEach(k=>{
     const n = countOccurrences(text, k.key);
     if(k.key === '/ObjStm') objStmCount = n;
-    if(n>0) findings.push({sev:k.sev, title:k.title(n), desc:k.desc});
+    if(n>0) findings.push({sev:k.sev, title:k.title(n), basic:k.basic, eli5:k.eli5, desc:k.desc});
   });
   objStmCount = countOccurrences(text, '/ObjStm');
 
@@ -6179,7 +6184,7 @@ function analyzePdfBytes(bytes){
   while((m = uriRe.exec(text))){ if(m[1]) uriMatches.add(m[1]); }
 
   if(objStmCount > 0){
-    findings.push({sev:'low', title:`El documento usa flujos de objetos comprimidos (/ObjStm: ${objStmCount})`, desc:'Un escaneo de texto simple como este no puede ver el contenido dentro de esos flujos comprimidos. Los resultados anteriores podrían no ser exhaustivos si el PDF oculta palabras clave dentro de un /ObjStm. Esta es la misma limitación que tienen herramientas de triage como "pdfid".'});
+    findings.push({sev:'low', title:`El documento usa flujos de objetos comprimidos (/ObjStm: ${objStmCount})`, basic:'Parte del contenido del PDF está comprimido internamente, así que este análisis no puede verlo todo.', eli5:'Es como revisar el interior de una maleta pero encontrarte con un compartimento sellado que no se puede abrir sin herramientas especiales — puede que dentro no haya nada raro, pero esta comprobación no llega a mirar ahí.', desc:'Un escaneo de texto simple como este no puede ver el contenido dentro de esos flujos comprimidos. Los resultados anteriores podrían no ser exhaustivos si el PDF oculta palabras clave dentro de un /ObjStm. Esta es la misma limitación que tienen herramientas de triage como "pdfid".'});
   }
 
   if(findings.length === 0){
@@ -6192,10 +6197,10 @@ function analyzeRtfBytes(bytes){
   const findings = [];
   const text = toLatin1String(bytes);
   if(/\\object\b/i.test(text) || /\\objdata\b/i.test(text)){
-    findings.push({sev:'med', title:'Objeto OLE incrustado en el RTF', desc:'Los objetos OLE en RTF se han usado en exploits conocidos (p. ej. del editor de ecuaciones de Office). Revisa el origen del archivo antes de abrirlo si no lo esperabas.'});
+    findings.push({sev:'med', title:'Objeto OLE incrustado en el RTF', basic:'El documento incluye otro archivo escondido dentro, un tipo de contenido que se ha usado antes para aprovechar fallos de seguridad conocidos.', eli5:'Es como un documento con otro más pequeño pegado por dentro, invisible hasta que se activa — este mecanismo en concreto se ha usado en el pasado para colar ataques a través de Office.', desc:'Los objetos OLE en RTF se han usado en exploits conocidos (p. ej. del editor de ecuaciones de Office). Revisa el origen del archivo antes de abrirlo si no lo esperabas.'});
   }
   if(/INCLUDEPICTURE|INCLUDETEXT/i.test(text) && /https?:\/\//i.test(text)){
-    findings.push({sev:'high', title:'Campo de plantilla remota (posible RTF template injection)', desc:'El documento contiene un campo que puede cargar una imagen o texto desde una URL externa al abrirse, sin avisar. Es una técnica conocida para rastrear la apertura del archivo o para encadenar un ataque posterior.'});
+    findings.push({sev:'high', title:'Campo de plantilla remota (posible RTF template injection)', basic:'El documento puede cargar contenido de internet automáticamente al abrirlo, sin avisar.', eli5:'Es como una carta que, al abrirla, envía en secreto un mensajero a buscar algo más en otro sitio — sirve tanto para saber que has abierto el documento como para colar un ataque posterior.', desc:'El documento contiene un campo que puede cargar una imagen o texto desde una URL externa al abrirse, sin avisar. Es una técnica conocida para rastrear la apertura del archivo o para encadenar un ataque posterior.'});
   }
   const urls = extractUrls(text);
   if(findings.length===0){
@@ -6392,13 +6397,13 @@ function classifyAndAnalyzeQrContent(raw){
     findings.push(...senderFindings);
   } else if(/^wifi:/i.test(trimmed)){
     subType = 'Configuración de red WiFi';
-    findings.push({sev:'med', title:'Código QR de conexión WiFi', desc:'Este QR conecta automáticamente el dispositivo a una red WiFi (y puede incluir su contraseña en texto dentro del propio código). Solo escanéalo si confías en quién lo proporcionó. Es una forma habitual de dirigir a víctimas hacia redes WiFi controladas por un atacante ("evil twin").'});
+    findings.push({sev:'med', title:'Código QR de conexión WiFi', basic:'Este QR conecta tu dispositivo a una red WiFi automáticamente, sin que tengas que escribir la contraseña.', eli5:'Es como una llave que abre una puerta sin que sepas a qué habitación lleva de verdad — solo úsala si confías plenamente en quién te la ha dado, porque podría conectarte a una red controlada por un desconocido.', desc:'Este QR conecta automáticamente el dispositivo a una red WiFi (y puede incluir su contraseña en texto dentro del propio código). Solo escanéalo si confías en quién lo proporcionó. Es una forma habitual de dirigir a víctimas hacia redes WiFi controladas por un atacante ("evil twin").'});
   } else if(/^geo:/i.test(trimmed)){
     subType = 'Ubicación geográfica';
     findings.push({sev:'ok', title:'Código QR de ubicación', desc:'Apunta a unas coordenadas geográficas. No representa en sí un riesgo de seguridad.'});
   } else if(/^begin:vcard/i.test(trimmed)){
     subType = 'Tarjeta de contacto (vCard)';
-    findings.push({sev:'low', title:'Código QR de tarjeta de contacto', desc:'Añade un contacto a tu agenda. Revisa los datos antes de guardarlo; no supone ejecución de código, pero podría contener información falsa de contacto.'});
+    findings.push({sev:'low', title:'Código QR de tarjeta de contacto', basic:'Este QR añade un contacto nuevo a tu agenda.', eli5:'Es como recibir una tarjeta de visita: no hace nada por sí sola, pero conviene comprobar que los datos son reales antes de guardarla, porque cualquiera puede escribir lo que quiera en una.', desc:'Añade un contacto a tu agenda. Revisa los datos antes de guardarlo; no supone ejecución de código, pero podría contener información falsa de contacto.'});
     extractUrls(trimmed).forEach(u=>{ /* enlaces dentro de la vCard, si los hay, se listan abajo */ });
   } else {
     subType = 'Texto plano';
@@ -6410,7 +6415,7 @@ function classifyAndAnalyzeQrContent(raw){
     }
   }
 
-  findings.push({sev:'low', title:'Recuerda: el QR ocultaba este contenido', desc:'Antes de escanearlo no había forma de saber qué contenía. Es la base de los ataques "quishing": QR pegados sobre carteles, parquímetros o menús legítimos que en realidad apuntan a webs fraudulentas.'});
+  findings.push({sev:'low', title:'Recuerda: el QR ocultaba este contenido', basic:'Un código QR no deja ver su contenido hasta que lo escaneas, a diferencia de un enlace escrito.', eli5:'Es como un sobre cerrado que solo puedes leer una vez lo abres: nunca sabes de antemano qué hay dentro. Por eso los QR pegados encima de carteles o menús reales son un truco tan usado para colar enlaces falsos.', desc:'Antes de escanearlo no había forma de saber qué contenía. Es la base de los ataques "quishing": QR pegados sobre carteles, parquímetros o menús legítimos que en realidad apuntan a webs fraudulentas.'});
 
   return { findings, subType, extraHtml };
 }
@@ -6600,44 +6605,44 @@ function parseElf(bytes){
 /* Patrones de riesgo para scripts en texto plano, por familia de lenguaje */
 const SCRIPT_PATTERN_GROUPS = {
   powershell: [
-    { re:/-enc(odedcommand)?\b/i, sev:'high', title:'Comando codificado en Base64 (-EncodedCommand)', desc:'Ejecutar comandos codificados en Base64 es la técnica de ofuscación más común en PowerShell malicioso, precisamente para dificultar este tipo de análisis de texto.' },
-    { re:/iex\s*\(|invoke-expression/i, sev:'high', title:'Uso de Invoke-Expression / IEX', desc:'Ejecuta como código cualquier cadena de texto que reciba, habitualmente descargada de internet. Es la forma más común de "descargar y ejecutar" en PowerShell.' },
-    { re:/downloadstring|downloadfile|net\.webclient|invoke-webrequest|start-bitstransfer/i, sev:'high', title:'Descarga de contenido remoto', desc:'El script descarga contenido de internet, a menudo para ejecutarlo a continuación con IEX.' },
-    { re:/-windowstyle\s+hidden|-w\s+hidden/i, sev:'high', title:'Ejecución con ventana oculta', desc:'Oculta la ventana de PowerShell al usuario. No tiene ningún propósito legítimo habitual fuera de tareas de automatización de sistema controladas.' },
-    { re:/-executionpolicy\s+bypass|-ep\s+bypass/i, sev:'high', title:'Omisión de la política de ejecución', desc:'Se salta deliberadamente la protección que impide ejecutar scripts no firmados.' },
-    { re:/frombase64string/i, sev:'med', title:'Decodificación de Base64', desc:'Puede ser legítimo, pero combinado con descargas o IEX es un patrón claro de payload ofuscado.' },
+    { re:/-enc(odedcommand)?\b/i, sev:'high', title:'Comando codificado en Base64 (-EncodedCommand)', basic:'El script ejecuta un comando que está oculto, codificado para que no se pueda leer directamente.', eli5:'Es como una instrucción escrita en un código secreto: el ordenador sabe descifrarla y ejecutarla, pero una persona que la mire no puede saber qué hace a simple vista.', desc:'Ejecutar comandos codificados en Base64 es la técnica de ofuscación más común en PowerShell malicioso, precisamente para dificultar este tipo de análisis de texto.' },
+    { re:/iex\s*\(|invoke-expression/i, sev:'high', title:'Uso de Invoke-Expression / IEX', basic:'El script puede ejecutar como código cualquier texto que reciba, a menudo descargado de internet en el momento.', eli5:'Es como leer en voz alta lo primero que encuentres en un papel sin saber de antemano lo que dice — si el papel trae instrucciones peligrosas, se ejecutan igualmente.', desc:'Ejecuta como código cualquier cadena de texto que reciba, habitualmente descargada de internet. Es la forma más común de "descargar y ejecutar" en PowerShell.' },
+    { re:/downloadstring|downloadfile|net\.webclient|invoke-webrequest|start-bitstransfer/i, sev:'high', title:'Descarga de contenido remoto', basic:'El script descarga contenido de internet, normalmente para ejecutarlo justo después.', eli5:'Es como pedir un paquete a un desconocido y abrirlo sin comprobar qué trae dentro antes de usarlo.', desc:'El script descarga contenido de internet, a menudo para ejecutarlo a continuación con IEX.' },
+    { re:/-windowstyle\s+hidden|-w\s+hidden/i, sev:'high', title:'Ejecución con ventana oculta', basic:'El script se ejecuta sin mostrar ninguna ventana, para que no te des cuenta de que está corriendo.', eli5:'Es como alguien que entra en una habitación y apaga la luz para que nadie note que está ahí — un programa legítimo normalmente no necesita esconderse así.', desc:'Oculta la ventana de PowerShell al usuario. No tiene ningún propósito legítimo habitual fuera de tareas de automatización de sistema controladas.' },
+    { re:/-executionpolicy\s+bypass|-ep\s+bypass/i, sev:'high', title:'Omisión de la política de ejecución', basic:'El script se salta a propósito una protección de Windows que evita ejecutar código no verificado.', eli5:'Es como forzar una cerradura de seguridad diseñada para impedir precisamente que se ejecuten scripts sin comprobar antes — saltársela a propósito es una señal de alarma.', desc:'Se salta deliberadamente la protección que impide ejecutar scripts no firmados.' },
+    { re:/frombase64string/i, sev:'med', title:'Decodificación de Base64', basic:'El script decodifica un texto cifrado para revelar su contenido real justo antes de usarlo.', eli5:'Es como desenvolver un paquete disfrazado justo antes de usarlo — no es peligroso por sí solo, pero combinado con descargas o ejecución automática es un patrón habitual de ocultar código dañino.', desc:'Puede ser legítimo, pero combinado con descargas o IEX es un patrón claro de payload ofuscado.' },
   ],
   batch: [
-    { re:/powershell(\.exe)?\s+.*-enc/i, sev:'high', title:'Batch que lanza PowerShell codificado', desc:'Patrón muy común de droppers: un .bat simple que invoca un comando PowerShell ofuscado en Base64.' },
-    { re:/certutil.*-decode|certutil.*-urlcache/i, sev:'high', title:'Abuso de certutil.exe', desc:'certutil es una utilidad legítima de Windows reutilizada para descargar o decodificar archivos ("living off the land"), evadiendo así muchas listas de aplicaciones permitidas.' },
-    { re:/bitsadmin/i, sev:'high', title:'Uso de bitsadmin para transferencias', desc:'Otra utilidad legítima de Windows frecuentemente abusada para descargar payloads de forma sigilosa.' },
-    { re:/mshta/i, sev:'high', title:'Uso de mshta.exe', desc:'Ejecuta aplicaciones HTA, una vía clásica para ejecutar VBScript/JScript arbitrario evadiendo restricciones del navegador.' },
-    { re:/regsvr32.*\/i:https?:/i, sev:'high', title:'regsvr32 con carga remota ("Squiblydoo")', desc:'Técnica conocida para ejecutar código remoto usando una utilidad de Windows firmada, evadiendo listas de aplicaciones permitidas.' },
+    { re:/powershell(\.exe)?\s+.*-enc/i, sev:'high', title:'Batch que lanza PowerShell codificado', basic:'Este archivo simple en realidad lanza un comando de PowerShell oculto y codificado.', eli5:'Es como una nota corta que en realidad es la llave para activar otra instrucción mucho más compleja y oculta detrás de ella — un patrón muy típico de programas maliciosos sencillos que abren la puerta a algo mayor.', desc:'Patrón muy común de droppers: un .bat simple que invoca un comando PowerShell ofuscado en Base64.' },
+    { re:/certutil.*-decode|certutil.*-urlcache/i, sev:'high', title:'Abuso de certutil.exe', basic:'Usa una herramienta legítima de Windows de forma poco habitual, para descargar o decodificar archivos.', eli5:'Es como usar la llave maestra del portero, pensada para otra cosa, para colarse por una puerta trasera que nadie vigila — la herramienta en sí es de confianza, pero este uso concreto no lo es.', desc:'certutil es una utilidad legítima de Windows reutilizada para descargar o decodificar archivos ("living off the land"), evadiendo así muchas listas de aplicaciones permitidas.' },
+    { re:/bitsadmin/i, sev:'high', title:'Uso de bitsadmin para transferencias', basic:'Usa una herramienta de Windows para descargar archivos de forma discreta.', eli5:'Es otra "llave maestra" del sistema, legítima, pero muy usada para traer archivos de internet sin que salte ninguna alarma habitual.', desc:'Otra utilidad legítima de Windows frecuentemente abusada para descargar payloads de forma sigilosa.' },
+    { re:/mshta/i, sev:'high', title:'Uso de mshta.exe', basic:'Usa una herramienta de Windows para ejecutar código de tipo web de forma poco habitual.', eli5:'Es una puerta trasera clásica: una herramienta de Windows pensada para otra cosa, pero muy usada para ejecutar código sin pasar por las protecciones normales del navegador.', desc:'Ejecuta aplicaciones HTA, una vía clásica para ejecutar VBScript/JScript arbitrario evadiendo restricciones del navegador.' },
+    { re:/regsvr32.*\/i:https?:/i, sev:'high', title:'regsvr32 con carga remota ("Squiblydoo")', basic:'Usa una herramienta de Windows para descargar y ejecutar código directamente desde internet.', eli5:'Es una técnica conocida para colarse usando una herramienta oficial y de confianza de Windows como tapadera, evitando así las listas de programas permitidos.', desc:'Técnica conocida para ejecutar código remoto usando una utilidad de Windows firmada, evadiendo listas de aplicaciones permitidas.' },
   ],
   vbs: [
-    { re:/createobject\s*\(\s*["']wscript\.shell["']/i, sev:'high', title:'Creación de WScript.Shell', desc:'Permite ejecutar comandos del sistema operativo desde el script.' },
-    { re:/adodb\.stream/i, sev:'high', title:'Uso de ADODB.Stream', desc:'Se usa habitualmente para escribir en disco contenido descargado o decodificado desde Base64, un paso típico para soltar un payload adicional.' },
-    { re:/\.run\s*\(/i, sev:'med', title:'Llamada a .Run(', desc:'Ejecuta un programa o comando externo.' },
-    { re:/chr\(\d+\)\s*&|chrw\(/i, sev:'med', title:'Construcción de cadenas carácter a carácter', desc:'Técnica de ofuscación habitual para ocultar palabras clave (URLs, comandos) de un escaneo de texto simple.' },
+    { re:/createobject\s*\(\s*["']wscript\.shell["']/i, sev:'high', title:'Creación de WScript.Shell', basic:'El script puede ejecutar comandos directamente en tu sistema operativo.', eli5:'Es como darle a un script el mando a distancia completo de tu ordenador, con capacidad de teclear comandos por su cuenta.', desc:'Permite ejecutar comandos del sistema operativo desde el script.' },
+    { re:/adodb\.stream/i, sev:'high', title:'Uso de ADODB.Stream', basic:'El script puede escribir archivos nuevos en tu disco, a menudo contenido descargado o descifrado.', eli5:'Es la herramienta que usaría el script para "materializar" en el disco algo que trae escondido u oculto — el paso típico antes de instalar algo adicional.', desc:'Se usa habitualmente para escribir en disco contenido descargado o decodificado desde Base64, un paso típico para soltar un payload adicional.' },
+    { re:/\.run\s*\(/i, sev:'med', title:'Llamada a .Run(', basic:'El script ejecuta otro programa o comando.', eli5:'Es el botón de "ejecutar" apretado desde dentro del propio script, sin que tú lo pulses directamente.', desc:'Ejecuta un programa o comando externo.' },
+    { re:/chr\(\d+\)\s*&|chrw\(/i, sev:'med', title:'Construcción de cadenas carácter a carácter', basic:'El texto del script está construido letra a letra de forma artificial, para que no se pueda leer directamente.', eli5:'Es como escribir una palabra prohibida deletreándola con números de página de un diccionario en vez de escribirla tal cual — un truco para que un buscador de texto no la reconozca a simple vista.', desc:'Técnica de ofuscación habitual para ocultar palabras clave (URLs, comandos) de un escaneo de texto simple.' },
   ],
   jscript: [
-    { re:/activexobject\s*\(\s*["']wscript\.shell["']/i, sev:'high', title:'ActiveXObject("WScript.Shell")', desc:'Permite ejecutar comandos del sistema operativo desde JScript.' },
-    { re:/eval\s*\(/i, sev:'med', title:'Uso de eval()', desc:'Ejecuta como código cualquier cadena, una técnica habitual para desofuscar y correr un payload en tiempo de ejecución.' },
-    { re:/unescape\s*\(/i, sev:'med', title:'Uso de unescape()', desc:'Frecuente en cadenas de desofuscación de shellcode o payloads codificados en JScript/HTA.' },
+    { re:/activexobject\s*\(\s*["']wscript\.shell["']/i, sev:'high', title:'ActiveXObject("WScript.Shell")', basic:'El script puede ejecutar comandos directamente en tu sistema operativo.', eli5:'Es como darle a un script el mando a distancia completo de tu ordenador, con capacidad de teclear comandos por su cuenta.', desc:'Permite ejecutar comandos del sistema operativo desde JScript.' },
+    { re:/eval\s*\(/i, sev:'med', title:'Uso de eval()', basic:'El script ejecuta como código cualquier texto que reciba, sin saber de antemano qué es.', eli5:'Es como leer en voz alta lo primero que encuentres en un papel sin saber de antemano lo que dice — muy usado para desenmascarar y ejecutar código escondido en el momento.', desc:'Ejecuta como código cualquier cadena, una técnica habitual para desofuscar y correr un payload en tiempo de ejecución.' },
+    { re:/unescape\s*\(/i, sev:'med', title:'Uso de unescape()', basic:'El script convierte texto codificado en su forma original justo antes de usarlo.', eli5:'Es como desenvolver un paquete disfrazado justo antes de usarlo — habitual en scripts que esconden su verdadero contenido hasta el último momento.', desc:'Frecuente en cadenas de desofuscación de shellcode o payloads codificados en JScript/HTA.' },
   ],
   shell: [
-    { re:/curl[^\n]*\|\s*(sh|bash)|wget[^\n]*\|\s*(sh|bash)/i, sev:'high', title:'Descarga y ejecución directa ("curl | bash")', desc:'Descarga un script de internet y lo ejecuta inmediatamente sin que nadie lo revise antes. Muy usado tanto en instaladores legítimos como en malware.' },
-    { re:base64 => false, re2:/base64\s+-d|base64\s+--decode/i, sev:'med', title:'Decodificación de Base64', desc:'Puede ocultar un payload o comando adicional.' },
-    { re:/\/dev\/tcp\//i, sev:'high', title:'Uso de /dev/tcp (posible shell reversa de Bash)', desc:'Técnica nativa de Bash para abrir conexiones de red sin depender de netcat; muy usada en shells reversas.' },
-    { re:/nc\s+-e|ncat\s+-e/i, sev:'high', title:'Netcat con ejecución (-e)', desc:'Patrón clásico de shell reversa: conecta un intérprete de comandos a un host remoto.' },
-    { re:/chmod\s+\+x[^\n]*&&[^\n]*\.\//i, sev:'med', title:'Otorga permisos de ejecución y ejecuta inmediatamente', desc:'Patrón típico de instaladores automáticos de payloads.' },
+    { re:/curl[^\n]*\|\s*(sh|bash)|wget[^\n]*\|\s*(sh|bash)/i, sev:'high', title:'Descarga y ejecución directa ("curl | bash")', basic:'El script descarga otro script de internet y lo ejecuta de inmediato, sin que nadie lo revise antes.', eli5:'Es como aceptar y comerte al momento lo que trae un repartidor desconocido, sin abrir el paquete para comprobar qué es primero — se usa tanto en instaladores legítimos como en malware.', desc:'Descarga un script de internet y lo ejecuta inmediatamente sin que nadie lo revise antes. Muy usado tanto en instaladores legítimos como en malware.' },
+    { re:base64 => false, re2:/base64\s+-d|base64\s+--decode/i, sev:'med', title:'Decodificación de Base64', basic:'El script decodifica un texto cifrado para revelar su contenido real.', eli5:'Es como desenvolver un paquete disfrazado — puede ocultar un comando o contenido adicional que solo se revela en ese momento.', desc:'Puede ocultar un payload o comando adicional.' },
+    { re:/\/dev\/tcp\//i, sev:'high', title:'Uso de /dev/tcp (posible shell reversa de Bash)', basic:'El script puede abrir una conexión de red directa hacia otro ordenador, sin usar herramientas normales.', eli5:'Es como si el script tendiera un cable directo hacia otra casa para que alguien pueda controlar la tuya desde fuera — una técnica muy asociada a tomar el control remoto de un equipo.', desc:'Técnica nativa de Bash para abrir conexiones de red sin depender de netcat; muy usada en shells reversas.' },
+    { re:/nc\s+-e|ncat\s+-e/i, sev:'high', title:'Netcat con ejecución (-e)', basic:'El script conecta un intérprete de comandos de tu sistema con un ordenador remoto.', eli5:'Es como dejar un micrófono y un altavoz conectados a una casa desconocida: quien esté al otro lado puede hablar comandos y tu sistema los obedece.', desc:'Patrón clásico de shell reversa: conecta un intérprete de comandos a un host remoto.' },
+    { re:/chmod\s+\+x[^\n]*&&[^\n]*\.\//i, sev:'med', title:'Otorga permisos de ejecución y ejecuta inmediatamente', basic:'El script hace que otro archivo sea ejecutable y lo lanza en el mismo paso.', eli5:'Es como desenvolver algo y ponerlo en marcha en el mismo gesto, sin dejar tiempo a que nadie lo revise por el camino — patrón típico de instaladores automáticos de contenido adicional.', desc:'Patrón típico de instaladores automáticos de payloads.' },
   ],
   python: [
-    { re:/os\.system\s*\(|subprocess\.(run|popen|call)/i, sev:'med', title:'Ejecución de comandos del sistema', desc:'Permite ejecutar cualquier comando del sistema operativo desde Python.' },
-    { re:/\beval\s*\(|\bexec\s*\(/i, sev:'med', title:'Uso de eval()/exec()', desc:'Ejecuta código Python arbitrario construido en tiempo de ejecución, una técnica habitual de ofuscación.' },
-    { re:/base64\.b64decode/i, sev:'med', title:'Decodificación de Base64', desc:'Puede ocultar un payload adicional que se ejecuta después de decodificarse.' },
-    { re:/socket\.socket\s*\([^)]*\)[^\n]*\.connect/i, sev:'high', title:'Apertura de conexión de red tipo socket', desc:'Combinado con ejecución de comandos, es la base de una shell reversa en Python.' },
-    { re:/pickle\.loads?/i, sev:'med', title:'Deserialización con pickle', desc:'La deserialización de datos no confiables con pickle puede ejecutar código arbitrario. Es un vector de ataque conocido en Python.' },
+    { re:/os\.system\s*\(|subprocess\.(run|popen|call)/i, sev:'med', title:'Ejecución de comandos del sistema', basic:'El script puede ejecutar cualquier comando de tu sistema operativo.', eli5:'Es como darle a un script el mando a distancia completo de tu ordenador, con capacidad de teclear comandos por su cuenta.', desc:'Permite ejecutar cualquier comando del sistema operativo desde Python.' },
+    { re:/\beval\s*\(|\bexec\s*\(/i, sev:'med', title:'Uso de eval()/exec()', basic:'El script ejecuta código construido sobre la marcha, en el propio momento de correr.', eli5:'Es como leer en voz alta lo primero que encuentres en un papel sin saber de antemano lo que dice — una técnica habitual para ocultar el verdadero código hasta el último momento.', desc:'Ejecuta código Python arbitrario construido en tiempo de ejecución, una técnica habitual de ofuscación.' },
+    { re:/base64\.b64decode/i, sev:'med', title:'Decodificación de Base64', basic:'El script decodifica un texto cifrado para revelar su contenido real.', eli5:'Es como desenvolver un paquete disfrazado justo antes de usarlo — puede ocultar un contenido adicional que se ejecuta después.', desc:'Puede ocultar un payload adicional que se ejecuta después de decodificarse.' },
+    { re:/socket\.socket\s*\([^)]*\)[^\n]*\.connect/i, sev:'high', title:'Apertura de conexión de red tipo socket', basic:'El script puede abrir una conexión directa hacia otro ordenador por internet.', eli5:'Es como tender un cable directo hacia otra casa: combinado con la capacidad de ejecutar comandos, es la base de dar el control remoto de tu equipo a otra persona.', desc:'Combinado con ejecución de comandos, es la base de una shell reversa en Python.' },
+    { re:/pickle\.loads?/i, sev:'med', title:'Deserialización con pickle', basic:'El script reconstruye datos complejos recibidos de una fuente que podría no ser de confianza.', eli5:'Es como montar un mueble a partir de instrucciones que te ha dado un desconocido, sin comprobar antes que las piezas son seguras — con este método, esas "instrucciones" pueden llegar a ejecutar código por su cuenta.', desc:'La deserialización de datos no confiables con pickle puede ejecutar código arbitrario. Es un vector de ataque conocido en Python.' },
   ],
 };
 
@@ -6649,18 +6654,18 @@ function scanScriptText(text, ext){
   const patterns = group ? (SCRIPT_PATTERN_GROUPS[group]||[]) : [];
   patterns.forEach(p=>{
     const matches = p.re2 ? p.re2.test(text) : p.re.test(text);
-    if(matches) findings.push({sev:p.sev, title:p.title, desc:p.desc});
+    if(matches) findings.push({sev:p.sev, title:p.title, basic:p.basic, eli5:p.eli5, desc:p.desc});
   });
   // Si es HTA, también aplican los patrones de VBS/JScript ya que puede combinar ambos
   if(ext === 'hta'){
     [...SCRIPT_PATTERN_GROUPS.vbs, ...SCRIPT_PATTERN_GROUPS.jscript].forEach(p=>{
-      if(p.re.test(text) && !findings.some(f=>f.title===p.title)) findings.push({sev:p.sev, title:p.title, desc:p.desc});
+      if(p.re.test(text) && !findings.some(f=>f.title===p.title)) findings.push({sev:p.sev, title:p.title, basic:p.basic, eli5:p.eli5, desc:p.desc});
     });
   }
   // Blob de Base64 sospechosamente largo en una sola línea
   const longB64 = text.match(/[A-Za-z0-9+/]{200,}={0,2}/);
   if(longB64){
-    findings.push({sev:'med', title:'Bloque de texto largo compatible con Base64', desc:`Se encontró una cadena de ${longB64[0].length} caracteres consecutivos que parece Base64. Es habitual para incrustar un payload, un ejecutable o una URL ofuscada dentro del script.`});
+    findings.push({sev:'med', title:'Bloque de texto largo compatible con Base64', basic:'El archivo contiene un bloque de texto muy largo que parece un dato codificado, no texto normal.', eli5:'Es un paquete envuelto y disfrazado dentro del propio script — habitual para esconder otro programa, un enlace o una instrucción sin que se lea a simple vista.', desc:`Se encontró una cadena de ${longB64[0].length} caracteres consecutivos que parece Base64. Es habitual para incrustar un payload, un ejecutable o una URL ofuscada dentro del script.`});
   }
 
   // Intento de decodificar un -EncodedCommand de PowerShell (Base64 de UTF-16LE)
@@ -6673,7 +6678,7 @@ function scanScriptText(text, ext){
         const bytes = new Uint8Array(bin.length);
         for(let i=0;i<bin.length;i++) bytes[i] = bin.charCodeAt(i);
         decodedCommand = new TextDecoder('utf-16le').decode(bytes);
-        findings.push({sev:'high', title:'Comando codificado decodificado con éxito', desc:'Vigía ha decodificado el Base64 del -EncodedCommand. Revisa el contenido decodificado más abajo. Es el comando real que se ejecutaría.'});
+        findings.push({sev:'high', title:'Comando codificado decodificado con éxito', basic:'Vigía ha conseguido descifrar el comando oculto que el script ejecutaría de verdad.', eli5:'Es como abrir el paquete disfrazado y mostrarte exactamente qué había dentro — lo que ves ahora es la instrucción real que se ejecutaría, sin ningún disfraz encima.', desc:'Vigía ha decodificado el Base64 del -EncodedCommand. Revisa el contenido decodificado más abajo. Es el comando real que se ejecutaría.'});
       }catch(e){ /* no se pudo decodificar: se mantiene solo la alerta de -enc detectada arriba */ }
     }
   }
@@ -6711,45 +6716,45 @@ async function analyzeExecutableFile(file){
       findings.push({sev:'ok', title:`Cabecera PE válida: ${pe.isDLL?'DLL':'EXE'}, ${pe.machineName}, subsistema ${pe.subsystemName}`, desc:`${pe.numSections} sección(es) en el binario.`});
       const packerHits = pe.sections.filter(s=>PACKER_SECTION_NAMES.some(p=>s.name.toUpperCase().includes(p)));
       if(packerHits.length){
-        findings.push({sev:'high', title:`Sección(es) de empaquetador/protector conocido: ${packerHits.map(s=>s.name).join(', ')}`, desc:'El binario está comprimido/protegido con un empaquetador conocido. Se usa tanto en software legítimo como en malware, precisamente para dificultar el análisis estático. Trátalo con más cautela si no esperabas este archivo.'});
+        findings.push({sev:'high', title:`Sección(es) de empaquetador/protector conocido: ${packerHits.map(s=>s.name).join(', ')}`, basic:'El programa está protegido con una herramienta que oculta cómo funciona por dentro, dificultando también su análisis.', eli5:'Es como una caja envuelta en varias capas de papel opaco: se usa tanto para proteger un programa legítimo como para esconder algo que no se quiere que se vea a simple vista.', desc:'El binario está comprimido/protegido con un empaquetador conocido. Se usa tanto en software legítimo como en malware, precisamente para dificultar el análisis estático. Trátalo con más cautela si no esperabas este archivo.'});
       }
       if(!pe.hasCertTable){
-        findings.push({sev:'med', title:'Sin firma digital (Authenticode)', desc:'El ejecutable no declara un certificado de firma de código. No es concluyente (mucho software legítimo tampoco firma), pero un archivo sin firmar que dice ser de un editor reconocido es motivo de sospecha adicional.'});
+        findings.push({sev:'med', title:'Sin firma digital (Authenticode)', basic:'El programa no lleva ninguna firma digital que confirme quién lo ha creado.', eli5:'Es como un paquete sin remitente en la etiqueta: no significa automáticamente que sea peligroso, pero si dice venir de una empresa conocida, sorprende que no lleve su sello de garantía.', desc:'El ejecutable no declara un certificado de firma de código. No es concluyente (mucho software legítimo tampoco firma), pero un archivo sin firmar que dice ser de un editor reconocido es motivo de sospecha adicional.'});
       } else {
         findings.push({sev:'ok', title:'El binario declara una firma digital (Authenticode)', desc:'Contiene un certificado de firma de código. Vigía no puede validar localmente la cadena de confianza ni si el certificado sigue siendo válido/no revocado.'});
       }
     } else {
-      findings.push({sev:'high', title:'Cabecera "MZ" presente pero sin estructura PE válida', desc:'El archivo comienza como un ejecutable DOS/Windows pero su cabecera PE es inválida o está corrupta/manipulada.'});
+      findings.push({sev:'high', title:'Cabecera "MZ" presente pero sin estructura PE válida', basic:'El archivo empieza como un programa de Windows, pero su estructura interna está rota o no tiene sentido.', eli5:'Es como una caja que por fuera parece un electrodoméstico de una marca conocida, pero cuyas piezas de dentro no encajan como deberían — corrupto, mal construido o manipulado.', desc:'El archivo comienza como un ejecutable DOS/Windows pero su cabecera PE es inválida o está corrupta/manipulada.'});
     }
     const wholeText = toLatin1String(bytes);
     const apiHits = SUSPICIOUS_PE_APIS.filter(a=>wholeText.includes(a));
     if(apiHits.length >= 3){
-      findings.push({sev:'med', title:`${apiHits.length} función(es) de API sensibles mencionadas en el binario`, desc:`Incluye: ${apiHits.slice(0,10).join(', ')}. Esto es un escaneo de texto simple (no confirma que se llamen realmente ni cómo), pero esta combinación es típica de inyección de código, descarga remota o registro de teclas.`});
+      findings.push({sev:'med', title:`${apiHits.length} función(es) de API sensibles mencionadas en el binario`, basic:'El programa hace referencia a funciones del sistema capaces de inyectar código, descargar contenido o registrar lo que escribes.', eli5:'Son las mismas herramientas que usaría alguien para manipular otro programa desde dentro o para espiar lo que tecleas — no confirma que se usen de verdad, pero es una combinación que aparece mucho en software malicioso.', desc:`Incluye: ${apiHits.slice(0,10).join(', ')}. Esto es un escaneo de texto simple (no confirma que se llamen realmente ni cómo), pero esta combinación es típica de inyección de código, descarga remota o registro de teclas.`});
     }
   } else if(sig.type === 'ELF'){
     const elf = parseElf(bytes);
     if(elf) findings.push({sev:'ok', title:`Cabecera ELF válida: ${elf.typeName}, ${elf.machineName}, ${elf.is64?'64':'32'}-bit`, desc:'Ejecutable/objeto para Linux o Unix.'});
     const wholeText = toLatin1String(bytes);
-    if(wholeText.includes('LD_PRELOAD')) findings.push({sev:'med', title:'Referencia a LD_PRELOAD', desc:'Técnica de persistencia/inyección habitual en Linux para cargar una librería antes que las del sistema.'});
-    if(/\/dev\/tcp\/|nc -e/i.test(wholeText)) findings.push({sev:'high', title:'Cadenas asociadas a shell reversa', desc:'Se encontraron cadenas típicas de una conexión de red inversa embebidas en el binario.'});
+    if(wholeText.includes('LD_PRELOAD')) findings.push({sev:'med', title:'Referencia a LD_PRELOAD', basic:'El programa puede cargar código propio antes que el del propio sistema operativo.', eli5:'Es como colarse el primero en la fila para sustituir una pieza del sistema antes de que este arranque de verdad — una técnica muy usada en Linux tanto legítimamente como para ocultar código malicioso.', desc:'Técnica de persistencia/inyección habitual en Linux para cargar una librería antes que las del sistema.'});
+    if(/\/dev\/tcp\/|nc -e/i.test(wholeText)) findings.push({sev:'high', title:'Cadenas asociadas a shell reversa', basic:'El programa contiene fragmentos típicos de una conexión que daría el control remoto de tu equipo a otra persona.', eli5:'Es como encontrar un cable tendido en secreto hacia otra casa: quien esté al otro lado podría acabar controlando tu equipo a distancia.', desc:'Se encontraron cadenas típicas de una conexión de red inversa embebidas en el binario.'});
   } else if(sig.type === 'MACHO'){
-    findings.push({sev:'low', title:'Ejecutable Mach-O (macOS)', desc:'Vigía identifica el formato pero no realiza un análisis profundo de binarios Mach-O. Trata con la misma cautela que cualquier ejecutable de origen desconocido.'});
+    findings.push({sev:'low', title:'Ejecutable Mach-O (macOS)', basic:'Es un programa ejecutable para Mac, que Vigía identifica pero no puede analizar en tanta profundidad.', eli5:'Vigía reconoce el formato, como reconocer el envoltorio de un producto, pero no puede mirar tan a fondo dentro de él como con otros formatos — trátalo con la misma cautela que cualquier programa de origen desconocido.', desc:'Vigía identifica el formato pero no realiza un análisis profundo de binarios Mach-O. Trata con la misma cautela que cualquier ejecutable de origen desconocido.'});
   } else if(sig.type === 'ZIP' && ext === 'jar'){
-    findings.push({sev:'low', title:'Archivo JAR (Java)', desc:'Es un contenedor ZIP ejecutable con la máquina virtual de Java. Usa la pestaña "Comprimidos" para listar su contenido completo, o revisa aquí solo el aviso general.'});
+    findings.push({sev:'low', title:'Archivo JAR (Java)', basic:'Es un programa de Java, que por dentro es en realidad un archivo comprimido ejecutable.', eli5:'Es como una caja de herramientas que además de contener piezas, sabe montarse sola cuando la abres — para ver todo su contenido en detalle, usa la pestaña de Comprimidos.', desc:'Es un contenedor ZIP ejecutable con la máquina virtual de Java. Usa la pestaña "Comprimidos" para listar su contenido completo, o revisa aquí solo el aviso general.'});
   } else {
-    findings.push({sev:'high', title:`Contenido no reconocido como ejecutable/script válido: ${sig.label}`, desc:'El archivo no coincide con la estructura esperada según su extensión.'});
+    findings.push({sev:'high', title:`Contenido no reconocido como ejecutable/script válido: ${sig.label}`, basic:'El archivo no tiene la estructura que debería tener según lo que su nombre sugiere.', eli5:'Es como abrir una caja que dice contener un electrodoméstico y no encontrar ninguna de las piezas que debería traer — algo no encaja en cómo está construido el archivo.', desc:'El archivo no coincide con la estructura esperada según su extensión.'});
   }
 
   // Discordancia extensión vs contenido real para binarios
   const expectedBinary = { exe:'EXE', dll:'EXE', scr:'EXE', com:'EXE', elf:'ELF' }[ext];
   if(expectedBinary && sig.type !== expectedBinary && !(expectedBinary==='EXE' && sig.type==='OLE2')){
-    findings.push({sev:'high', title:`Extensión ".${ext}" pero contenido real: ${sig.label}`, desc:'La extensión no coincide con el contenido real del archivo.'});
+    findings.push({sev:'high', title:`Extensión ".${ext}" pero contenido real: ${sig.label}`, basic:'El archivo dice ser una cosa por su nombre, pero por dentro es otra completamente distinta.', eli5:'Es como una caja etiquetada como "juguete" que en realidad contiene otra cosa muy distinta — el nombre se puede escribir como se quiera, pero lo que hay dentro no engaña a quien mira de verdad.', desc:'La extensión no coincide con el contenido real del archivo.'});
   }
 
   const entropy = shannonEntropy(bytes.length > 2_000_000 ? bytes.subarray(0,2_000_000) : bytes);
   const entropyNote = bytes.length > 2_000_000 ? ' (calculada sobre los primeros 2 MB)' : '';
   if(entropy > 7.5){
-    findings.push({sev:'med', title:`Entropía muy alta: ${entropy.toFixed(2)}/8${entropyNote}`, desc:'Un valor cercano a 8 indica datos con aspecto aleatorio: típico de contenido comprimido, cifrado o empaquetado. Ni es exclusivo de malware ni lo descarta. Muchos instaladores legítimos también están comprimidos.'});
+    findings.push({sev:'med', title:`Entropía muy alta: ${entropy.toFixed(2)}/8${entropyNote}`, basic:'El contenido del archivo parece datos aleatorios, típico de algo comprimido, cifrado o empaquetado.', eli5:'Es como intentar leer un texto y encontrarte solo con ruido sin ningún patrón reconocible — pasa tanto con programas legítimos comprimidos como con contenido cifrado a propósito para ocultar lo que hay dentro.', desc:'Un valor cercano a 8 indica datos con aspecto aleatorio: típico de contenido comprimido, cifrado o empaquetado. Ni es exclusivo de malware ni lo descarta. Muchos instaladores legítimos también están comprimidos.'});
   }
 
   if(urls.length){
@@ -6851,15 +6856,15 @@ function parseTar(bytes){
 function evaluateArchiveListing(listing, findings){
   const traversal = listing.filter(e=>checkPathTraversal(e.name));
   if(traversal.length){
-    findings.push({sev:'high', title:`${traversal.length} entrada(s) con ruta de salida del directorio ("zip slip")`, desc:`Ejemplo: ${traversal[0].name}. Un nombre de archivo con "../" o una ruta absoluta puede, en programas de descompresión mal protegidos, escribir fuera de la carpeta de destino, una vulnerabilidad clásica de archivos comprimidos maliciosos.`});
+    findings.push({sev:'high', title:`${traversal.length} entrada(s) con ruta de salida del directorio ("zip slip")`, basic:'Algunos archivos dentro del comprimido tienen nombres diseñados para escribir fuera de la carpeta donde deberían descomprimirse.', eli5:'Es como una carta con una dirección de entrega falsificada, pensada para que el cartero la deje en otra casa distinta a la que debería — en un programa mal protegido, ese archivo podría acabar escribiéndose en un lugar del ordenador donde no debería estar.', desc:`Ejemplo: ${traversal[0].name}. Un nombre de archivo con "../" o una ruta absoluta puede, en programas de descompresión mal protegidos, escribir fuera de la carpeta de destino, una vulnerabilidad clásica de archivos comprimidos maliciosos.`});
   }
   const doubleExt = listing.filter(e=>checkDoubleExtension(e.name));
   if(doubleExt.length){
-    findings.push({sev:'high', title:`${doubleExt.length} archivo(s) con doble extensión`, desc:`Ejemplo: ${doubleExt[0].name}. Un nombre como "factura.pdf.exe" oculta la extensión ejecutable real tras una extensión de documento conocida.`});
+    findings.push({sev:'high', title:`${doubleExt.length} archivo(s) con doble extensión`, basic:'Hay archivos dentro cuyo nombre está disfrazado para parecer un documento, aunque en realidad son programas.', eli5:'Es como un caramelo envuelto en el papel de otro distinto: "factura.pdf.exe" parece un PDF a simple vista, pero el final real ".exe" es el que manda.', desc:`Ejemplo: ${doubleExt[0].name}. Un nombre como "factura.pdf.exe" oculta la extensión ejecutable real tras una extensión de documento conocida.`});
   }
   const dangerous = listing.filter(e=>DANGEROUS_ARCHIVE_EXTS.includes(getExt(e.name)));
   if(dangerous.length){
-    findings.push({sev:'med', title:`${dangerous.length} archivo(s) ejecutable(s)/script(s) dentro del comprimido`, desc:`${dangerous.slice(0,10).map(e=>e.name).join(', ')}${dangerous.length>10?'…':''}. No es malicioso en sí (muchos programas se distribuyen en ZIP), pero revisa si esperabas recibir contenido ejecutable en este archivo.`});
+    findings.push({sev:'med', title:`${dangerous.length} archivo(s) ejecutable(s)/script(s) dentro del comprimido`, basic:'El comprimido contiene programas o scripts capaces de ejecutarse.', eli5:'Es como abrir una caja de mudanza y encontrar dentro un aparato eléctrico listo para enchufar — no es raro (muchos programas se reparten así), pero conviene comprobar que esperabas recibir algo ejecutable.', desc:`${dangerous.slice(0,10).map(e=>e.name).join(', ')}${dangerous.length>10?'…':''}. No es malicioso en sí (muchos programas se distribuyen en ZIP), pero revisa si esperabas recibir contenido ejecutable en este archivo.`});
   }
 }
 
@@ -6907,35 +6912,35 @@ async function analyzeZipArchive(bytes, findings){
     }
   }
   if(oversizedSkipped > 0){
-    findings.push({sev:'high', title:`${oversizedSkipped} entrada(s) omitida(s) por tamaño descomprimido anómalo`, desc:'Una o más entradas de este archivo declaran, sin necesidad de descomprimirlas, un tamaño real muy por encima de lo razonable. Vigía no las descomprime para no agotar la memoria del navegador. Esto es en sí mismo una señal a tener en cuenta: es la técnica típica de una "bomba de descompresión" (zip bomb), pensada para bloquear o colgar herramientas de análisis automático como esta.'});
+    findings.push({sev:'high', title:`${oversizedSkipped} entrada(s) omitida(s) por tamaño descomprimido anómalo`, basic:'Una o más partes del comprimido declaran un tamaño imposible de grande, un truco típico para saturar quien intenta abrirlo.', eli5:'Es como una maleta que en la etiqueta pesa 2 kilos pero, si la abrieras, pesaría toneladas — por eso Vigía ni siquiera intenta abrirla, y esa mentira sobre el tamaño ya es en sí misma una señal de alarma.', desc:'Una o más entradas de este archivo declaran, sin necesidad de descomprimirlas, un tamaño real muy por encima de lo razonable. Vigía no las descomprime para no agotar la memoria del navegador. Esto es en sí mismo una señal a tener en cuenta: es la técnica típica de una "bomba de descompresión" (zip bomb), pensada para bloquear o colgar herramientas de análisis automático como esta.'});
   }
   if(encryptedCount > 0){
-    findings.push({sev:'med', title:`${encryptedCount} entrada(s) protegida(s) con contraseña`, desc:'Los archivos comprimidos cifrados son una técnica de evasión muy habitual: impiden que los antivirus de correo/red analicen el contenido automáticamente. No es malicioso por sí solo, pero justifica precaución extra, sobre todo si la contraseña viene en el mismo mensaje que el archivo.'});
+    findings.push({sev:'med', title:`${encryptedCount} entrada(s) protegida(s) con contraseña`, basic:'Parte del contenido está protegido con contraseña, lo que impide que se analice automáticamente.', eli5:'Es como una caja cerrada con candado dentro de otra caja: los sistemas de seguridad automáticos no pueden mirar dentro sin la llave, así que quien reparte contenido dañino a veces usa este truco para colarlo sin que salte ninguna alarma.', desc:'Los archivos comprimidos cifrados son una técnica de evasión muy habitual: impiden que los antivirus de correo/red analicen el contenido automáticamente. No es malicioso por sí solo, pero justifica precaución extra, sobre todo si la contraseña viene en el mismo mensaje que el archivo.'});
   }
   if(mismatches.length){
-    findings.push({sev:'high', title:'Archivo(s) interno(s) con extensión falsificada', desc: mismatches.join('; ')});
+    findings.push({sev:'high', title:'Archivo(s) interno(s) con extensión falsificada', basic:'Algunos archivos dentro dicen ser una cosa por su nombre, pero por dentro son otra completamente distinta.', eli5:'Es como cajas etiquetadas como "juguete" que en realidad contienen otra cosa muy distinta — el nombre se puede escribir como se quiera, pero lo que hay dentro no engaña a quien mira de verdad.', desc: mismatches.join('; ')});
   }
   return { listing: listing.filter(e=>!e.dir), meta:`${names.length} entradas` };
 }
 
 function analyzeRarBytes(bytes, findings){
   const isV5 = bytesEqual(bytes,0,[0x52,0x61,0x72,0x21,0x1A,0x07,0x01,0x00]);
-  findings.push({sev:'low', title:`Archivo RAR (${isV5?'v5+':'v4 o anterior'})`, desc:'Vigía no incluye un descompresor RAR completo, así que no puede listar el contenido con precisión total. En su lugar, busca nombres de archivo de riesgo visibles en las cabeceras (que RAR suele almacenar sin comprimir).'});
+  findings.push({sev:'low', title:`Archivo RAR (${isV5?'v5+':'v4 o anterior'})`, basic:'Es un archivo comprimido RAR; Vigía puede ver menos detalle de su contenido que con un ZIP normal.', eli5:'Es como mirar dentro de una caja a través de una rendija en vez de abrirla del todo: se puede ver algo, pero no todo con la misma claridad que con otros formatos.', desc:'Vigía no incluye un descompresor RAR completo, así que no puede listar el contenido con precisión total. En su lugar, busca nombres de archivo de riesgo visibles en las cabeceras (que RAR suele almacenar sin comprimir).'});
   const text = toLatin1String(bytes);
   const nameLikeRe = /[\w][\w .\-]{2,60}\.(exe|scr|com|bat|cmd|vbs|vbe|js|jse|wsf|ps1|hta|jar|lnk|docm|xlsm|pptm)\b/gi;
   const hits = new Set();
   let m;
   while((m = nameLikeRe.exec(text)) && hits.size < 20){ hits.add(m[0]); }
   if(hits.size){
-    findings.push({sev:'high', title:`${hits.size} nombre(s) de archivo de riesgo visibles dentro del RAR`, desc:[...hits].join(', ')});
+    findings.push({sev:'high', title:`${hits.size} nombre(s) de archivo de riesgo visibles dentro del RAR`, basic:'Se han visto nombres de archivos de riesgo dentro del RAR, aunque no se pueda ver todo su contenido.', eli5:'Es como leer algunas etiquetas a través de la rendija de la caja cerrada: no se ve todo, pero lo que se alcanza a leer ya da motivos para desconfiar.', desc:[...hits].join(', ')});
   }
   if(/password|encrypted/i.test(text.slice(0,200))){
-    findings.push({sev:'med', title:'Posible archivo protegido con contraseña', desc:'Detección orientativa; RAR cifrado es una técnica de evasión habitual de antivirus.'});
+    findings.push({sev:'med', title:'Posible archivo protegido con contraseña', basic:'El archivo parece estar protegido con contraseña, lo que impide analizarlo automáticamente.', eli5:'Es como una caja cerrada con candado dentro de otra caja: los sistemas de seguridad automáticos no pueden mirar dentro sin la llave.', desc:'Detección orientativa; RAR cifrado es una técnica de evasión habitual de antivirus.'});
   }
 }
 
 function analyze7zBytes(bytes, findings){
-  findings.push({sev:'med', title:'Archivo 7-Zip (formato de cabecera comprimida)', desc:'A diferencia de ZIP/RAR, 7z suele comprimir también los nombres de archivo dentro de su propia cabecera, así que Vigía no puede ni siquiera listar su contenido sin una librería de descompresión completa. Trata cualquier .7z de origen desconocido (y especialmente si está protegido con contraseña) con la máxima precaución: es un formato muy usado precisamente para evadir el análisis automático de antivirus y filtros de correo.'});
+  findings.push({sev:'med', title:'Archivo 7-Zip (formato de cabecera comprimida)', basic:'Es un archivo .7z, un formato en el que Vigía no puede ver el contenido interno en absoluto.', eli5:'Es como una caja completamente opaca, sin ninguna rendija: ni siquiera se puede adivinar qué nombres de archivo lleva dentro sin abrirla del todo — trátala con la máxima precaución si no esperabas recibirla, sobre todo si además pide contraseña.', desc:'A diferencia de ZIP/RAR, 7z suele comprimir también los nombres de archivo dentro de su propia cabecera, así que Vigía no puede ni siquiera listar su contenido sin una librería de descompresión completa. Trata cualquier .7z de origen desconocido (y especialmente si está protegido con contraseña) con la máxima precaución: es un formato muy usado precisamente para evadir el análisis automático de antivirus y filtros de correo.'});
 }
 
 async function analyzeArchiveFile(file){
@@ -6964,17 +6969,17 @@ async function analyzeArchiveFile(file){
         findings.push({sev:'ok', title:'Contenido .tar.gz listado correctamente', desc:'Se descomprimió con la API nativa del navegador y se analizó el tar resultante.'});
       } else {
         const innerSig = detectMagicSignature(un);
-        findings.push({sev: ['EXE','SCRIPT','ELF'].includes(innerSig.type)?'high':'low', title:`Contenido descomprimido: ${innerSig.label}`, desc:'El .gz no contiene un tar, sino un único archivo comprimido. Se identifica su formato real tras descomprimir.'});
+        findings.push({sev: ['EXE','SCRIPT','ELF'].includes(innerSig.type)?'high':'low', title:`Contenido descomprimido: ${innerSig.label}`, basic:'Al descomprimir, dentro hay un único archivo, no una carpeta con varios como suele ser habitual.', eli5:'Es como abrir una caja de mudanza y encontrar un solo objeto suelto en vez de varias cosas organizadas — se identifica qué es realmente ese objeto tras sacarlo de la caja.', desc:'El .gz no contiene un tar, sino un único archivo comprimido. Se identifica su formato real tras descomprimir.'});
       }
     } else {
-      findings.push({sev:'low', title:'No se pudo descomprimir el GZIP', desc:'Tu navegador podría no soportar la API nativa de descompresión (DecompressionStream), o el archivo está corrupto.'});
+      findings.push({sev:'low', title:'No se pudo descomprimir el GZIP', basic:'No se ha podido abrir el contenido comprimido para revisarlo.', eli5:'Es como intentar abrir una caja con una herramienta que tu navegador no tiene disponible, o encontrarte con que la caja está dañada por dentro.', desc:'Tu navegador podría no soportar la API nativa de descompresión (DecompressionStream), o el archivo está corrupto.'});
     }
   } else if(sig.type === 'TAR'){
     listing = parseTar(bytes).filter(e=>!e.dir);
     evaluateArchiveListing(listing, findings);
     meta = `${listing.length} entradas`;
   } else {
-    findings.push({sev:'high', title:`Contenido no reconocido como archivo comprimido: ${sig.label}`, desc:'El archivo no coincide con ningún formato de archivo comprimido conocido pese a su extensión.'});
+    findings.push({sev:'high', title:`Contenido no reconocido como archivo comprimido: ${sig.label}`, basic:'El archivo no tiene la estructura de ningún formato comprimido conocido, pese a lo que indica su nombre.', eli5:'Es como abrir lo que parecía una caja de mudanza y encontrarte con algo que no tiene ninguna de las formas habituales de una caja — algo no encaja con lo que se esperaba.', desc:'El archivo no coincide con ningún formato de archivo comprimido conocido pese a su extensión.'});
   }
 
   if(findings.length === 0){
