@@ -621,8 +621,8 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
   <button class="nav-scroll-btn left" id="nav-scroll-left" aria-label="Desplazar pestañas a la izquierda" type="button">‹</button>
   <nav class="tabs" role="tablist">
     <button role="tab" aria-selected="true" data-tab="inicio"><svg class="tab-icon" aria-hidden="true"><use href="#icon-home"></use></svg>Inicio</button>
-    <button role="tab" aria-selected="false" data-tab="analizar"><svg class="tab-icon" aria-hidden="true"><use href="#icon-search"></use></svg>Analizar</button>
-    <button role="tab" aria-selected="false" data-tab="dashboard"><svg class="tab-icon" aria-hidden="true"><use href="#icon-chart"></use></svg>Análisis</button>
+    <button role="tab" aria-selected="false" data-tab="analizar"><svg class="tab-icon" aria-hidden="true"><use href="#icon-search"></use></svg>Comprobar</button>
+    <button role="tab" aria-selected="false" data-tab="dashboard"><svg class="tab-icon" aria-hidden="true"><use href="#icon-chart"></use></svg>Actividad</button>
     <button role="tab" aria-selected="false" data-tab="guia"><svg class="tab-icon" aria-hidden="true"><use href="#icon-help"></use></svg>Aprender</button>
     <button role="tab" aria-selected="false" data-tab="ajustes"><svg class="tab-icon" aria-hidden="true"><use href="#icon-settings"></use></svg>Ajustes</button>
   </nav>
@@ -715,7 +715,7 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
             <span class="symptom-sub">Aunque nadie te haya enviado el enlace</span>
           </button>
         </div>
-        <p class="hint" style="margin:16px 0 10px;">Si ninguna encaja, mira todos los módulos de golpe en <button class="btn ghost dash-goto-tab" data-tab="analizar" style="padding:4px 10px;font-size:11px;">Analizar</button>, o <button class="btn ghost" id="wizard-contact-link" style="padding:4px 10px;font-size:11px;">escríbeme directamente</button> contándome qué ha pasado.</p>
+        <p class="hint" style="margin:16px 0 10px;">Si ninguna encaja, mira todos los módulos de golpe en <button class="btn ghost dash-goto-tab" data-tab="analizar" style="padding:4px 10px;font-size:11px;">Comprobar</button>, o <button class="btn ghost" id="wizard-contact-link" style="padding:4px 10px;font-size:11px;">escríbeme directamente</button> contándome qué ha pasado.</p>
         <div class="row mt">
           <button class="btn ghost" id="wizard-fallback-back-btn">← Atrás</button>
         </div>
@@ -734,7 +734,7 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
   </section>
 
   <section class="panel" id="panel-analizar">
-    <h2 class="panel-title">Analizar</h2>
+    <h2 class="panel-title">Comprobar</h2>
     <p class="panel-sub">Acceso directo a cada módulo, para cuando ya sabes exactamente qué quieres revisar.</p>
     <div class="symptom-grid" id="analizar-grid">
       <button class="symptom-card" data-route="url">
@@ -771,8 +771,8 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
   </section>
 
   <section class="panel" id="panel-dashboard">
-    <h2 class="panel-title">Panel de control</h2>
-    <p class="panel-sub">Resumen de tu actividad en Vigía. Todo se calcula localmente a partir del historial guardado en este navegador. Nada de esto sale de tu dispositivo.</p>
+    <h2 class="panel-title">Actividad</h2>
+    <p class="panel-sub">Todo se calcula localmente a partir de tu historial guardado en este navegador. Nada de esto sale de tu dispositivo.</p>
 
     <div class="card" id="dash-empty-state" style="display:none;text-align:center;padding:32px 20px;">
       <div style="font-size:28px;line-height:1;margin-bottom:10px;">🛡️</div>
@@ -877,7 +877,7 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
       <label class="field-label" for="start-pref-select">Al abrir Vigía, ir directamente a…</label>
       <select id="start-pref-select">
         <option value="inicio">🧭 Inicio — preguntarme qué he recibido (por defecto)</option>
-        <option value="analizar">⚡ Analizar — la rejilla de los 6 módulos</option>
+        <option value="analizar">⚡ Comprobar — la rejilla de los 6 módulos</option>
         <option value="url">🔗 Directo al módulo Enlace</option>
         <option value="email">✉️ Directo al módulo Correo</option>
         <option value="sms:text">💬 Directo al módulo SMS</option>
@@ -1791,7 +1791,11 @@ function renderVerdict(score, extraDesc){
       <div class="label" style="color:${color};">${verdictText}</div>
       <div class="desc">${extraDesc || 'Puntuación heurística sobre 100 · mayor = más señales de riesgo'}</div>
     </div>
-  </div>`;
+  </div>
+  <button type="button" class="btn ghost result-mode-quick-toggle" style="width:100%;margin-top:8px;font-size:12px;padding:8px 12px;">
+    <span class="only-basico">🔵 Ver detalles técnicos →</span>
+    <span class="only-avanzado">🟢 Volver a resultado sencillo</span>
+  </button>`;
 }
 
 /* El anillo de veredicto se inserta siempre "vacío" (offset = circunferencia completa) y
