@@ -774,22 +774,31 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
     <h2 class="panel-title">Panel de control</h2>
     <p class="panel-sub">Resumen de tu actividad en Vigía. Todo se calcula localmente a partir del historial guardado en este navegador. Nada de esto sale de tu dispositivo.</p>
 
-    <div class="card">
+    <div class="card" id="dash-empty-state" style="display:none;text-align:center;padding:32px 20px;">
+      <div style="font-size:28px;line-height:1;margin-bottom:10px;">🛡️</div>
+      <h3 style="font-family:var(--mono);font-size:14px;color:var(--text);margin:0 0 8px;">Todavía no has hecho ningún análisis</h3>
+      <p class="hint" style="margin:0 0 18px;max-width:360px;margin-left:auto;margin-right:auto;">En cuanto compruebes tu primer enlace, correo, SMS o archivo, aquí verás un resumen de tu actividad.</p>
+      <button class="btn dash-goto-tab" data-tab="inicio">Hacer mi primer análisis</button>
+    </div>
+
+    <div class="card" id="dash-today-block">
       <h3 style="font-family:var(--mono);font-size:12.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin:0 0 4px;">Hoy</h3>
       <div id="dash-today-counts"></div>
     </div>
 
-    <div class="subgrid">
+    <div class="subgrid" id="dash-stats-block">
       <div class="card" id="dash-threats-card" style="text-align:center;"></div>
       <div class="card" id="dash-risk-card" style="text-align:center;"></div>
     </div>
 
     <details class="card" id="dash-intel-card">
-      <summary style="cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:baseline;">
-        <h3 style="font-family:var(--mono);font-size:13px;color:var(--text);text-transform:uppercase;letter-spacing:.06em;margin:0;">🔁 Patrones detectados</h3>
-        <span class="hint" style="font-size:11px;">VER MÁS</span>
+      <summary style="cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:flex-start;">
+        <div>
+          <h3 style="font-family:var(--mono);font-size:13px;color:var(--text);text-transform:uppercase;letter-spacing:.06em;margin:0;">🔁 Patrones detectados</h3>
+          <p class="hint" style="margin:4px 0 0;font-size:11.5px;">Elementos que se repiten en tus análisis: dominios, IPs, remitentes…</p>
+        </div>
       </summary>
-      <p class="hint" style="font-size:12px;margin:12px 0;">Vigía ha detectado estos patrones repetidos en tus últimos análisis (hasta las últimas 300 entradas guardadas): dominios, IPs, remitentes... Nada de esto se envía a ningún sitio.</p>
+      <p class="hint" style="font-size:12px;margin:12px 0;">Se recalculan a partir de tus últimas 300 entradas guardadas en este navegador. Nada de esto se envía a ningún sitio.</p>
       <div class="subgrid" id="dash-intel-grid" style="gap:10px;"></div>
     </details>
 
@@ -804,12 +813,14 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
 
   <section class="panel" id="panel-guia">
     <h2 class="panel-title">Aprender</h2>
-    <p class="panel-sub">Pensada para quien tiene pocos conocimientos de ciberseguridad: qué significan los términos que usa la app, preguntas frecuentes, y cómo se calcula el nivel de riesgo de cada análisis.</p>
+    <p class="panel-sub">Pensada para quien tiene pocos conocimientos de ciberseguridad: qué significa tu resultado, términos que usa la app, preguntas frecuentes, hábitos de protección, y cómo se calcula el nivel de riesgo de cada análisis.</p>
 
     <div class="tabbtn-inline" role="tablist">
-      <button class="active" data-mode="niveles">🎯 ¿Qué significa el resultado?</button>
+      <button class="active" data-mode="niveles">🎯 Entender mi resultado</button>
       <button data-mode="glosario">📖 Glosario</button>
       <button data-mode="faq">❔ Preguntas frecuentes</button>
+      <button data-mode="habitos">🛡️ Hábitos de seguridad</button>
+      <button data-mode="calculo">📊 Cómo calculamos el riesgo</button>
     </div>
 
     <div class="card" id="guia-glosario-block" style="display:none;">
@@ -820,6 +831,13 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
     </div>
 
     <div class="card" id="guia-niveles-block">
+      <h3 style="font-family:var(--mono);font-size:12.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin:0 0 10px;">Los 5 niveles</h3>
+      <div id="niveles-list"></div>
+
+      <p class="hint mt" style="border-top:1px dashed var(--line);padding-top:12px;">⚠️ Importante: un resultado de "sin señales relevantes" (0 puntos) <b style="color:var(--text);">no es una garantía de seguridad absoluta</b>. Solo significa que no se ha detectado ninguno de los patrones que Vigía sabe reconocer. Sigue aplicando el sentido común.</p>
+    </div>
+
+    <div class="card" id="guia-calculo-block" style="display:none;">
       <h3 style="font-family:var(--mono);font-size:12.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin:0 0 4px;">¿Cómo se calcula el riesgo?</h3>
       <p class="hint">Cada análisis revisa una serie de "factores" (lo que en la app ves como ✓ / ⚠ / ✗). Cada uno tiene un peso según su gravedad, y los pesos <b style="color:var(--text);">se suman</b> hasta un máximo de 100:</p>
       <div class="mt">
@@ -830,16 +848,11 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
       </div>
       <p class="hint mt">Se suman porque <b style="color:var(--text);">varias señales flojas juntas pueden ser tan preocupantes como una señal grave sola</b>. Por ejemplo: un dominio con extensión sospechosa (+16) que además usa muchos subdominios (+16) suma 32 puntos (riesgo medio), aunque ninguno de los dos factores por separado sea crítico.</p>
       <p class="hint mt">Con un matiz: <b style="color:var(--text);">un segundo hallazgo del mismo nivel de gravedad cuenta algo menos que el primero</b> (un 60%, luego un 36%, y así sucesivamente), en vez de sumarse siempre a peso completo. Dos hallazgos "críticos" no dan automáticamente el doble de puntos: muchas veces son la misma suplantación vista desde dos ángulos distintos (por ejemplo, un dominio que imita una marca y, además, una ruta que usa palabras como "acceso" junto a esa misma marca), así que sumarlos a peso completo exageraría el riesgo más de lo que la evidencia real justifica.</p>
-
-      <h3 style="font-family:var(--mono);font-size:12.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 10px;">Los 5 niveles</h3>
-      <div id="niveles-list"></div>
-
-      <p class="hint mt" style="border-top:1px dashed var(--line);padding-top:12px;">⚠️ Importante: un resultado de "sin señales relevantes" (0 puntos) <b style="color:var(--text);">no es una garantía de seguridad absoluta</b>. Solo significa que no se ha detectado ninguno de los patrones que Vigía sabe reconocer. Sigue aplicando el sentido común.</p>
     </div>
 
-    <div class="card" id="guia-faq-block" style="display:none;">
+    <div class="card" id="guia-habitos-block" style="display:none;">
       <h3 style="font-family:var(--mono);font-size:12.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin:0 0 10px;">🛡️ Hábitos básicos de protección</h3>
-      <ul class="hint" style="padding-left:18px;line-height:1.8;margin:0 0 18px;">
+      <ul class="hint" style="padding-left:18px;line-height:1.8;margin:0;">
         <li>Nunca compartas un código de verificación (OTP), aunque te lo pida alguien que dice ser tu banco.</li>
         <li>Antes de hacer clic, mira bien el dominio real del enlace, no solo el texto que lo acompaña.</li>
         <li>Desconfía de cualquier mensaje que te meta prisa, te asuste o te prometa un premio.</li>
@@ -847,6 +860,9 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
         <li>Mantén tus apps y sistema operativo actualizados: muchas amenazas explotan fallos ya corregidos.</li>
         <li>Usa contraseñas distintas para cada servicio y, si puedes, activa la verificación en dos pasos.</li>
       </ul>
+    </div>
+
+    <div class="card" id="guia-faq-block" style="display:none;">
       <div id="faq-list"></div>
     </div>
   </section>
@@ -955,7 +971,7 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
       <label class="field-label" for="url-input">URL o dominio</label>
       <textarea id="url-input" rows="4" placeholder="https://ejemplo-banco-verificacion.tk/login&#10;bit.ly/3xAmpLe&#10;paypa1.com"></textarea>
       <div class="row mt">
-        <button class="btn" id="url-analyze-btn">Analizar</button>
+        <button class="btn" id="url-analyze-btn">Analizar enlace</button>
         <button class="btn ghost" id="url-clear-btn">Limpiar</button>
         <span class="hint" id="url-count-hint"></span>
       </div>
@@ -1044,7 +1060,7 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
       <input type="file" id="shot-file" accept="image/*">
       <p class="hint mt">El texto se extrae en tu navegador mediante OCR (se descarga el motor la primera vez, requiere conexión puntual). No se sube la imagen a ningún servidor.</p>
       <div class="row mt">
-        <button class="btn" id="shot-analyze-btn">Extraer y analizar</button>
+        <button class="btn" id="shot-analyze-btn">Extraer texto y analizar</button>
         <button class="btn ghost" id="shot-clear-btn">Limpiar</button>
         <span id="shot-status" class="hint"></span>
       </div>
@@ -1119,7 +1135,7 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
         <input type="text" id="store-query" placeholder="Ej. «WhatsApp», «Meta Platforms», o https://play.google.com/store/apps/details?id=com.whatsapp">
       </div>
       <div class="row mt">
-        <button class="btn" id="store-analyze-btn">Buscar</button>
+        <button class="btn" id="store-analyze-btn">Buscar aplicación</button>
         <button class="btn ghost" id="store-clear-btn">Limpiar</button>
         <span id="store-status" class="hint"></span>
       </div>
@@ -1194,7 +1210,7 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
       <input type="file" id="app-file" accept=".apk,.ipa">
       <p class="hint mt">Todo se procesa en tu navegador, sin subir el archivo a ningún sitio. Se extraen y analizan: permisos (y permisos peligrosos), librerías y SDKs de terceros, SDKs de publicidad, Firebase, dominios embebidos, certificado/firma, hash SHA-256 (con enlace opcional a VirusTotal) y posibles empaquetadores/protectores. Es una extracción heurística: puede no detectar todo, y no sustituye un análisis estático/dinámico completo.</p>
       <div class="row mt">
-        <button class="btn" id="appfile-analyze-btn">Extraer y analizar</button>
+        <button class="btn" id="appfile-analyze-btn">Extraer y analizar app</button>
         <button class="btn ghost" id="appfile-clear-btn">Limpiar</button>
         <span id="appfile-status" class="hint"></span>
       </div>
@@ -1324,7 +1340,7 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
       <input type="file" id="exe-file" accept=".exe,.dll,.scr,.com,.msi,.bat,.cmd,.vbs,.vbe,.js,.jse,.wsf,.ps1,.psm1,.sh,.py,.jar,.hta,.elf,.bin">
       <p class="hint mt">Windows (.exe/.dll/.scr), scripts (.bat/.vbs/.js/.ps1/.sh/.py/.hta…) y binarios Linux/macOS. Se analiza la cabecera real del binario, señales de empaquetado/ofuscación (entropía, secciones de packers conocidos), firma digital declarada, y patrones de código peligroso en scripts, sin ejecutar nada en ningún momento.</p>
       <div class="row mt">
-        <button class="btn" id="exe-analyze-btn">Analizar archivo</button>
+        <button class="btn" id="exe-analyze-btn">Analizar ejecutable/script</button>
         <button class="btn ghost" id="exe-clear-btn">Limpiar</button>
         <span id="exe-status" class="hint"></span>
       </div>
@@ -1390,6 +1406,7 @@ function activateTab(name, subMode){
   tabButtons.forEach(b=>b.setAttribute('aria-selected', b.dataset.tab===navName ? 'true':'false'));
   location.hash = name;
   if(name==='dashboard' && typeof renderDashboard==='function') renderDashboard();
+  if(name==='inicio' && typeof resetWizardHome==='function') resetWizardHome();
   if(subMode){
     const subBtn = document.querySelector('#panel-'+name+' .tabbtn-inline button[data-mode="'+subMode+'"]');
     if(subBtn) subBtn.click();
@@ -1422,10 +1439,10 @@ document.querySelectorAll('#analizar-grid .symptom-card[data-route]').forEach(ca
    usuario nunca aterriza en una pestaña vacía teniendo que pegar el texto una segunda vez. */
 (function setupWizard(){
   const PASTE_TARGETS = {
-    url:   { tab:'url',   subMode:null,    inputId:'url-input',   btnId:'url-analyze-btn',   resultsId:'url-results',   label:'Pega aquí el enlace' },
-    eml:   { tab:'email', subMode:null,    inputId:'eml-text',    btnId:'eml-analyze-btn',   resultsId:'email-results', label:'Pega aquí el correo completo (o al menos el texto y el remitente)' },
-    sms:   { tab:'sms',   subMode:'text',  inputId:'sms-text',    btnId:'sms-analyze-btn',   resultsId:'sms-results',   label:'Pega aquí el mensaje que has recibido' },
-    phone: { tab:'sms',   subMode:'phone', inputId:'phone-input', btnId:'phone-analyze-btn', resultsId:'sms-results',   label:'Escribe o pega el número de teléfono' },
+    url:   { tab:'url',   subMode:null,    inputId:'url-input',   btnId:'url-analyze-btn',   resultsId:'url-results',   label:'Pega aquí el enlace', btnLabel:'Analizar enlace' },
+    eml:   { tab:'email', subMode:null,    inputId:'eml-text',    btnId:'eml-analyze-btn',   resultsId:'email-results', label:'Pega aquí el correo completo (o al menos el texto y el remitente)', btnLabel:'Analizar correo' },
+    sms:   { tab:'sms',   subMode:'text',  inputId:'sms-text',    btnId:'sms-analyze-btn',   resultsId:'sms-results',   label:'Pega aquí el mensaje que has recibido', btnLabel:'Analizar mensaje' },
+    phone: { tab:'sms',   subMode:'phone', inputId:'phone-input', btnId:'phone-analyze-btn', resultsId:'sms-results',   label:'Escribe o pega el número de teléfono', btnLabel:'Analizar número' },
   };
   const card = document.getElementById('wizard-card');
   if(!card) return;
@@ -1435,6 +1452,7 @@ document.querySelectorAll('#analizar-grid .symptom-card[data-route]').forEach(ca
   const fallback = document.getElementById('wizard-fallback');
   const pasteInput = document.getElementById('wizard-paste-input');
   const pasteLabel = document.getElementById('wizard-paste-label');
+  const pasteSubmit = document.getElementById('wizard-paste-submit');
   let currentPasteTarget = null;
 
   function showStep(step){
@@ -1443,11 +1461,19 @@ document.querySelectorAll('#analizar-grid .symptom-card[data-route]').forEach(ca
     pasteStep.style.display = step==='paste' ? '' : 'none';
     fallback.style.display = step==='fallback' ? '' : 'none';
   }
+  // Expuesto para que activateTab() pueda resetear el asistente cada vez que se navega
+  // a Inicio por cualquier vía (nav, enlaces internos, hash, preferencia guardada). Sin esto,
+  // si el usuario abandonaba Inicio a mitad del asistente (p. ej. desde "Otra cosa" pulsando
+  // "Analizar" o "escríbeme directamente"), el paso quedaba fijado y, al volver a pulsar
+  // "Inicio", veía ese mismo paso intermedio en vez de la pantalla de bienvenida real —
+  // aparentando que el botón "Inicio" de la barra de navegación no hacía nada.
+  window.resetWizardHome = () => showStep('q1');
 
   function openPaste(key){
     currentPasteTarget = key;
     const t = PASTE_TARGETS[key];
     pasteLabel.textContent = t.label;
+    pasteSubmit.textContent = t.btnLabel;
     pasteInput.value = '';
     pasteInput.classList.remove('field-error');
     showStep('paste');
@@ -1991,6 +2017,23 @@ function renderDashboard(){
   const hist = getHistory();
   const today = hist.filter(h => isToday(h.ts));
 
+  // Primera visita real (sin NINGÚN historial, no solo "sin actividad hoy" — eso último es
+  // normal en un usuario habitual y no debe disparar este mensaje): en vez de 3 tarjetas con
+  // ceros y guiones repetidos ("Hoy" a 0, "0 amenazas", "— nivel de riesgo"), un único mensaje
+  // de bienvenida con acción clara. Sugerencia de un experto UX consultado por el usuario.
+  const emptyStateEl = document.getElementById('dash-empty-state');
+  const todayBlockEl = document.getElementById('dash-today-block');
+  const statsBlockEl = document.getElementById('dash-stats-block');
+  const isFirstVisit = hist.length === 0;
+  emptyStateEl.style.display = isFirstVisit ? '' : 'none';
+  todayBlockEl.style.display = isFirstVisit ? 'none' : '';
+  statsBlockEl.style.display = isFirstVisit ? 'none' : '';
+  if(isFirstVisit){
+    recentEl.innerHTML = '';
+    renderIntelCenter(hist);
+    return;
+  }
+
   // Contadores "Hoy" por tipo
   countsEl.innerHTML = Object.entries(DASH_KIND_META).map(([kind, meta])=>{
     const n = today.filter(h => h.kind === kind).length;
@@ -2011,22 +2054,19 @@ function renderDashboard(){
     <div style="font-family:var(--mono);font-size:34px;font-weight:700;color:${today.length?riskColor:'var(--text-dim)'};line-height:1;">${today.length ? avgRisk+'%' : '—'}</div>
     <div class="hint mt" style="margin-top:6px;">Nivel medio de riesgo${today.length?' hoy':' (sin análisis hoy)'}</div>`;
 
-  // Últimos análisis (los más recientes de todo el historial, no solo de hoy)
-  if(!hist.length){
-    recentEl.innerHTML = '<p class="hint">Todavía no hay análisis guardados. Empieza desde <b style="color:var(--text);">Inicio</b> o <b style="color:var(--text);">Analizar</b>, en la barra de arriba.</p>';
-  } else {
-    const kindLabel = {url:'URL', email:'Correo', app:'App', sms:'SMS/Tel', archivo:'Archivo'};
-    recentEl.innerHTML = hist.slice(0,8).map(h=>{
-      const {label,color} = scoreLabel(h.score);
-      const d = new Date(h.ts);
-      return `<div class="history-item">
-        <div><b>${kindLabel[h.kind]||h.kind}</b>: ${escapeHtml(h.subject)}
-          <div class="h-meta">${d.toLocaleString('es-ES')}</div>
-        </div>
-        <div style="color:${color};font-family:var(--mono);font-size:12px;white-space:nowrap;">${label} (${h.score})</div>
-      </div>`;
-    }).join('');
-  }
+  // Últimos análisis (los más recientes de todo el historial, no solo de hoy).
+  // El caso "sin historial" ya no llega aquí: isFirstVisit hace return antes.
+  const kindLabel = {url:'URL', email:'Correo', app:'App', sms:'SMS/Tel', archivo:'Archivo'};
+  recentEl.innerHTML = hist.slice(0,8).map(h=>{
+    const {label,color} = scoreLabel(h.score);
+    const d = new Date(h.ts);
+    return `<div class="history-item">
+      <div><b>${kindLabel[h.kind]||h.kind}</b>: ${escapeHtml(h.subject)}
+        <div class="h-meta">${d.toLocaleString('es-ES')}</div>
+      </div>
+      <div style="color:${color};font-family:var(--mono);font-size:12px;white-space:nowrap;">${label} (${h.score})</div>
+    </div>`;
+  }).join('');
 
   // "Accesos rápidos" vivía aquí antes de que existiera la pestaña "Analizar" dedicada a
   // exactamente eso; se retiró de Mis análisis por redundante (dos caminos al mismo sitio
@@ -2485,6 +2525,8 @@ document.querySelectorAll('#panel-guia .tabbtn-inline button').forEach(btn=>{
     const mode = btn.dataset.mode;
     document.getElementById('guia-glosario-block').style.display = mode==='glosario' ? '' : 'none';
     document.getElementById('guia-niveles-block').style.display = mode==='niveles' ? '' : 'none';
+    document.getElementById('guia-calculo-block').style.display = mode==='calculo' ? '' : 'none';
+    document.getElementById('guia-habitos-block').style.display = mode==='habitos' ? '' : 'none';
     document.getElementById('guia-faq-block').style.display = mode==='faq' ? '' : 'none';
   });
 });
