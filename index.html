@@ -963,7 +963,12 @@ footer .credits .license-line{opacity:0.85;letter-spacing:0.01em;}
 
   <section class="panel" id="panel-url">
     <h2 class="panel-title">Análisis de URLs, dominios e IPs</h2>
-    <p class="panel-sub">Pega una o varias URLs/dominios, comprueba una dirección IP pública, o revisa si tu conexión filtra tu IP real. <b style="color:var(--text);">Por defecto, Vigía solo analiza el patrón del propio texto de la URL</b> (estructura, TLD, homógrafos, entropía, typosquatting...), sin visitar el enlace ni consultar nada en internet. Es un análisis de forma, no una comprobación de que el sitio exista o sea seguro ahora mismo. Para eso está la consulta opcional de <b style="color:var(--text);">DNS, ASN y WHOIS</b> más abajo en cada resultado: es la única parte de este módulo que sale a internet a verificar algo real, y solo se activa si tú lo pides.</p>
+    <p class="panel-sub">Pega una o varias URLs/dominios, comprueba una dirección IP pública, o revisa si tu conexión filtra tu IP real. Revisamos la estructura del texto sin abrirlo. 🔒 <b style="color:var(--text);">No visitaremos el enlace ni consultaremos nada en internet</b>, salvo que tú lo pidas.</p>
+
+    <details class="eli5-details" style="margin:-4px 0 14px;">
+      <summary class="eli5-summary">¿Quieres más información?</summary>
+      <p class="hint" style="margin-top:8px;"><b style="color:var(--text);">Por defecto, Vigía solo analiza el patrón del propio texto de la URL</b> (estructura, TLD, homógrafos, entropía, typosquatting...), sin visitar el enlace ni consultar nada en internet. Es un análisis de forma, no una comprobación de que el sitio exista o sea seguro ahora mismo. Para eso está la consulta opcional de <b style="color:var(--text);">DNS, ASN y WHOIS</b> más abajo en cada resultado: es la única parte de este módulo que sale a internet a verificar algo real, y solo se activa si tú lo pides.</p>
+    </details>
 
     <div class="tabbtn-inline" role="tablist">
       <button class="active" data-mode="urls">URLs y dominios</button>
