@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">Vigía — Radar en vivo</title>
+  <desc id="desc">Radar circular con barrido animado y puntos detectados.</desc>
+  <style>
+    :root{--ring:#2F7A70;--signal:#46E0C6}
+    .ring{fill:none;stroke:var(--ring);stroke-width:2.4}
+    .inner{fill:none;stroke:var(--ring);stroke-width:1.25;opacity:.72}
+    .tick{stroke:var(--ring);stroke-width:1.7;stroke-linecap:round;opacity:.78}
+    .sweep{transform-origin:32px 32px;animation:spin 3.2s linear infinite}
+    .beam{fill:var(--signal);opacity:.16}
+    .edge{stroke:var(--signal);stroke-width:2;stroke-linecap:round;opacity:.95}
+    .center,.dot{fill:var(--signal);filter:drop-shadow(0 0 4px rgba(70,224,198,.55))}
+    .d1{animation:ping 3.2s linear infinite .42s}.d2{animation:ping 3.2s linear infinite 1.28s}
+    @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+    @keyframes ping{0%,6%{opacity:.22;transform:scale(.75)}12%,24%{opacity:1;transform:scale(1.12)}32%,100%{opacity:.55;transform:scale(1)}}
+    @media (prefers-reduced-motion:reduce){.sweep,.d1,.d2{animation:none}}
+  </style>
+  <circle class="ring" cx="32" cy="32" r="28.5"/>
+  <circle class="inner" cx="32" cy="32" r="20"/>
+  <g>
+    <line class="tick" x1="32" y1="2.9" x2="32" y2="7"/><line class="tick" x1="61.1" y1="32" x2="57" y2="32"/>
+    <line class="tick" x1="32" y1="61.1" x2="32" y2="57"/><line class="tick" x1="2.9" y1="32" x2="7" y2="32"/>
+  </g>
+  <g class="sweep">
+    <path class="beam" d="M32 32 L32 3.4 A28.6 28.6 0 0 1 46.3 7.2 Z"/>
+    <line class="edge" x1="32" y1="32" x2="32" y2="3.4"/>
+  </g>
+  <circle class="dot d1" cx="47.7" cy="19.2" r="3"/>
+  <circle class="dot d2" cx="14.8" cy="42.7" r="2.6"/>
+  <circle class="center" cx="32" cy="32" r="10"/>
+</svg>

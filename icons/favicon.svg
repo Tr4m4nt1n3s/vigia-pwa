@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">Vigía — Radar</title>
+  <desc id="desc">Icono circular de radar de Vigía.</desc>
+  <style>
+    .ring{fill:none;stroke:#2F7A70;stroke-width:2.4}
+    .inner{fill:none;stroke:#2F7A70;stroke-width:1.25;opacity:.72}
+    .tick{stroke:#2F7A70;stroke-width:1.7;stroke-linecap:round;opacity:.78}
+    .edge{stroke:#46E0C6;stroke-width:2;stroke-linecap:round;opacity:.95}
+    .center,.dot{fill:#46E0C6}
+  </style>
+  <circle class="ring" cx="32" cy="32" r="28.5"/>
+  <circle class="inner" cx="32" cy="32" r="20"/>
+  <g>
+    <line class="tick" x1="32" y1="2.9" x2="32" y2="7"/>
+    <line class="tick" x1="61.1" y1="32" x2="57" y2="32"/>
+    <line class="tick" x1="32" y1="61.1" x2="32" y2="57"/>
+    <line class="tick" x1="2.9" y1="32" x2="7" y2="32"/>
+  </g>
+  <line class="edge" x1="32" y1="32" x2="32" y2="3.4"/>
+  <circle class="dot" cx="47.7" cy="19.2" r="3"/>
+  <circle class="dot" cx="14.8" cy="42.7" r="2.6"/>
+  <circle class="center" cx="32" cy="32" r="10"/>
+</svg>
