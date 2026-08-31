@@ -326,6 +326,23 @@ section.panel.active{display:block;animation:fade-in .25s ease;}
 h2.panel-title{font-family:var(--sans);font-size:calc(15px * var(--fs-scale));color:var(--text);margin:0 0 4px;letter-spacing:0.02em;}
 p.panel-sub{color:var(--text-dim);font-size:calc(14.5px * var(--fs-scale));margin:0 0 18px;line-height:1.5;}
 
+/* Botón "Atrás" contextual (punto 2 del experto, navegación móvil, v111). Aparece solo en las
+   pantallas internas que son "hijas" de otra (hoy: los 5 módulos de análisis, hijos de Comprobar)
+   para que ningún usuario quede atrapado dentro de un módulo sin saber cómo salir — no depende de
+   que sepa usar el gesto o el botón físico del sistema. */
+.contextual-back-btn{display:inline-flex;align-items:center;gap:6px;background:none;border:none;padding:2px 0 12px;margin:0;color:var(--text-dim);font-family:inherit;font-size:calc(13.5px * var(--fs-scale));cursor:pointer;}
+.contextual-back-btn:hover,.contextual-back-btn:focus-visible{color:var(--signal);}
+.contextual-back-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+
+/* Indicador visual del gesto de deslizar para volver (punto 3 del experto, solo Android — ver
+   comentario junto al JS). Empieza pegado al borde izquierdo, fuera de la vista
+   (translateX(-100%)), y se va revelando según el dedo se desplaza hacia la derecha; el propio
+   JS mueve el transform en cada touchmove, así que aquí solo definimos apariencia y el estado
+   "ready" (cuando ya se ha arrastrado lo suficiente para que soltar dispare el volver). */
+.swipe-back-indicator{position:fixed;top:50%;left:0;transform:translate(-100%,-50%);display:flex;align-items:center;gap:7px;background:var(--panel-2);border:1px solid var(--line);color:var(--text-dim);padding:10px 18px 10px 12px;border-radius:0 999px 999px 0;font-size:calc(13px * var(--fs-scale));z-index:9999;pointer-events:none;box-shadow:0 2px 10px rgba(0,0,0,.2);}
+.swipe-back-indicator svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.swipe-back-indicator.ready{color:var(--signal);border-color:var(--signal);}
+
 /* Cabeceras de grupo dentro de Ajustes (Personalización/Privacidad/Aplicación/Ayuda) —
    agrupación puramente visual, sin cambiar la navegación de la app. */
 .settings-group-title{
@@ -926,6 +943,10 @@ footer .credits .license-line{letter-spacing:0.01em;}
      hace que cada icono herede automáticamente el color del texto del botón que lo usa. -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
+    <symbol id="icon-arrow-left" viewBox="0 0 16 16">
+      <polyline points="9.5,2.8 3.6,8 9.5,13.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <line x1="4.1" y1="8" x2="13.4" y2="8" stroke-linecap="round"/>
+    </symbol>
     <symbol id="icon-home" viewBox="0 0 16 16">
       <polyline points="2.3,7.8 8,3 13.7,7.8" stroke-linecap="round" stroke-linejoin="round"/>
       <path d="M4,7 V13 H12 V7" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1489,6 +1510,7 @@ footer .credits .license-line{letter-spacing:0.01em;}
 
 
   <section class="panel" id="panel-url">
+    <button type="button" class="contextual-back-btn" data-back-to="analizar"><svg aria-hidden="true"><use href="#icon-arrow-left"/></svg>Comprobar</button>
     <h2 class="panel-title">Pega el enlace que te preocupa.</h2>
     <p class="panel-sub">🔒 No abriremos el enlace ni consultaremos nada en internet, salvo que tú lo pidas.</p>
 
@@ -1568,6 +1590,7 @@ footer .credits .license-line{letter-spacing:0.01em;}
   </section>
 
   <section class="panel" id="panel-email">
+    <button type="button" class="contextual-back-btn" data-back-to="analizar"><svg aria-hidden="true"><use href="#icon-arrow-left"/></svg>Comprobar</button>
     <h2 class="panel-title">Sube el correo o una captura.</h2>
     <p class="panel-sub">Análisis de correo electrónico. Importa un archivo .eml o .msg (Outlook), pega la fuente del correo, sube una captura de pantalla, o analiza solo la dirección del remitente. Incluye ruta del mensaje, cliente de correo, lenguaje de manipulación, y verificación de autenticidad del remitente bajo petición. <span class="only-avanzado">(Cabeceras "Received", SPF/DKIM/DMARC.)</span></p>
 
@@ -1622,6 +1645,7 @@ footer .credits .license-line{letter-spacing:0.01em;}
 
 
   <section class="panel" id="panel-apps">
+    <button type="button" class="contextual-back-btn" data-back-to="analizar"><svg aria-hidden="true"><use href="#icon-arrow-left"/></svg>Comprobar</button>
     <h2 class="panel-title">Dinos qué aplicación quieres comprobar.</h2>
     <p class="panel-sub">Análisis de apps móviles (Android / iOS). Describe la app manualmente, sube su archivo de instalación, busca una app pública en Google Play / App Store, o analiza el registro de conexiones que haya establecido. <span class="only-avanzado">(Complemento heurístico a tu MTD; admite .apk / .ipa.)</span></p>
 
@@ -1779,6 +1803,7 @@ footer .credits .license-line{letter-spacing:0.01em;}
   </section>
 
   <section class="panel" id="panel-sms">
+    <button type="button" class="contextual-back-btn" data-back-to="analizar"><svg aria-hidden="true"><use href="#icon-arrow-left"/></svg>Comprobar</button>
     <h2 class="panel-title">Pega el mensaje que has recibido.</h2>
     <p class="panel-sub">Vigía buscará señales habituales de estafa. <svg aria-hidden="true" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;vertical-align:-2px;"><use href="#icon-lock"></use></svg> <b style="color:var(--text);">Copia y pega el mensaje</b> — Vigía nunca lee tu bandeja de SMS automáticamente.</p>
 
@@ -1838,6 +1863,7 @@ footer .credits .license-line{letter-spacing:0.01em;}
   </section>
 
   <section class="panel" id="panel-archivos">
+    <button type="button" class="contextual-back-btn" data-back-to="analizar"><svg aria-hidden="true"><use href="#icon-arrow-left"/></svg>Comprobar</button>
     <h2 class="panel-title">Selecciona el archivo antes de abrirlo.</h2>
     <p class="panel-sub">Revisa el archivo <b>antes de abrirlo</b>, en busca de cosas escondidas dentro. <span class="only-avanzado">(Datos añadidos tras el final del archivo, macros y scripts que se ejecutan al abrir, contenido empaquetado/ofuscado, hipervínculos a dominios externos, y discordancias entre la extensión y el contenido real.)</span></p>
 
@@ -2072,7 +2098,23 @@ const tabButtons = document.querySelectorAll('nav.tabs button');
 // Mis análisis en la nueva arquitectura) resaltan el botón padre correspondiente, para que
 // siempre quede claro en qué sección de las 5 principales está el usuario.
 const NAV_PARENT_TAB = { url:'analizar', email:'analizar', apps:'analizar', sms:'analizar', archivos:'analizar' };
-function activateTab(name, subMode){
+const VALID_TABS = ['inicio','analizar','guia','ajustes','contacto','url','email','apps','sms','archivos','historial'];
+
+// Punto 1 del experto (navegación móvil, v111): activateTab() ya cambiaba location.hash en cada
+// pestaña — eso SÍ añadía una entrada al historial del navegador — pero no existía ningún listener
+// de popstate/hashchange en toda la app (confirmado por búsqueda: cero resultados). Consecuencia
+// real, no solo teórica: al pulsar el botón físico Atrás de Android o hacer el gesto nativo de
+// iOS/Safari dentro de la PWA instalada, la URL cambiaba hacia atrás pero la pantalla se quedaba
+// congelada en el panel anterior, porque nada volvía a llamar a activateTab(). El usuario tenía
+// que pulsar Atrás varias veces sin ver ningún cambio hasta salir de la app entera.
+//
+// Fix: se separa la actualización visual (applyTabState, no toca el historial) de la navegación
+// normal (activateTab, sí lo toca). suppressNextHashChange evita procesar dos veces el mismo
+// cambio cuando es la propia app la que provoca el hashchange (clic en una pestaña); así el
+// listener de 'hashchange' solo actúa cuando el cambio viene de fuera (Atrás/Adelante del
+// sistema), que es exactamente el caso que hoy no funcionaba.
+let suppressNextHashChange = false;
+function applyTabState(name, subMode){
   document.querySelectorAll('section.panel').forEach(p=>p.classList.toggle('active', p.id==='panel-'+name));
   const navName = NAV_PARENT_TAB[name] || name;
   tabButtons.forEach(b=>{
@@ -2080,7 +2122,6 @@ function activateTab(name, subMode){
     b.setAttribute('aria-selected', sel ? 'true':'false');
     b.setAttribute('tabindex', sel ? '0':'-1');
   });
-  location.hash = name;
   if(name==='historial'){
     if(typeof renderDashboard==='function') renderDashboard();
     if(typeof renderHistory==='function') renderHistory();
@@ -2091,13 +2132,113 @@ function activateTab(name, subMode){
     if(subBtn) subBtn.click();
   }
   // El módulo activo se desplaza a la vista, se abra desde donde se abra (clic, accesos
-  // rápidos del Dashboard, o al cargar la página con un hash) — así nunca queda fuera de la
-  // zona visible de la barra, sin necesidad de fijar ninguna pestaña por posición.
+  // rápidos del Dashboard, al cargar la página con un hash, o al pulsar Atrás) — así nunca
+  // queda fuera de la zona visible de la barra, sin necesidad de fijar ninguna pestaña por
+  // posición.
   const activeBtn = [...tabButtons].find(b=>b.dataset.tab===navName);
   if(activeBtn) activeBtn.scrollIntoView({behavior:'smooth', inline:'center', block:'nearest'});
   if(typeof updateNavToggle==='function') updateNavToggle(navName);
 }
+function activateTab(name, subMode){
+  applyTabState(name, subMode);
+  if(location.hash.replace('#','') !== name){
+    suppressNextHashChange = true;
+    location.hash = name;
+  }
+}
+window.addEventListener('hashchange', ()=>{
+  if(suppressNextHashChange){ suppressNextHashChange = false; return; }
+  const h = location.hash.replace('#','');
+  if(VALID_TABS.includes(h)) applyTabState(h);
+});
 tabButtons.forEach(b=>b.addEventListener('click', ()=>activateTab(b.dataset.tab)));
+
+// Punto 2 del experto (navegación móvil, v111): botón "Atrás" contextual, siempre visible en las
+// pantallas internas (los 5 módulos de análisis, hijos de Comprobar), para que ningún usuario
+// quede atrapado dentro de un módulo sin saber cómo salir. Un único listener delegado cubre los
+// 5 botones sin necesidad de engancharlos uno a uno.
+document.addEventListener('click', e=>{
+  const backBtn = e.target.closest('.contextual-back-btn');
+  if(backBtn) activateTab(backBtn.dataset.backTo);
+});
+
+// Punto 3 del experto (navegación móvil, v112): gesto de deslizar desde el borde izquierdo hacia
+// la derecha, como complemento OPCIONAL de los puntos 1 y 2 — nunca como sustituto de ninguno.
+// Deliberadamente restringido a Android (comprobado por navigator.userAgent): en iOS/iPadOS ese
+// mismo gesto de borde ya pertenece al sistema (Safari/PWA), y capturarlo competiría con él en
+// vez de complementarlo, tal y como advirtió el experto — ahí el usuario sigue teniendo el botón
+// contextual (punto 2) y el gesto/botón nativo del sistema (punto 1), sin ningún gesto añadido.
+// Solo se activa cuando la pantalla actual es una de las 5 "hijas" con botón contextual (mismo
+// criterio que currentChildPanelName), y solo si el toque empieza pegado al borde (EDGE_ZONE) —
+// detección conservadora a propósito, para no competir con gestos de scroll horizontal u otros
+// gestos del propio Android en el resto de la pantalla.
+if(/Android/i.test(navigator.userAgent || '')){
+  const EDGE_ZONE = 28;      // px desde el borde izquierdo donde puede empezar el gesto
+  const BACK_THRESHOLD = 76; // px de arrastre para que soltar dispare el volver (rango 70-80 pedido)
+  const MAX_DRAG = 130;      // px a partir de los cuales el indicador ya no avanza más
+  let touchId = null, startX = 0, startY = 0, dragging = false, confirmed = false, indicatorEl = null;
+
+  function currentChildPanelName(){
+    const active = document.querySelector('section.panel.active');
+    if(!active) return null;
+    const name = active.id.replace('panel-','');
+    return NAV_PARENT_TAB[name] ? name : null;
+  }
+  function ensureIndicator(){
+    if(indicatorEl) return indicatorEl;
+    indicatorEl = document.createElement('div');
+    indicatorEl.className = 'swipe-back-indicator';
+    indicatorEl.innerHTML = '<svg aria-hidden="true"><use href="#icon-arrow-left"/></svg><span>Volver</span>';
+    document.body.appendChild(indicatorEl);
+    return indicatorEl;
+  }
+  document.addEventListener('touchstart', e=>{
+    if(e.touches.length !== 1) return;
+    const t = e.touches[0];
+    if(t.clientX > EDGE_ZONE || !currentChildPanelName()) return;
+    touchId = t.identifier; startX = t.clientX; startY = t.clientY;
+    dragging = true; confirmed = false;
+  }, {passive:true});
+  document.addEventListener('touchmove', e=>{
+    if(!dragging) return;
+    const t = [...e.touches].find(tt=>tt.identifier===touchId);
+    if(!t) return;
+    const dx = t.clientX - startX, dy = t.clientY - startY;
+    if(!confirmed){
+      // Todavía sin confirmar si es "volver" o un scroll vertical normal: si el movimiento
+      // vertical ya domina claramente, se abandona el seguimiento y se deja el scroll intacto.
+      if(Math.abs(dy) > Math.abs(dx) || dx < 12){
+        if(Math.abs(dy) > 24) dragging = false;
+        return;
+      }
+      confirmed = true;
+      ensureIndicator().classList.add('active');
+    }
+    e.preventDefault(); // ya confirmado el gesto: a partir de aquí no debe hacer scroll a la vez
+    const clamped = Math.max(0, Math.min(dx, MAX_DRAG));
+    const el = ensureIndicator();
+    const ready = clamped >= BACK_THRESHOLD;
+    el.style.transform = `translate(${-100 + (clamped/MAX_DRAG)*100}%, -50%)`;
+    el.classList.toggle('ready', ready);
+    el.querySelector('span').textContent = ready ? 'Suelta para volver' : 'Volver';
+  }, {passive:false});
+  function endSwipe(e){
+    if(!dragging) return;
+    dragging = false;
+    if(!confirmed || !indicatorEl){ confirmed = false; return; }
+    const t = e.changedTouches && [...e.changedTouches].find(tt=>tt.identifier===touchId);
+    const dx = t ? t.clientX - startX : 0;
+    indicatorEl.classList.remove('active','ready');
+    indicatorEl.style.transform = 'translate(-100%, -50%)';
+    confirmed = false;
+    if(dx >= BACK_THRESHOLD){
+      const name = currentChildPanelName();
+      if(name) activateTab(NAV_PARENT_TAB[name]);
+    }
+  }
+  document.addEventListener('touchend', endSwipe);
+  document.addEventListener('touchcancel', endSwipe);
+}
 
 // Patrón ARIA de pestañas (punto 48 del experto): roving tabindex compartido por los 6 grupos
 // internos de sub-pestañas (tabbtn-inline). Marca aria-selected="true"+tabindex="0" en el botón
@@ -2372,7 +2513,7 @@ function runInitialRoute(){
     return;
   }
   const h = location.hash.replace('#','');
-  const validHash = ['inicio','analizar','guia','ajustes','contacto','url','email','apps','sms','archivos','historial'].includes(h);
+  const validHash = VALID_TABS.includes(h);
   if(validHash){
     activateTab(h);
   } else {
