@@ -7296,7 +7296,15 @@ document.getElementById('shot-analyze-btn').addEventListener('click', async ()=>
     const bitmap = await validateAndDecodeOcrImage(f);
 
     status.innerHTML = '<span class="spinner"></span> preparando imagen…';
-    const prepared = preprocessOcrImage(bitmap) || bitmap;
+    // Tesseract.js NUNCA debe recibir un ImageBitmap directamente: no es una entrada soportada
+    // por worker.recognize() (admite File/Blob/<img>/<canvas>, entre otros, pero no ImageBitmap),
+    // y pasarlo produce justo los errores de Leptonica vistos en consola ("truncated file" /
+    // "Unknown format" / "pixRead failed") — no son un problema de la captura, sino del tipo de
+    // dato que se le entrega. Si no hubo que redimensionar (preprocessOcrImage devuelve null),
+    // se usa el File original, nunca el bitmap; si sí hubo redimensionado, se usa el <canvas>
+    // que preprocessOcrImage ya genera. El bitmap solo existía para decodificar/medir la imagen.
+    const prepared = preprocessOcrImage(bitmap) || f;
+    try{ bitmap.close(); }catch(_){}
 
     status.innerHTML = '<span class="spinner"></span> cargando motor OCR…';
     await ensureTesseract();
