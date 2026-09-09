@@ -18,7 +18,7 @@
 
 <!-- Content-Security-Policy: capa de defensa en profundidad, no un parche a un agujero conocido
      (el código ya escapa de forma consistente todo el contenido dinámico con escapeHtml()).
-     Tres límites honestos, documentados en vez de ocultados:
+     Cuatro límites honestos, documentados en vez de ocultados:
      - script-src necesita 'unsafe-inline' porque toda la lógica de Vigía vive en bloques de script
        inline dentro de un único archivo .html sin servidor que pueda generar un nonce por carga; aun así,
        sigue bloqueando que un script se cargue desde un dominio ajeno a los ya autorizados.
@@ -31,8 +31,14 @@
        usa script-src como fallback para workers — y script-src no incluye blob:, así que el worker
        quedaba bloqueado. Se declara worker-src aparte, en vez de añadir blob: a script-src, para no
        ampliar de dónde puede cargarse código de scripts normal (blob: en script-src sería mucho más
-       permisivo: cualquier blob generado en runtime podría ejecutarse como si fuera un script de la página). -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; connect-src 'self' https:; object-src 'none'; base-uri 'none'; form-action 'self' https://formspree.io; frame-ancestors 'self';">
+       permisivo: cualquier blob generado en runtime podría ejecutarse como si fuera un script de la página).
+     - script-src necesita 'wasm-unsafe-eval' por la misma cadena del motor OCR: una vez el Worker se crea
+       (permitido por worker-src), Tesseract.js compila su núcleo WebAssembly (tesseract-core-simd.wasm)
+       dentro de ese Worker, y WebAssembly.instantiate() cae bajo la restricción de evaluación de script-src.
+       'wasm-unsafe-eval' autoriza específicamente eso — compilar/instanciar WebAssembly — sin ampliar
+       nada más: a diferencia de 'unsafe-eval' (que se NIEGA deliberadamente a usarse aquí), no permite
+       eval() ni new Function() ni evaluar JavaScript arbitrario, solo módulos WebAssembly. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; connect-src 'self' https:; object-src 'none'; base-uri 'none'; form-action 'self' https://formspree.io; frame-ancestors 'self';">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Vigía">
 <meta name="apple-mobile-web-app-status-bar-style" content="default" id="apple-status-bar-meta">
