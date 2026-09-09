@@ -18,15 +18,21 @@
 
 <!-- Content-Security-Policy: capa de defensa en profundidad, no un parche a un agujero conocido
      (el código ya escapa de forma consistente todo el contenido dinámico con escapeHtml()).
-     Dos límites honestos, documentados en vez de ocultados:
+     Tres límites honestos, documentados en vez de ocultados:
      - script-src necesita 'unsafe-inline' porque toda la lógica de Vigía vive en bloques de script
        inline dentro de un único archivo .html sin servidor que pueda generar un nonce por carga; aun así,
        sigue bloqueando que un script se cargue desde un dominio ajeno a los ya autorizados.
      - connect-src se deja amplio a "https:" a propósito: el módulo RDAP (WHOIS moderno) redirige
        a servidores de registro autoritativos que varían según el dominio consultado (Verisign,
        RIPE, registradores concretos...) y no se pueden enumerar de antemano; una lista cerrada
-       rompería silenciosamente esa función, justo lo que la filosofía del proyecto quiere evitar. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; connect-src 'self' https:; object-src 'none'; base-uri 'none'; form-action 'self' https://formspree.io; frame-ancestors 'self';">
+       rompería silenciosamente esa función, justo lo que la filosofía del proyecto quiere evitar.
+     - worker-src 'self' blob: es NECESARIO para el motor OCR (Tesseract.js crea su Web Worker a partir
+       de un blob: generado en memoria, no de una URL de archivo real). Sin worker-src explícito, la CSP
+       usa script-src como fallback para workers — y script-src no incluye blob:, así que el worker
+       quedaba bloqueado. Se declara worker-src aparte, en vez de añadir blob: a script-src, para no
+       ampliar de dónde puede cargarse código de scripts normal (blob: en script-src sería mucho más
+       permisivo: cualquier blob generado en runtime podría ejecutarse como si fuera un script de la página). -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; connect-src 'self' https:; object-src 'none'; base-uri 'none'; form-action 'self' https://formspree.io; frame-ancestors 'self';">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Vigía">
 <meta name="apple-mobile-web-app-status-bar-style" content="default" id="apple-status-bar-meta">
@@ -7336,10 +7342,10 @@ document.getElementById('shot-analyze-btn').addEventListener('click', async ()=>
     let type;
     if(run.timedOut) type = 'timeout';
     else if(run.userCancelled) type = 'cancelled';
-    else type = err.ocrErrorType || 'engine';
+    else type = err?.ocrErrorType || 'engine';
     const messages = {
-      invalid: err.message || 'Archivo no válido: la imagen no es válida o no se puede abrir.',
-      too_large: err.message || 'La captura supera el tamaño máximo permitido para OCR.',
+      invalid: err?.message || 'Archivo no válido: la imagen no es válida o no se puede abrir.',
+      too_large: err?.message || 'La captura supera el tamaño máximo permitido para OCR.',
       cancelled: 'Análisis OCR cancelado.',
       timeout: 'El OCR ha tardado demasiado y se ha cancelado (tiempo de espera agotado). Prueba con una imagen más pequeña o más nítida.',
       engine: 'El motor OCR no ha podido procesar la captura. Comprueba tu conexión (se descarga la primera vez) o prueba con otra imagen.',
@@ -7643,6 +7649,8 @@ function axmlTokenize(buffer){
       events.push({type:'start', nameIdx, attrs});
     } else if(chunkType === 0x0103){ // END_ELEMENT
       events.push({type:'end', nameIdx: view.getInt32(pos+20, true)});
+    } else if(chunkType === 0x0104){ // CDATA (texto entre etiquetas, p.ej. <domain>ejemplo.com</domain>)
+      events.push({type:'cdata', dataIdx: view.getInt32(pos+16, true)});
     }
     pos += chunkSize;
   }
@@ -7668,11 +7676,21 @@ function axmlBuildTree(stringPool, events){
       const node = { tag, attrs:{}, children:[], parent:cur };
       for(const a of ev.attrs){
         const name = axmlStr(stringPool, a.nameIdx);
-        if(name) node.attrs[name] = axmlResolveAttrValue(a, stringPool);
+        if(name){
+          node.attrs[name] = axmlResolveAttrValue(a, stringPool);
+          if(a.rawValueIdx < 0 && a.dataType === AXML_TYPE_REFERENCE){
+            node.refs = node.refs || {};
+            node.refs[name] = a.data; // resource id numérico crudo, para poder resolverlo luego vía resources.arsc
+          }
+        }
       }
       cur.children.push(node);
       cur = node;
     } else if(ev.type === 'end'){ if(cur.parent) cur = cur.parent; }
+    else if(ev.type === 'cdata'){
+      const txt = axmlStr(stringPool, ev.dataIdx) || '';
+      cur.text = (cur.text || '') + txt;
+    }
   }
   return root;
 }
@@ -7683,8 +7701,280 @@ function parseAxml(buffer){
 }
 function axmlGetAttr(node, name){ return node && node.attrs ? node.attrs[name] : undefined; }
 function axmlChildren(node, tag){ return node ? node.children.filter(c=>c.tag===tag) : []; }
+function axmlText(node){ return (node && node.text) || ''; }
 
-/* ===== Extracción semántica del manifiesto a partir del árbol AXML ===== */
+/* ===== resources.arsc — parser mínimo, SOLO para resolver un resource id numérico
+   (p. ej. el que trae android:networkSecurityConfig="@xml/...") a la ruta del archivo
+   compilado dentro del APK (típicamente "res/xml/algo.xml"). No interpreta drawables,
+   estilos, plurals, ni configuraciones por densidad/idioma: eso queda fuera de alcance,
+   solo hace falta resolver UNA referencia de tipo string a ruta de archivo. ===== */
+function axmlParseResourcesArsc(buffer){
+  const bytes = new Uint8Array(buffer);
+  const view = new DataView(buffer);
+  if(bytes.length < 12) throw new Error('Buffer demasiado pequeño para ser resources.arsc');
+  if(view.getUint16(0, true) !== 0x0002) throw new Error('Cabecera inicial no es RES_TABLE_TYPE (0x0002): no parece un resources.arsc válido');
+  const totalSize = view.getUint32(4, true);
+  const limit = Math.min(totalSize || bytes.length, bytes.length);
+  let globalStrings = [];
+  const packages = [];
+  let pos = 12, guard = 0; // headerSize del chunk raíz = 12 (type+headerSize+size+packageCount)
+  while(pos + 8 <= limit && guard < 100000){
+    guard++;
+    const chunkType = view.getUint16(pos, true);
+    const headerSize = view.getUint16(pos+2, true);
+    const chunkSize = view.getUint32(pos+4, true);
+    if(headerSize < 8 || chunkSize < headerSize || pos + chunkSize > bytes.length || chunkSize <= 0){
+      throw new Error(`Chunk de resources.arsc corrupto o truncado en offset ${pos} (type=0x${chunkType.toString(16)})`);
+    }
+    if(chunkType === 0x0001 && !globalStrings.length){
+      globalStrings = axmlReadStringPoolChunk(view, bytes, pos);
+    } else if(chunkType === 0x0200){ // RES_TABLE_PACKAGE_TYPE
+      packages.push({ id: view.getUint32(pos+8, true) & 0xFF, start: pos, end: pos + chunkSize, headerSize });
+    }
+    pos += chunkSize;
+  }
+  return { globalStrings, packages, bytes, view };
+}
+/* resId: entero de 32 bits con forma 0xPPTTEEEE (paquete, tipo, entrada). Devuelve el
+   string resuelto (p. ej. "res/xml/network_security_config.xml") o null si no se pudo
+   resolver (paquete no encontrado, tipo distinto de string, entrada compleja/estilo, etc.). */
+function axmlResolveResourceId(resTable, resId){
+  if(typeof resId !== 'number' || resId < 0) return null;
+  const pkgId = (resId >>> 24) & 0xFF;
+  const typeId = (resId >>> 16) & 0xFF;
+  const entryId = resId & 0xFFFF;
+  const pkg = resTable.packages.find(p => p.id === pkgId);
+  if(!pkg) return null;
+  const { view, bytes, globalStrings } = resTable;
+  let p = pkg.start + pkg.headerSize;
+  let guard = 0;
+  while(p + 8 <= pkg.end && guard < 100000){
+    guard++;
+    const ct = view.getUint16(p, true);
+    const hs = view.getUint16(p+2, true);
+    const cs = view.getUint32(p+4, true);
+    if(hs < 8 || cs < hs || p + cs > pkg.end || cs <= 0) break; // corrupción local: se abandona la resolución en vez de reventar
+    if(ct === 0x0201){ // RES_TABLE_TYPE_TYPE
+      const tId = bytes[p+8];
+      if(tId === typeId){
+        const flags = bytes[p+9];
+        const entryCount = view.getUint32(p+12, true);
+        const entriesStart = view.getUint32(p+16, true);
+        const sparse = !!(flags & 0x01);
+        const offsetsArrayStart = p + hs;
+        const entriesDataStart = p + entriesStart;
+        let entryAbs = null;
+        if(sparse){
+          for(let i=0;i<entryCount;i++){
+            const base = offsetsArrayStart + i*4;
+            if(base+4 > bytes.length) break;
+            const idx = view.getUint16(base, true);
+            const off4 = view.getUint16(base+2, true);
+            if(idx === entryId){ entryAbs = entriesDataStart + off4*4; break; }
+          }
+        } else {
+          if(entryId < entryCount){
+            const base = offsetsArrayStart + entryId*4;
+            if(base+4 <= bytes.length){
+              const off = view.getUint32(base, true);
+              if(off !== 0xFFFFFFFF) entryAbs = entriesDataStart + off;
+            }
+          }
+        }
+        if(entryAbs !== null && entryAbs + 8 <= bytes.length){
+          const entrySize = view.getUint16(entryAbs, true);
+          const entryFlags = view.getUint16(entryAbs+2, true);
+          const isComplex = !!(entryFlags & 0x0001);
+          if(!isComplex){
+            const valueOffset = entryAbs + entrySize;
+            if(valueOffset + 8 <= bytes.length){
+              const dataType = bytes[valueOffset+3];
+              const data = view.getUint32(valueOffset+4, true);
+              if(dataType === AXML_TYPE_STRING) return axmlStr(globalStrings, data);
+            }
+          }
+          return null; // entrada compleja (map/estilo) — no es una ruta de archivo, fuera de alcance
+        }
+      }
+    }
+    p += cs;
+  }
+  return null;
+}
+
+/* ===== network_security_config.xml — mismo formato AXML que el manifiesto, así que se
+   reutiliza parseAxml(). Extrae cleartext por defecto/por dominio, trust-anchors (system/
+   user/certificado propio) y debug-overrides: auditoría del experto, punto D. ===== */
+function axmlExtractTrustAnchors(trustAnchorsEl){
+  if(!trustAnchorsEl) return null;
+  return axmlChildren(trustAnchorsEl, 'certificates').map(c => ({
+    src: axmlGetAttr(c, 'src') || null, // 'system' | 'user' | '@raw/algo' | 'https://...' (raro)
+    overridePins: axmlGetAttr(c, 'overridePins') === true,
+  }));
+}
+function extractNetworkSecurityConfig(tree){
+  const root = axmlChildren(tree, 'network-security-config')[0];
+  if(!root) throw new Error('No se encontró el elemento raíz <network-security-config>');
+  const baseConfigEl = axmlChildren(root, 'base-config')[0];
+  const baseConfig = baseConfigEl ? {
+    cleartextTrafficPermitted: axmlGetAttr(baseConfigEl, 'cleartextTrafficPermitted'), // true/false/undefined(default real: true si targetSdk<28, false si >=28)
+    trustAnchors: axmlExtractTrustAnchors(axmlChildren(baseConfigEl, 'trust-anchors')[0]),
+  } : null;
+  const domainConfigs = axmlChildren(root, 'domain-config').map(dc => ({
+    cleartextTrafficPermitted: axmlGetAttr(dc, 'cleartextTrafficPermitted'),
+    domains: axmlChildren(dc, 'domain').map(d => ({ name: axmlText(d).trim(), includeSubdomains: axmlGetAttr(d,'includeSubdomains') === true })),
+    trustAnchors: axmlExtractTrustAnchors(axmlChildren(dc, 'trust-anchors')[0]),
+    hasPinSet: axmlChildren(dc, 'pin-set').length > 0,
+  }));
+  const debugOverridesEl = axmlChildren(root, 'debug-overrides')[0];
+  const debugOverrides = debugOverridesEl ? {
+    trustAnchors: axmlExtractTrustAnchors(axmlChildren(debugOverridesEl, 'trust-anchors')[0]),
+  } : null;
+  return { baseConfig, domainConfigs, debugOverrides };
+}
+function axmlHasUserCa(trustAnchors){ return !!(trustAnchors && trustAnchors.some(t => t.src === 'user')); }
+function buildNetworkSecurityConfigFindings(nsc){
+  const findings = [];
+  if(nsc.baseConfig){
+    if(nsc.baseConfig.cleartextTrafficPermitted === true){
+      findings.push({sev:'med', dim:'threat', id:'manifest.nsc_base_cleartext_permitted', confidence:0.8,
+        title:'Network Security Config: cleartext HTTP permitido por defecto para toda la app',
+        basic:'La configuración de red personalizada de la app permite explícitamente tráfico sin cifrar (HTTP) por defecto, salvo que un dominio concreto lo restrinja aparte.',
+        eli5:'Es como una empresa que, por norma general, permite mandar la correspondencia sin sobre — algunos departamentos concretos pueden exigir sobre cerrado, pero la política de base es la postal abierta.',
+        desc:'android:cleartextTrafficPermitted="true" en <base-config>. Se aplica a cualquier dominio no cubierto por un <domain-config> más específico.'});
+    }
+    if(axmlHasUserCa(nsc.baseConfig.trustAnchors)){
+      findings.push({sev:'high', dim:'threat', id:'manifest.nsc_base_user_ca', confidence:0.85,
+        title:'Network Security Config: confía en certificados instalados por el usuario (src="user"), por defecto',
+        basic:'Por defecto, Android moderno solo confía en las autoridades de certificación del sistema. Esta app amplía esa confianza a certificados que cualquiera pueda instalar manualmente en el dispositivo.',
+        eli5:'Es como aceptar como válido cualquier sello que el propio usuario decida fabricarse y pegar en un documento, en vez de exigir solo los sellos oficiales — si alguien logra que instales su "sello" (certificado), esta app se lo creerá.',
+        desc:'<base-config><trust-anchors><certificates src="user"/> aplicado por defecto a TODA la app (no solo depuración). Es la condición técnica que hace posible un ataque de intermediario (MITM) con un proxy interceptor tipo Burp/mitmproxy si el atacante logra que la víctima instale su certificado — algo que malware/estafas de "instala este perfil de seguridad" buscan activamente.'});
+    }
+  }
+  for(const dc of nsc.domainConfigs){
+    const domainList = dc.domains.map(d=>d.name).filter(Boolean).join(', ') || '(dominio no legible)';
+    if(dc.cleartextTrafficPermitted === true){
+      findings.push({sev:'med', dim:'threat', id:'manifest.nsc_domain_cleartext_permitted', confidence:0.75,
+        evidence:{domains:dc.domains.map(d=>d.name)},
+        title:`Network Security Config: cleartext HTTP permitido para ${domainList}`,
+        basic:`Esta app permite explícitamente tráfico sin cifrar hacia "${domainList}".`,
+        eli5:'Es como autorizar, solo para una dirección concreta, que el cartero entregue la correspondencia sin sobre — el resto del correo puede ir bien cerrado, pero ese destino en concreto no.',
+        desc:`<domain-config cleartextTrafficPermitted="true"> para: ${domainList}${dc.domains.some(d=>d.includeSubdomains)?' (incluye subdominios en al menos uno)':''}.`});
+    }
+    if(axmlHasUserCa(dc.trustAnchors)){
+      findings.push({sev:'high', dim:'threat', id:'manifest.nsc_domain_user_ca', confidence:0.8,
+        evidence:{domains:dc.domains.map(d=>d.name)},
+        title:`Network Security Config: confía en certificados de usuario para ${domainList}`,
+        basic:`Para el tráfico hacia "${domainList}" en concreto, esta app confía en certificados instalados manualmente por el usuario, no solo en las autoridades del sistema.`,
+        eli5:'Igual que antes, pero limitado a un destino concreto: si alguien logra colar su propio "sello" en el dispositivo, esta app se lo creerá solo para ese destino — a menudo justo el dominio más sensible de la app (banco, login...).',
+        desc:`<domain-config><trust-anchors><certificates src="user"/> para: ${domainList}. Mismo riesgo de intermediario (MITM) que la versión global, pero acotado a este dominio.`});
+    }
+  }
+  if(nsc.debugOverrides && axmlHasUserCa(nsc.debugOverrides.trustAnchors)){
+    findings.push({sev:'ok', dim:'threat', id:'manifest.nsc_debug_override_user_ca', confidence:0.6,
+      title:'Network Security Config: confianza en certificados de usuario limitada a builds de depuración',
+      basic:'La app confía en certificados instalados por el usuario SOLO en compilaciones de depuración (android:debuggable), no en la versión que se distribuye normalmente.',
+      eli5:'Es como una llave maestra que solo funciona en la copia de pruebas del edificio, no en el edificio real — Android desactiva automáticamente esta parte de la configuración cuando la app no está en modo depuración.',
+      desc:'<debug-overrides><trust-anchors><certificates src="user"/>: Android ignora este bloque por completo cuando android:debuggable="false" (el caso normal de una app publicada). Es la forma RECOMENDADA de permitir interceptar tráfico en desarrollo sin debilitar la app real — buena práctica, no un hallazgo negativo por sí solo.'});
+  }
+  return findings;
+}
+
+/* ===== Backup / exfiltración de datos (punto F): fullBackupContent, dataExtractionRules,
+   y su correlación con android:allowBackup + permisos sensibles concedidos. ===== */
+function axmlExtractBackupRuleList(sectionEl){
+  const rules = [];
+  for(const tag of ['include','exclude']){
+    for(const el of axmlChildren(sectionEl, tag)){
+      rules.push({ type: tag, domain: axmlGetAttr(el,'domain') || null, path: axmlGetAttr(el,'path') || null });
+    }
+  }
+  return rules;
+}
+/* full-backup-content: legacy (API 23-30), sigue aplicando a copias de seguridad locales (adb backup)
+   en cualquier versión, pero YA NO gobierna el backup en la nube desde Android 12 (lo hace dataExtractionRules). */
+function extractFullBackupContent(tree){
+  const root = axmlChildren(tree, 'full-backup-content')[0];
+  if(!root) throw new Error('No se encontró el elemento raíz <full-backup-content>');
+  return { rules: axmlExtractBackupRuleList(root) };
+}
+/* data-extraction-rules (API 31+): <cloud-backup> ausente = sin copia en la nube en absoluto para esta app;
+   presente (con o sin hijos) = incluye todo por defecto salvo lo que <exclude> descarte explícitamente. */
+function extractDataExtractionRules(tree){
+  const root = axmlChildren(tree, 'data-extraction-rules')[0];
+  if(!root) throw new Error('No se encontró el elemento raíz <data-extraction-rules>');
+  function readSection(el){
+    if(!el) return null;
+    return { disableIfNoEncryptionCapability: axmlGetAttr(el,'disableIfNoEncryptionCapability') === true, rules: axmlExtractBackupRuleList(el) };
+  }
+  return {
+    cloudBackup: readSection(axmlChildren(root,'cloud-backup')[0]),
+    deviceTransfer: readSection(axmlChildren(root,'device-transfer')[0]),
+  };
+}
+function axmlSummarizeRules(rules){
+  if(!rules || !rules.length) return '(sin reglas include/exclude propias)';
+  return rules.map(r => `${r.type}${r.domain?` domain="${r.domain}"`:''}${r.path?` path="${r.path}"`:''}`).join('; ');
+}
+/* opts: { allowBackup, hasFullBackupContent, fullBackupContentRules, hasDataExtractionRules,
+   dataExtractionRulesInfo, sensitivePermissions } — todos opcionales/nulos si no se pudieron resolver. */
+function buildBackupExfiltrationFindings(opts){
+  const findings = [];
+  const sensitivePermissions = opts.sensitivePermissions || [];
+  const hasSensitive = sensitivePermissions.length > 0;
+  const permsTxt = sensitivePermissions.map(p=>String(p).replace('android.permission.','')).join(', ');
+
+  if(opts.allowBackup === false){
+    findings.push({sev:'ok', dim:'privacy', id:'manifest.backup_disabled', confidence:1,
+      title:'Backup deshabilitado explícitamente (android:allowBackup="false")',
+      desc:'Ni "adb backup" ni la copia de seguridad en la nube de Android pueden extraer los datos privados de esta app. Es la configuración más restrictiva posible en este punto.'});
+    return findings; // con el backup cerrado del todo, el resto de este análisis no aporta nada más
+  }
+
+  const hasAnyRules = !!(opts.hasFullBackupContent || opts.hasDataExtractionRules);
+  const allowBackupTxt = opts.allowBackup === true ? 'android:allowBackup="true" (declarado explícitamente)' : 'android:allowBackup no declarado (el valor por defecto de Android es "true")';
+
+  if(!hasAnyRules && hasSensitive){
+    findings.push({sev:'high', dim:'privacy', id:'manifest.backup_enabled_sensitive_no_rules', confidence:0.7,
+      evidence:{permissions:sensitivePermissions},
+      title:'Backup habilitado sin ninguna restricción, en una app con permisos sensibles',
+      basic:`Esta app permite hacer copia de seguridad completa de sus datos (${allowBackupTxt}), sin excluir nada, y además tiene permisos para acceder a datos sensibles (${permsTxt}).`,
+      eli5:'Es como guardar una copia de TODO lo que hay en un cajón con llave — incluida cualquier nota que alguien haya dejado ahí dentro por descuido — y no decir "menos esto" sobre ninguna carpeta en concreto.',
+      desc:`${allowBackupTxt}. Sin android:fullBackupContent ni android:dataExtractionRules, TODO el directorio de datos privados de la app (posibles tokens de sesión, mensajes cacheados, bases de datos locales...) puede extraerse íntegro vía "adb backup" (con acceso físico/USB) o vía la copia de seguridad en la nube de la cuenta de Google del dispositivo. No implica que la app almacene esos datos localmente — solo que si lo hace, nada lo protege de esta vía.`});
+  } else if(!hasAnyRules){
+    findings.push({sev:'low', dim:'privacy', id:'manifest.backup_enabled_no_rules', confidence:0.4,
+      title:'Backup habilitado sin reglas de exclusión declaradas',
+      desc:`${allowBackupTxt}, sin fullBackupContent ni dataExtractionRules. No se han detectado en este análisis permisos especialmente sensibles, pero conviene tener presente que cualquier dato guardado localmente por la app podría incluirse en una copia de seguridad completa.`});
+  } else {
+    findings.push({sev: hasSensitive ? 'med' : 'ok', dim:'privacy', id:'manifest.backup_enabled_with_rules', confidence:0.5,
+      evidence:{permissions:sensitivePermissions},
+      title: hasSensitive ? 'Backup habilitado con reglas propias declaradas, en una app con permisos sensibles' : 'Backup habilitado, con reglas de inclusión/exclusión propias declaradas',
+      basic: hasSensitive ? `La app restringe de algún modo qué se incluye en la copia de seguridad, pero también tiene permisos sensibles (${permsTxt}) — conviene revisar qué excluyen exactamente esas reglas.` : 'La app ha declarado sus propias reglas sobre qué incluir o excluir de la copia de seguridad, en vez de dejar el comportamiento por defecto.',
+      desc:`${allowBackupTxt}. ${opts.hasFullBackupContent?`fullBackupContent: ${opts.fullBackupContentRules?axmlSummarizeRules(opts.fullBackupContentRules.rules):'declarado, no se ha podido leer su contenido.'}`:''}${opts.hasDataExtractionRules?` dataExtractionRules: ${opts.dataExtractionRulesInfo?'ver hallazgos específicos más abajo.':'declarado, no se ha podido leer su contenido.'}`:''}`.trim()});
+  }
+
+  if(opts.hasDataExtractionRules && opts.dataExtractionRulesInfo){
+    const info = opts.dataExtractionRulesInfo;
+    if(!info.cloudBackup){
+      findings.push({sev:'ok', dim:'privacy', id:'manifest.data_extraction_no_cloud_backup', confidence:0.6,
+        title:'Copia de seguridad en la nube deshabilitada por completo (Android 12+)',
+        desc:'android:dataExtractionRules no declara ningún <cloud-backup>: en dispositivos con Android 12 o superior, ningún dato de esta app se sube a la copia de seguridad en la nube de Google, con independencia de android:allowBackup. Mitigación real y explícita.'});
+    } else if(info.cloudBackup.rules.some(r=>r.type==='exclude')){
+      const excl = info.cloudBackup.rules.filter(r=>r.type==='exclude');
+      findings.push({sev:'ok', dim:'privacy', id:'manifest.data_extraction_cloud_excludes', confidence:0.4,
+        title:'dataExtractionRules excluye explícitamente ciertos datos de la copia en la nube',
+        desc:`Reglas de exclusión declaradas para <cloud-backup>: ${axmlSummarizeRules(excl)}. El resto de datos no cubiertos por una exclusión sigue incluyéndose por defecto.`});
+    }
+  }
+  if(opts.hasFullBackupContent && opts.fullBackupContentRules && opts.fullBackupContentRules.rules.some(r=>r.type==='exclude')){
+    const excl = opts.fullBackupContentRules.rules.filter(r=>r.type==='exclude');
+    findings.push({sev:'ok', dim:'privacy', id:'manifest.full_backup_content_excludes', confidence:0.4,
+      title:'fullBackupContent excluye explícitamente ciertos datos de la copia de seguridad',
+      desc:`Reglas de exclusión declaradas: ${axmlSummarizeRules(excl)}. Aplica a "adb backup"; en Android 12+ el backup en la nube se rige aparte por dataExtractionRules si está presente.`});
+  }
+  return findings;
+}
+
 const AXML_COMPONENT_TAGS = ['activity','activity-alias','service','receiver','provider'];
 const AXML_SENSITIVE_ACTIONS = {
   'android.intent.action.BOOT_COMPLETED': 'se ejecuta automáticamente al arrancar el dispositivo',
@@ -7702,12 +7992,141 @@ function axmlComputeDefaultExported(tag, hasIntentFilter, targetSdk){
   }
   return !!hasIntentFilter;
 }
-function axmlExtractIntentFilters(el){
-  return axmlChildren(el, 'intent-filter').map(f => ({
-    actions: axmlChildren(f, 'action').map(a=>axmlGetAttr(a,'name')).filter(Boolean),
-    categories: axmlChildren(f, 'category').map(c=>axmlGetAttr(c,'name')).filter(Boolean),
+function axmlExtractDataEntries(filterEl){
+  return axmlChildren(filterEl, 'data').map(d => ({
+    scheme: axmlGetAttr(d,'scheme') || null,
+    host: axmlGetAttr(d,'host') || null,
+    port: axmlGetAttr(d,'port') || null,
+    path: axmlGetAttr(d,'path') || null,
+    pathPrefix: axmlGetAttr(d,'pathPrefix') || null,
+    pathPattern: axmlGetAttr(d,'pathPattern') || null,
+    mimeType: axmlGetAttr(d,'mimeType') || null,
   }));
 }
+function axmlExtractIntentFilters(el){
+  return axmlChildren(el, 'intent-filter').map(f => ({
+    autoVerify: axmlGetAttr(f, 'autoVerify') === true,
+    actions: axmlChildren(f, 'action').map(a=>axmlGetAttr(a,'name')).filter(Boolean),
+    categories: axmlChildren(f, 'category').map(c=>axmlGetAttr(c,'name')).filter(Boolean),
+    data: axmlExtractDataEntries(f),
+  }));
+}
+
+/* ===== Punto C: Deep Links / App Links =====
+   Simplificación consciente: Android combina los atributos de varios <data>
+   dentro del mismo intent-filter con reglas de unión no triviales (scheme
+   se une con host, path es independiente de host, etc.). Para una auditoría
+   heurística agregamos el UNION de valores no nulos vistos en cada categoría
+   (schemes, hosts, paths) dentro del filtro — suficiente para detectar
+   custom schemes / dominios / App Links y sus riesgos típicos, sin pretender
+   replicar el algoritmo exacto de resolución de intents de Android. */
+const SENSITIVE_PATH_RE = /(oauth|\/auth(?:\/|$)|callback|\bsso\b|reset[-_]?password|\/login|\/verify|token)/i;
+function axmlExtractLinkSpecs(components){
+  const specs = [];
+  for(const c of components){
+    if(c.tag !== 'activity' && c.tag !== 'activity-alias') continue;
+    for(const f of c.intentFilters){
+      if(!f.actions.includes('android.intent.action.VIEW')) continue;
+      if(!f.data || !f.data.length) continue;
+      const schemes = [...new Set(f.data.map(d=>d.scheme).filter(Boolean))];
+      const hosts = [...new Set(f.data.map(d=>d.host).filter(Boolean))];
+      const paths = f.data.map(d=>d.path||d.pathPrefix||d.pathPattern).filter(Boolean);
+      const browsable = f.categories.includes('android.intent.category.BROWSABLE');
+      if(!schemes.length && !hosts.length) continue;
+      specs.push({ component: c.name, tag: c.tag, exported: c.exported, exportedSource: c.exportedSource,
+        autoVerify: f.autoVerify, schemes, hosts, paths, browsable });
+    }
+  }
+  return specs;
+}
+function axmlClassifyLinkSpec(spec){
+  const customSchemes = spec.schemes.filter(s => s!=='http' && s!=='https');
+  const webSchemes = spec.schemes.filter(s => s==='http' || s==='https');
+  const isAppLink = spec.autoVerify && webSchemes.includes('https');
+  const isWildcardHost = spec.hosts.includes('*');
+  const hasSensitivePath = spec.paths.some(p => SENSITIVE_PATH_RE.test(p));
+  return { customSchemes, webSchemes, isAppLink, isWildcardHost, hasSensitivePath,
+    kind: customSchemes.length && webSchemes.length ? 'mixto' : customSchemes.length ? 'custom-scheme' : 'web-link' };
+}
+function axmlBuildDeepLinkFindings(components){
+  const findings = [];
+  const specs = axmlExtractLinkSpecs(components);
+  const appLinkDomains = []; // {host, component} para el cruce dominio↔paquete↔certificado
+  for(const spec of specs){
+    const cl = axmlClassifyLinkSpec(spec);
+    const exportedTxt = spec.exported===true ? 'exportada' : spec.exported===false ? 'NO exportada' : 'exported desconocido';
+
+    if(cl.customSchemes.length){
+      findings.push({sev:'ok', dim:'threat', id:'manifest.deeplink_custom_scheme', confidence:0.6,
+        evidence:{component:spec.component, schemes:cl.customSchemes},
+        title:`Custom scheme registrado: ${cl.customSchemes.map(s=>s+'://').join(', ')} (${spec.component})`,
+        basic:'La app se puede abrir con un enlace propio (no http/https), algo habitual y en general legítimo.',
+        eli5:'Es como tener un timbre propio además de la puerta principal de la calle — normal, pero cualquier otra app instalada también podría intentar registrar ese mismo timbre e interceptar quien llame primero.',
+        desc:`Actividad ${exportedTxt}. Un esquema personalizado no está protegido por Android como los dominios verificados (App Links): si otra app instalada declara el mismo scheme, el sistema puede mostrar un selector — o, en dispositivos/ROMs que priman "el primero instalado", quedarse con la app equivocada.`});
+      if(cl.hasSensitivePath && spec.exported!==false){
+        findings.push({sev:'med', dim:'threat', id:'manifest.deeplink_sensitive_custom_scheme', confidence:0.55,
+          evidence:{component:spec.component, schemes:cl.customSchemes, paths:spec.paths},
+          title:`Custom scheme con ruta sensible (auth/callback/token) sin verificación de dominio: ${spec.component}`,
+          basic:'Este enlace personalizado incluye rutas típicas de inicio de sesión o autenticación (oauth, callback, token...), y los esquemas personalizados no tienen ninguna verificación de propiedad.',
+          eli5:'Es como si el código de un solo uso para entrar en tu cuenta se enviara a "cualquier casa que tenga puesto ese buzón" en vez de comprobar antes que es la casa correcta — si otra app instala el mismo buzón antes, puede quedarse con ese código.',
+          desc:'Patrón conocido como "OAuth deep link hijacking": si el flujo de login/callback de la app depende de un custom scheme (en vez de un App Link https verificado), una app maliciosa que registre el mismo scheme puede interceptar el código/token de autenticación. Recomendable migrar ese flujo concreto a un App Link con android:autoVerify.'});
+      }
+    }
+    if(cl.webSchemes.length && spec.hosts.length){
+      for(const host of spec.hosts){
+        if(host === '*'){
+          findings.push({sev:'high', dim:'threat', id:'manifest.deeplink_wildcard_host', confidence:0.75,
+            evidence:{component:spec.component},
+            title:`Intent-filter con host comodín "*": ${spec.component}`,
+            basic:'Esta actividad acepta enlaces web de CUALQUIER dominio, no de uno concreto.',
+            eli5:'Es como dejar que entre a tu casa cualquiera que diga cualquier dirección, en vez de solo quien de verdad vive en la de al lado — casi nunca es necesario y amplía mucho quién puede activar esa pantalla desde fuera.',
+            desc:`Actividad ${exportedTxt}. android:host="*" acepta el esquema web desde cualquier dominio externo. Salvo un caso de uso muy deliberado (visor genérico de enlaces), suele ser una configuración demasiado permisiva y una superficie de ataque innecesaria.`});
+          continue;
+        }
+        appLinkDomains.push({host, component:spec.component, isAppLink: cl.isAppLink, packageComponent: spec});
+        if(cl.isAppLink){
+          findings.push({sev:'ok', dim:'authenticity', id:'manifest.applink_declared', confidence:0.5,
+            evidence:{component:spec.component, host},
+            title:`App Link declarado (autoVerify): ${host} → ${spec.component}`,
+            desc:'Android exige que este dominio publique un archivo /.well-known/assetlinks.json autorizando a este paquete y certificado antes de que el enlace se abra directamente en la app sin selector. Vigía intenta comprobarlo más abajo si hay conexión disponible.'});
+        } else {
+          findings.push({sev:'low', dim:'threat', id:'manifest.deeplink_unverified_web', confidence:0.4,
+            evidence:{component:spec.component, host},
+            title:`Deep link web sin verificar (sin autoVerify): ${host} → ${spec.component}`,
+            basic:`La app responde a enlaces de "${host}" pero sin pedirle a Android que verifique que de verdad es la dueña de ese dominio.`,
+            eli5:'Es como decir "yo represento a esta empresa" sin enseñar ninguna credencial que lo confirme — Android, al no poder comprobarlo, puede acabar preguntando al usuario qué app usar cada vez, y otra app podría intentar hacerse pasar por el mismo dominio.',
+            desc:`Actividad ${exportedTxt}. Sin android:autoVerify="true" (y sin que ${host} publique un assetlinks.json válido para este paquete), Android no puede confirmar la propiedad del dominio: el enlace puede quedar ambiguo (selector de apps) o, en algunas configuraciones, ser reclamado por otra app.${cl.hasSensitivePath?' Incluye además una ruta de aspecto sensible (auth/callback/token).':''}`});
+        }
+      }
+    }
+  }
+  return { findings, appLinkDomains: appLinkDomains.filter(d=>d.isAppLink) };
+}
+/* Cruce dominio ↔ paquete ↔ certificado: comprueba en vivo (si hay red) que el dominio
+   de cada App Link publica un assetlinks.json que autoriza este paquete + huella del certificado. */
+function normalizeFingerprint(hex){
+  return (hex||'').replace(/[^0-9a-fA-F]/g,'').toUpperCase();
+}
+async function verifyAssetLinks(host, packageName, certFingerprintHex, fetchFn){
+  const f = fetchFn || (typeof fetch !== 'undefined' ? fetch : null);
+  if(!f) return { status:'no-fetch' };
+  const url = `https://${host}/.well-known/assetlinks.json`;
+  let res;
+  try{ res = await f(url, {mode:'cors'}); }
+  catch(e){ return { status:'network-error', error:String(e&&e.message||e) }; }
+  if(!res || !res.ok) return { status:'http-error', code: res?res.status:null };
+  let json;
+  try{ json = await res.json(); } catch(e){ return { status:'parse-error' }; }
+  if(!Array.isArray(json)) return { status:'parse-error' };
+  const wantFp = normalizeFingerprint(certFingerprintHex);
+  const entry = json.find(e => e && e.target && e.target.package_name === packageName &&
+    Array.isArray(e.target.sha256_cert_fingerprints) &&
+    e.target.sha256_cert_fingerprints.some(fp => normalizeFingerprint(fp) === wantFp));
+  if(entry) return { status:'verified' };
+  const samePackage = json.some(e => e && e.target && e.target.package_name === packageName);
+  return { status: samePackage ? 'fingerprint-mismatch' : 'package-not-listed', raw: json };
+}
+
 function axmlExtractComponents(appEl, targetSdk){
   const out = [];
   for(const tag of AXML_COMPONENT_TAGS){
@@ -7760,7 +8179,8 @@ function axmlBuildExportedFindings(components){
     }
     if(!hasProtection){
       const isLauncher = c.intentFilters.some(f=>f.categories.includes('android.intent.category.LAUNCHER'));
-      if(!isLauncher){
+      const isDeepLinkHandler = c.intentFilters.some(f=>f.actions.includes('android.intent.action.VIEW') && f.categories.includes('android.intent.category.BROWSABLE'));
+      if(!isLauncher && !isDeepLinkHandler){
         findings.push({sev:'low', dim:'threat', id:'manifest.exported_unprotected_component', confidence:0.4,
           evidence:{tag:c.tag, name:c.name},
           title:`${c.tag} exportado sin permission: ${c.name}`,
@@ -7797,15 +8217,34 @@ function extractManifestInfo(tree){
     allowBackup: appEl ? (axmlGetAttr(appEl,'allowBackup') ?? true) : null,
     usesCleartextTraffic: appEl ? (axmlGetAttr(appEl,'usesCleartextTraffic') ?? null) : null,
     networkSecurityConfig: appEl ? axmlGetAttr(appEl,'networkSecurityConfig') : null,
+    networkSecurityConfigResId: appEl && appEl.refs ? (appEl.refs.networkSecurityConfig ?? null) : null,
+    fullBackupContent: appEl ? (axmlGetAttr(appEl,'fullBackupContent') ?? null) : null,
+    fullBackupContentResId: appEl && appEl.refs ? (appEl.refs.fullBackupContent ?? null) : null,
+    dataExtractionRules: appEl ? (axmlGetAttr(appEl,'dataExtractionRules') ?? null) : null,
+    dataExtractionRulesResId: appEl && appEl.refs ? (appEl.refs.dataExtractionRules ?? null) : null,
     permissions: [...permissions, ...permissions23],
     components, queries,
   };
   info.exportedFindings = axmlBuildExportedFindings(components);
+  const dl = axmlBuildDeepLinkFindings(components);
+  info.deepLinkFindings = dl.findings;
+  info.appLinkDomains = dl.appLinkDomains; // [{host, component}] — para el cruce con assetlinks.json
   return info;
 }
 window.parseAxml = parseAxml;
 window.extractManifestInfo = extractManifestInfo;
+window.verifyAssetLinks = verifyAssetLinks;
+window.parseResourcesArsc = axmlParseResourcesArsc;
+window.resolveResourceId = axmlResolveResourceId;
+window.extractNetworkSecurityConfig = extractNetworkSecurityConfig;
+window.buildNetworkSecurityConfigFindings = buildNetworkSecurityConfigFindings;
+window.extractFullBackupContent = extractFullBackupContent;
+window.extractDataExtractionRules = extractDataExtractionRules;
+window.buildBackupExfiltrationFindings = buildBackupExfiltrationFindings;
 })();
+
+
+
 
 // Protección contra "bomba de descompresión" también para las lecturas puntuales de un
 // solo archivo dentro de un .apk/.ipa/.docx (AndroidManifest.xml, Info.plist, vbaProject.bin...):
@@ -7938,6 +8377,53 @@ function findLibraryHits(haystack, signatures){
   const hits = new Map();
   for(const sig of signatures){ if(haystack.includes(sig.frag)) hits.set(sig.name, sig.cat); }
   return hits;
+}
+/* ===== Carga dinámica de código (punto G): DexClassLoader/PathClassLoader/InMemoryDexClassLoader/
+   DexFile, y su correlación con APIs de red/descarga presentes en el mismo binario. Búsqueda de
+   cadenas sobre el mismo "haystack" (dex + resources.arsc) que ya usa la detección de librerías —
+   los descriptores de tipo internos de Dalvik (Lpaquete/Clase;) quedan embebidos como texto literal
+   en el pool de cadenas del .dex, así que son localizables sin necesitar un desensamblador real. ===== */
+const DYNAMIC_CODE_LOADING_SIGNATURES = [
+  { frag: 'Ldalvik/system/InMemoryDexClassLoader;', label: 'InMemoryDexClassLoader', risk: 'high',
+    desc: 'Carga bytecode Dalvik directamente desde memoria, sin pasar por un archivo en disco — la variante más sigilosa de carga dinámica (Android 8+), habitual en frameworks de plugins avanzados o en técnicas de evasión de análisis estático.' },
+  { frag: 'Ldalvik/system/DexClassLoader;', label: 'DexClassLoader', risk: 'high',
+    desc: 'Carga explícita en tiempo de ejecución de bytecode Dalvik (.dex/.jar/.apk) que NO forma parte del paquete original instalado — el mecanismo estándar para ejecutar código que la app obtiene después de instalarse.' },
+  { frag: 'Ldalvik/system/DexFile;', label: 'DexFile (API legacy de carga dinámica)', risk: 'med',
+    desc: 'API más antigua para abrir y ejecutar archivos .dex sueltos en tiempo de ejecución; en desuso desde hace años salvo en código heredado o en frameworks de carga dinámica.' },
+  { frag: 'Ldalvik/system/DexPathList;', label: 'DexPathList (acceso interno por reflexión)', risk: 'med',
+    desc: 'Estructura interna del classloader de Android, normalmente inaccesible desde código de aplicación normal — que aparezca indica manipulación por reflexión del classloader, técnica típica de frameworks de plugins/hot-fix o de inyección de código.' },
+  { frag: 'Ldalvik/system/PathClassLoader;', label: 'PathClassLoader', risk: 'low',
+    desc: 'Cargador de clases estándar de Android: TODA app lo usa implícitamente para su propio código, así que su sola presencia en las cadenas no es una señal de alarma por sí sola — solo lo sería si la app lo instancia explícitamente apuntando a una ruta externa, algo que un escaneo de cadenas como este no puede confirmar sin desensamblar el bytecode.' },
+];
+const NETWORK_DOWNLOAD_API_RE = /(Ljava\/net\/HttpURLConnection;|Ljavax\/net\/ssl\/HttpsURLConnection;|Landroid\/app\/DownloadManager;|Lokhttp3\/OkHttpClient;|Ljava\/net\/URLConnection;)/;
+function findDynamicCodeLoadingHits(haystack){
+  return DYNAMIC_CODE_LOADING_SIGNATURES.filter(sig => haystack.includes(sig.frag));
+}
+function buildDynamicCodeLoadingFindings(haystack){
+  const hits = findDynamicCodeLoadingHits(haystack);
+  const findings = [];
+  if(!hits.length) return findings;
+  const realHits = hits.filter(h => h.risk !== 'low'); // PathClassLoader no cuenta como señal por sí solo
+  const hasNetworkApi = NETWORK_DOWNLOAD_API_RE.test(haystack);
+  if(realHits.length && hasNetworkApi){
+    findings.push({sev:'high', dim:'threat', id:'dex.dynamic_code_loading_with_network', confidence:0.5,
+      evidence:{apis: realHits.map(h=>h.label)},
+      title:'Posible ejecución de código descargado: carga dinámica de bytecode + APIs de red en el mismo paquete',
+      basic:`La app contiene tanto mecanismos para cargar y ejecutar código Dalvik externo (${realHits.map(h=>h.label).join(', ')}) como APIs para descargar contenido de internet. Juntas, son la combinación técnica necesaria para descargar y ejecutar código no incluido en el APK original.`,
+      eli5:'Es como encontrar, en la misma casa, tanto una ranura para insertar llaves nuevas sin preguntar como un buzón por el que pueden llegar paquetes de fuera — ninguna de las dos cosas es ilegal por separado, pero juntas permiten que alguien meta una llave nueva por el buzón y la use.',
+      desc:'Detección por presencia de cadenas en el mismo binario (dex/resources.arsc), NO por seguimiento real del flujo de código: no se confirma que la API de red alimente de verdad al cargador de clases, solo que ambas piezas están presentes. Es una señal para investigar manualmente (p. ej. con jadx), no una prueba definitiva. Muy común en frameworks de actualización dinámica legítimos y también en malware con carga de payload en segunda fase — el contexto de la app decide cuál es más probable.'});
+  } else if(realHits.length){
+    findings.push({sev:'med', dim:'threat', id:'dex.dynamic_code_loading', confidence:0.4,
+      evidence:{apis: realHits.map(h=>h.label)},
+      title:`Mecanismo de carga dinámica de código detectado: ${realHits.map(h=>h.label).join(', ')}`,
+      basic:'La app contiene APIs de Android capaces de cargar y ejecutar bytecode que no viene incluido en el APK original.',
+      eli5:'Es como tener instalada una ranura para aceptar piezas nuevas de un juego de construcción — no significa que ya haya piezas de fuera puestas, solo que la ranura existe y podría usarse.',
+      desc: realHits.map(h=>`${h.label}: ${h.desc}`).join('\n\n') + '\n\nDetección por presencia de cadenas en el binario, no por análisis de flujo real: no se puede confirmar desde aquí si esta capacidad se usa realmente, con qué origen, ni con qué frecuencia. Frameworks legítimos de carga de plugins/hot-fix también usan estas APIs.'});
+  }
+  if(hits.length && !realHits.length){
+    findings.push({sev:'ok', title:'PathClassLoader detectado (uso normal de Android)', desc:DYNAMIC_CODE_LOADING_SIGNATURES.find(s=>s.label==='PathClassLoader').desc});
+  }
+  return findings;
 }
 function renderLibraryFindings(hits, findings){
   if(!hits.size){
@@ -8111,7 +8597,48 @@ async function analyzeApkFile(file){
     if(mi.debuggable === true) findings.push({sev:'high', dim:'threat', id:'manifest.debuggable_true', confidence:1, title:'android:debuggable="true" en una app distribuida', basic:'La app permite conectarse a ella con un depurador, algo que nunca debería activarse en una versión final.', eli5:'Es como dejar la puerta de servicio de una tienda sin cerrar mientras está abierta al público — un desarrollador nunca debería mandar así una versión definitiva a sus usuarios.', desc:'Permite adjuntar un depurador (ADB) al proceso de la app, exponiendo su memoria y flujo de ejecución en tiempo real a cualquiera con acceso al dispositivo. Habitual en builds de desarrollo filtradas o mal configuradas antes de publicar.'});
     if(mi.testOnly === true) findings.push({sev:'med', dim:'threat', id:'manifest.test_only_true', confidence:1, title:'android:testOnly="true" en el manifiesto', basic:'La app está marcada como "solo para pruebas": el sistema Android normal la rechaza si se instala desde fuera de un entorno de desarrollo.', eli5:'Es como recibir un producto con la etiqueta "prototipo de fábrica, no vender" — si te ha llegado así fuera de ese contexto, algo en cómo se ha generado o distribuido no es el proceso normal.', desc:'Marca de compilación de depuración/prueba, normalmente añadida automáticamente por herramientas de build. Verla en un APK que se distribuye normalmente es una anomalía de empaquetado, no necesariamente maliciosa.'});
     if(mi.usesCleartextTraffic === true) findings.push({sev:'med', dim:'threat', id:'manifest.cleartext_traffic_true', confidence:1, title:'android:usesCleartextTraffic="true" declarado explícitamente', basic:'La app permite explícitamente enviar y recibir datos sin cifrar (HTTP en vez de HTTPS) por defecto.', eli5:'Es como enviar una postal en vez de una carta cerrada: cualquiera que intercepte el camino (misma wifi, proveedor de internet, etc.) puede leer lo que va escrito.', desc:'No implica automáticamente que la app use HTTP en la práctica, pero lo permite globalmente salvo que una Network Security Config más específica lo restrinja después. Contraindicado para apps que manejan datos sensibles.'});
-    if(mi.networkSecurityConfig) findings.push({sev:'ok', title:'Declara una Network Security Config personalizada', desc:`Referencia: ${mi.networkSecurityConfig}. Este archivo (no accesible sin descompilar resources.arsc) puede endurecer o relajar las reglas de tráfico/certificados de la app; su sola presencia no es ni buena ni mala señal por sí sola.`});
+    else if(mi.usesCleartextTraffic == null && typeof mi.targetSdk === 'number' && mi.targetSdk < 28) findings.push({sev:'low', dim:'threat', id:'manifest.cleartext_default_permitted_old_targetsdk', confidence:0.6, title:`Cleartext HTTP permitido por defecto (targetSdk ${mi.targetSdk} < 28)`, basic:'La app no declara nada sobre tráfico sin cifrar, pero al apuntar a una versión de Android anterior a la 9 (API 28), Android permite HTTP igualmente por defecto.', eli5:'Es como no decir nada sobre si aceptas correspondencia sin sobre — antes de cierta fecha esa era la política por defecto en todas partes, así que "no decir nada" equivale a "sí, se acepta".', desc:'Desde Android 9 (API 28), el valor por defecto de cleartextTrafficPermitted cambió a "false". Con targetSdkVersion por debajo de ese umbral, sigue aplicando el valor por defecto anterior ("true") aunque el manifiesto no diga nada explícitamente.'});
+
+    if(mi.networkSecurityConfig){
+      findings.push({sev:'ok', title:'Declara una Network Security Config personalizada', desc:`Referencia: ${mi.networkSecurityConfig}.`});
+      /* Punto D del experto: resolver de verdad esa referencia (resources.arsc -> ruta del
+         archivo -> parsear su AXML) en vez de quedarse en "existe una referencia". */
+      if(mi.networkSecurityConfigResId != null){
+        try{
+          const arscEntry = zip.file('resources.arsc');
+          if(!arscEntry){
+            findings.push({sev:'low', title:'No se encontró resources.arsc: no se pudo leer el contenido real de la Network Security Config', desc:'La app declara android:networkSecurityConfig, pero sin resources.arsc no es posible resolver a qué archivo apunta esa referencia.'});
+          } else if(zipEntryTooLarge(arscEntry)){
+            findings.push({sev:'low', title:'resources.arsc con tamaño descomprimido anómalo: se omite el análisis de Network Security Config', desc:'Mismo criterio de protección que con el manifiesto: no se descomprime un archivo que declara un tamaño desproporcionado.'});
+          } else {
+            const arscBuf = await arscEntry.async('arraybuffer');
+            const resTable = parseResourcesArsc(arscBuf);
+            const nscPath = resolveResourceId(resTable, mi.networkSecurityConfigResId);
+            if(!nscPath){
+              findings.push({sev:'low', title:'No se pudo resolver la referencia de Network Security Config', desc:'La app declara android:networkSecurityConfig, pero Vigía no ha podido resolver ese resource id contra resources.arsc (formato inesperado, recurso de tipo complejo, o variante no cubierta por este parser mínimo).'});
+            } else {
+              const nscEntry = zip.file(nscPath);
+              if(!nscEntry){
+                findings.push({sev:'low', title:'No se pudo localizar el archivo de Network Security Config dentro del APK', desc:`Ruta resuelta: ${nscPath}, pero no está presente en este paquete (puede ocurrir en App Bundles/APKs divididos por configuración).`});
+              } else if(zipEntryTooLarge(nscEntry)){
+                findings.push({sev:'low', title:'Archivo de Network Security Config con tamaño descomprimido anómalo', desc:nscPath});
+              } else {
+                const nscBuf = await nscEntry.async('arraybuffer');
+                const { tree: nscTree } = parseAxml(nscBuf);
+                const nsc = extractNetworkSecurityConfig(nscTree);
+                const nscFindings = buildNetworkSecurityConfigFindings(nsc);
+                if(nscFindings.length) findings.push(...nscFindings);
+                else findings.push({sev:'ok', title:`Network Security Config leída (${nscPath}): sin cleartext ni CAs de usuario permitidos fuera de depuración`, desc:'Configuración restrictiva: solo autoridades de certificación del sistema, sin tráfico sin cifrar permitido explícitamente en base-config ni en ningún domain-config.'});
+              }
+            }
+          }
+        } catch(e){
+          findings.push({sev:'low', title:'No se pudo leer el contenido de la Network Security Config', desc:`Motivo técnico: ${e.message}. Se sabe que la app declara una configuración personalizada, pero no se ha podido interpretar su contenido real.`});
+        }
+      } else {
+        findings.push({sev:'low', title:'No se pudo determinar el resource id de la Network Security Config', desc:'El atributo android:networkSecurityConfig está presente pero no se pudo leer como referencia de recurso — no se intentará resolver su contenido.'});
+      }
+    }
     if(mi.queries && mi.queries.packages && mi.queries.packages.length) findings.push({sev:'low', title:`Consulta la presencia de ${mi.queries.packages.length} app(s) instalada(s) (bloque <queries>)`, basic:'La app comprueba si tienes otras apps concretas instaladas en el dispositivo.', eli5:'Es como si alguien mirara qué otras tiendas tienes guardadas en tus favoritos antes de hablarte — a veces es para integrarse mejor con ellas, y a veces (en malware bancario, por ejemplo) es para saber qué apps de banco atacar.', desc: mi.queries.packages.slice(0,20).join(', ') + (mi.queries.packages.length>20?`, y ${mi.queries.packages.length-20} más…`:'')});
 
     /* Componentes exportados (activity/service/receiver/provider) correlacionados con
@@ -8131,11 +8658,49 @@ async function analyzeApkFile(file){
     findings.push({sev: highest.length?'high':'med', dim:'privacy', title:`${dangerousPerms.length} permiso(s) peligroso(s) detectado(s)`, basic:'Pide permisos sensibles, como leer tus mensajes, tu ubicación o acceder a funciones del sistema.', eli5:'Son permisos que le dan a la app las llaves de habitaciones normalmente cerradas de tu móvil — tus mensajes, tu cámara, tu ubicación. No es señal automática de fraude, pero conviene que encajen con lo que la app dice hacer.', desc: dangerousPerms.map(p=>p.replace('android.permission.','')).join(', ') + adviceBlock(dangerousPerms.map(p=>p.replace('android.permission.','')), PERMISSION_ADVICE)});
   }
 
-  /* Firma clásica (META-INF) y certificado X.509 */
+  /* Punto F: backup/exfiltración — android:allowBackup, fullBackupContent, dataExtractionRules,
+     y su correlación con permisos sensibles ya detectados (dangerousPerms, arriba). */
+  if(manifestInfo){
+    const mi2 = manifestInfo;
+    const backupOpts = { allowBackup: mi2.allowBackup, sensitivePermissions: dangerousPerms,
+      hasFullBackupContent: !!mi2.fullBackupContent, hasDataExtractionRules: !!mi2.dataExtractionRules };
+    async function resolveBackupResourceXml(resId, rootTagLabel){
+      if(resId == null) return { error: 'sin resource id' };
+      const arscEntry = zip.file('resources.arsc');
+      if(!arscEntry) return { error: 'sin resources.arsc' };
+      if(zipEntryTooLarge(arscEntry)) return { error: 'resources.arsc con tamaño anómalo' };
+      const resTable = parseResourcesArsc(await arscEntry.async('arraybuffer'));
+      const path = resolveResourceId(resTable, resId);
+      if(!path) return { error: 'no se pudo resolver el resource id' };
+      const entry = zip.file(path);
+      if(!entry) return { error: `ruta resuelta (${path}) no presente en el paquete` };
+      if(zipEntryTooLarge(entry)) return { error: `${path} con tamaño anómalo` };
+      const { tree } = parseAxml(await entry.async('arraybuffer'));
+      return { path, tree };
+    }
+    if(mi2.fullBackupContentResId != null){
+      try{
+        const r = await resolveBackupResourceXml(mi2.fullBackupContentResId, 'full-backup-content');
+        if(r.tree) backupOpts.fullBackupContentRules = extractFullBackupContent(r.tree);
+        else findings.push({sev:'low', title:'No se pudo leer el contenido de fullBackupContent', desc:`Motivo: ${r.error}.`});
+      } catch(e){ findings.push({sev:'low', title:'No se pudo leer el contenido de fullBackupContent', desc:`Motivo técnico: ${e.message}.`}); }
+    }
+    if(mi2.dataExtractionRulesResId != null){
+      try{
+        const r = await resolveBackupResourceXml(mi2.dataExtractionRulesResId, 'data-extraction-rules');
+        if(r.tree) backupOpts.dataExtractionRulesInfo = extractDataExtractionRules(r.tree);
+        else findings.push({sev:'low', title:'No se pudo leer el contenido de dataExtractionRules', desc:`Motivo: ${r.error}.`});
+      } catch(e){ findings.push({sev:'low', title:'No se pudo leer el contenido de dataExtractionRules', desc:`Motivo técnico: ${e.message}.`}); }
+    }
+    findings.push(...buildBackupExfiltrationFindings(backupOpts));
+  }
+
+
   if(!names.some(n=>n.startsWith('META-INF/'))){
     findings.push({sev:'high', dim:'authenticity', title:'No se detectó carpeta META-INF (firma)', basic:'Al archivo le falta la parte que debería identificar quién lo firmó.', eli5:'Es como un documento oficial sin ningún sello ni firma al final — puede que solo esté mal generado, pero también es lo que pasaría si alguien lo hubiera manipulado y borrado el rastro de quién lo hizo de verdad.', desc:'Un APK sin metadatos de firma visibles puede estar corrupto, mal empaquetado, o haber sido manipulado para eliminar rastros de firma original.'});
   }
   const sigFile = names.find(n=>/^META-INF\/.*\.(RSA|DSA|EC)$/i.test(n));
+  let certFingerprint = null; // se rellena si se pudo leer el certificado — reutilizada más abajo para el cruce dominio↔paquete↔certificado (App Links)
   if(sigFile && zipEntryTooLarge(zip.file(sigFile))){
     findings.push({sev:'high', title:'Archivo de firma con tamaño descomprimido anómalo', basic:'El archivo de firma declara un tamaño imposible de grande, un truco típico para saturar quien intenta abrirlo.', eli5:'Igual que con el manifiesto: la etiqueta dice un peso pequeño pero por dentro sería enorme — Vigía no lo abre, y esa mentira sobre el tamaño ya es en sí misma una señal de alarma.', desc:`"${sigFile}" declara un tamaño real muy por encima de lo esperado para un certificado de firma. Vigía no lo descomprime; es en sí misma una señal de "bomba de descompresión".`});
   } else if(sigFile){
@@ -8144,6 +8709,7 @@ async function analyzeApkFile(file){
       const cert = findAndParseCertificate(sigBuf);
       if(cert){
         const fingerprint = await sha256Hex(sigBuf.slice(cert.start, cert.end));
+        certFingerprint = fingerprint;
         findings.push({sev:'ok', dim:'authenticity', title:'Certificado de firma (v1) leído', desc:`Emisor: ${cert.issuer}\nSujeto: ${cert.subject}\nValidez: ${cert.notBefore} → ${cert.notAfter}\nSerie: ${cert.serialHex}\nHuella SHA-256: ${fingerprint}${cert.selfSigned?'\n(Autofirmado, normal en Android: no usa una CA como TLS.)':''}`});
         if(cert.isDebugCert) findings.push({sev:'high', dim:'authenticity', title:'Firmado con certificado de depuración (debug) de Android', basic:'La app está firmada con un certificado de pruebas para desarrolladores, no uno real de producción.', eli5:'Es como si un producto llegara a la tienda todavía con la etiqueta de "prototipo de fábrica" pegada — ese certificado es público y cualquiera puede usarlo, así que no demuestra que la app venga de quien dice ser.', desc:'Coincide con el patrón del keystore de depuración por defecto de Android Studio (CN=Android Debug). Una app publicada así nunca debería llegar a producción: cualquiera puede firmar apps con esa misma clave de depuración estándar y hacerlas pasar por actualizaciones.'});
         const notAfterDate = new Date(cert.notAfter.replace(' UTC','Z').replace(' ','T'));
@@ -8160,6 +8726,38 @@ async function analyzeApkFile(file){
     }catch(e){ findings.push({sev:'low', title:'Error leyendo el archivo de firma', basic:'No se ha podido leer el archivo de firma de la app.', eli5:'Es como intentar leer un documento dañado: la comprobación de quién firmó la app no se ha podido completar por un problema técnico al leerlo.', desc: sigFile}); }
   }
   if(hasApkSigBlockV2(fileBytes)) findings.push({sev:'ok', dim:'authenticity', title:'Incluye APK Signing Block (firma v2/v3)', desc:'Además de (o en vez de) la firma clásica, el paquete usa el esquema de firma moderno de Android, más robusto frente a manipulación del ZIP.'});
+
+  /* Deep Links / App Links (auditoría del experto, punto C): custom schemes, dominios web,
+     App Links verificados (autoVerify) y patrones de riesgo (host comodín, rutas de
+     auth/oauth/callback sobre custom scheme sin verificar). */
+  if(manifestInfo && manifestInfo.deepLinkFindings && manifestInfo.deepLinkFindings.length){
+    findings.push(...manifestInfo.deepLinkFindings);
+  }
+  // Cruce dominio ↔ paquete ↔ certificado: para cada App Link declarado (autoVerify=true),
+  // se intenta comprobar en vivo si el dominio publica un assetlinks.json que autorice
+  // este paquete y esta huella de certificado exactos. Es una comprobación EXTERNA con
+  // fetch en directo: puede fallar por falta de conexión o porque el servidor no habilita
+  // CORS para este archivo (no todos los sitios lo hacen); un fallo de red no se interpreta
+  // como señal negativa, solo como "no se pudo comprobar".
+  if(manifestInfo && manifestInfo.appLinkDomains && manifestInfo.appLinkDomains.length && packageName){
+    const uniqueHosts = [...new Set(manifestInfo.appLinkDomains.map(d=>d.host))].slice(0, 15);
+    for(const host of uniqueHosts){
+      try{
+        const r = await verifyAssetLinks(host, packageName, certFingerprint || '');
+        if(r.status === 'verified'){
+          findings.push({sev:'ok', dim:'authenticity', id:'manifest.applink_assetlinks_verified', confidence:0.9, evidence:{host}, title:`App Link confirmado con ${host}`, desc:`El dominio publica un /.well-known/assetlinks.json que autoriza explícitamente a "${packageName}" con la huella de certificado de este APK. La relación dominio↔paquete↔certificado queda verificada.`});
+        } else if(r.status === 'fingerprint-mismatch'){
+          findings.push({sev:'high', dim:'authenticity', id:'manifest.applink_assetlinks_fp_mismatch', confidence:0.7, evidence:{host}, title:`App Link con huella de certificado que NO coincide: ${host}`, basic:`El dominio "${host}" autoriza a la app "${packageName}", pero con la huella de OTRO certificado distinto al de este APK concreto.`, eli5:'Es como una lista de invitados que sí incluye tu nombre, pero exige un carné distinto al que llevas encima — puede ser un simple desajuste de versión de compilación, o puede ser una app republicada con otra firma haciéndose pasar por la original.', desc:'Con esta discrepancia, Android NO habría verificado este App Link (fallback a selector de apps o rechazo). Revisar si este APK concreto procede de un canal de distribución distinto al oficial (firma de release distinta a la registrada en el assetlinks.json del dominio).'});
+        } else if(r.status === 'package-not-listed'){
+          findings.push({sev:'high', dim:'authenticity', id:'manifest.applink_assetlinks_pkg_missing', confidence:0.65, evidence:{host}, title:`App Link declarado, pero "${packageName}" no aparece en assetlinks.json de ${host}`, basic:`La app pide que Android verifique la propiedad de "${host}", pero ese dominio no autoriza a este paquete en absoluto.`, eli5:'Es como presentarte en la puerta diciendo que trabajas allí, pero tu nombre no está en ninguna lista de personal — Android tampoco lo aceptaría, y esta discrepancia por sí sola merece revisión.', desc:'El android:autoVerify de este intent-filter fallaría en un dispositivo real: Android no otorga el App Link si el dominio no lista este package_name. Puede deberse a un manifiesto desactualizado, un paquete de pruebas, o una app que reclama un dominio que no le pertenece.'});
+        } else if(r.status === 'http-error'){
+          findings.push({sev:'low', title:`No se pudo obtener assetlinks.json de ${host}`, desc:`Código HTTP: ${r.code ?? 'desconocido'}. El dominio no publica el archivo en la ruta estándar, o no es accesible ahora mismo — esto por sí solo no es una señal de nada, solo indica que Vigía no ha podido completar esta comprobación concreta.`});
+        } else if(r.status === 'network-error' || r.status === 'parse-error'){
+          findings.push({sev:'low', title:`No se pudo verificar el App Link con ${host}`, desc:`No ha sido posible comprobar assetlinks.json (fallo de red, sin conexión, o el servidor no permite esta consulta desde el navegador por CORS). No se interpreta como señal negativa: es una limitación de esta comprobación externa concreta, no del análisis del propio APK.`});
+        }
+      } catch(e){ /* nunca debe romper el análisis por un fallo de red puntual */ }
+    }
+  }
 
   const dexNames = names.filter(n=>/^classes\d*\.dex$/.test(n));
   if(dexNames.length > 3) findings.push({sev:'low', title:`App con múltiples archivos .dex (${dexNames.length})`, basic:'El código de la app está dividido en varios archivos, algo habitual en apps grandes.', eli5:'Es como un libro tan largo que viene repartido en varios tomos en vez de uno solo — normal cuando hay mucho contenido, no es en sí una señal de alarma.', desc:'Habitual en apps grandes (multidex). No es señal de riesgo por sí sola, solo un dato informativo.'});
@@ -8183,6 +8781,7 @@ async function analyzeApkFile(file){
   if(names.some(n=>n.includes('google-services.json'))) libHits.set('Firebase (google-services.json presente)','firebase');
   renderLibraryFindings(libHits, findings);
   renderDomainFindings(extractDomains(haystack).slice(0,60), findings);
+  findings.push(...buildDynamicCodeLoadingFindings(haystack));
 
   /* Packers / protectores comerciales y librerías nativas */
   const lowerNames = names.map(n=>n.toLowerCase()).join('\n');
