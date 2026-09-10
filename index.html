@@ -550,11 +550,26 @@ input[type=file]{font-family:var(--sans);font-size:calc(15.5px * var(--fs-scale)
 body:not(.mode-avanzado) .only-avanzado{display:none !important;}
 body.mode-avanzado .only-basico{display:none !important;}
 
-.basic-findings{margin:14px 0;}
-.basic-count{font-size:calc(16px * var(--fs-scale));color:var(--text);font-weight:600;margin:0 0 8px;}
-.basic-safe{font-size:calc(16px * var(--fs-scale));color:var(--safe);font-weight:600;margin:0;}
-.basic-signal-list{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px;}
-.basic-signal-list li{font-size:calc(16px * var(--fs-scale));color:var(--text);line-height:1.5;}
+/* "¿Por qué?" (segunda depuración UX): fusiona lo que antes eran dos cajas visuales
+   distintas ("En pocas palabras" + "¿Qué hemos encontrado?") en una sola, reutilizando
+   el borde izquierdo coloreado por severidad de la antigua .explain-box y la tipografía
+   legible de la antigua .basic-signal-list para las señales adicionales. */
+.why-box{
+  margin:14px 0;padding:12px 14px;border-radius:var(--radius);border-left:3px solid var(--line);
+  background:var(--panel-2);
+}
+.why-box.sev-high{border-left-color:var(--danger);}
+.why-box.sev-med{border-left-color:var(--warn);}
+.why-box.sev-low{border-left-color:var(--signal-dim);}
+.why-box.sev-ok{border-left-color:var(--safe);}
+.why-heading{font-family:var(--sans);font-size:calc(13px * var(--fs-scale));text-transform:uppercase;letter-spacing:.05em;color:var(--text-dim);margin:0 0 6px;}
+.why-box p{font-size:calc(15.5px * var(--fs-scale));line-height:1.6;margin:0 0 8px;color:var(--text);}
+.why-box p:last-child{margin-bottom:0;}
+.why-extra-list{margin:6px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:5px;}
+.why-extra-list li{font-size:calc(14px * var(--fs-scale));color:var(--text-dim);line-height:1.4;}
+.why-more-details{margin-top:8px;}
+.why-more-details summary{cursor:pointer;font-size:calc(14px * var(--fs-scale));color:var(--signal);font-weight:600;}
+.why-more-details[open] summary{margin-bottom:4px;}
 
 .eli5-details{margin-top:12px;border-top:1px dashed var(--line);padding-top:12px;}
 .eli5-summary{
@@ -577,10 +592,6 @@ body.mode-avanzado .only-basico{display:none !important;}
 .action-checklist{
   margin:8px 0 12px;padding:12px 14px;border-radius:var(--radius);
   background:linear-gradient(180deg, var(--panel), var(--panel-2));border:1px solid var(--line);
-}
-.basic-top-reason{
-  font-size:calc(15.5px * var(--fs-scale));color:var(--text-dim);margin:0 0 10px;padding-bottom:10px;
-  border-bottom:1px dashed var(--line);
 }
 .action-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px;}
 .action-list li{font-size:calc(16px * var(--fs-scale));color:var(--text);line-height:1.45;}
@@ -635,15 +646,18 @@ body.mode-avanzado .only-basico{display:none !important;}
 }
 .verdict .label{font-family:var(--sans);font-size:calc(16.5px * var(--fs-scale));font-weight:600;letter-spacing:0.02em;display:flex;align-items:center;}
 .verdict .verdict-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:7px;flex:none;}
-.verdict-score-line{display:flex;align-items:baseline;gap:8px;margin-bottom:5px;}
-.verdict-score-num{font-family:var(--sans);font-size:calc(23px * var(--fs-scale));font-weight:700;color:var(--text);line-height:1;}
-.verdict-score-max{font-size:calc(14px * var(--fs-scale));font-weight:500;color:var(--text-dim);}
-.verdict-score-caption{font-size:calc(12px * var(--fs-scale));color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em;}
-.verdict .verdict-range{color:var(--text-dim);font-size:calc(12.5px * var(--fs-scale));margin-top:1px;}
 .verdict .desc{color:var(--text-dim);font-size:calc(14.5px * var(--fs-scale));margin-top:3px;}
 .verdict .verdict-action{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);}
 .verdict .verdict-action b{font-family:var(--sans);font-size:calc(13px * var(--fs-scale));color:var(--text);}
 .verdict .verdict-action p{margin:2px 0 0;color:var(--text-dim);font-size:calc(14px * var(--fs-scale));}
+/* Punto 3/4 del rediseño UX del experto: el titular humano es ahora lo primero y más grande
+   que se lee dentro del veredicto — antes ese protagonismo lo tenía el número de puntuación. */
+.verdict-headline{font-family:var(--sans);font-size:calc(19px * var(--fs-scale));font-weight:700;letter-spacing:0.01em;display:flex;align-items:center;gap:8px;line-height:1.3;}
+.verdict-headline-emoji{font-size:calc(21px * var(--fs-scale));line-height:1;}
+.verdict-score-line{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin-top:8px;}
+.verdict-score-secondary{font-size:calc(13px * var(--fs-scale));color:var(--text-dim);}
+.verdict-score-secondary b{color:var(--text);font-weight:700;}
+.verdict-score-line .label{font-size:calc(12.5px * var(--fs-scale));}
 
 .factors-list{margin-bottom:2px;}
 .finding-bullet{
@@ -680,18 +694,14 @@ body.mode-avanzado .only-basico{display:none !important;}
 }
 .f-glossary-hint-label{display:block;font-weight:700;color:var(--text);margin-bottom:3px;}
 
-.explain-box{
-  margin-top:14px;padding:14px 16px;border-radius:10px;
-  background:rgba(255,255,255,0.02);border-left:3px solid var(--line);
+/* "Contenido analizado" (punto 6, segunda depuración UX): caja compacta y etiquetada,
+   colocada justo debajo del veredicto — reemplaza los .hint sin etiquetar que antes vivían
+   sueltos por encima del resultado. */
+.analyzed-subject{
+  margin:10px 0;padding:10px 12px;border-radius:8px;background:var(--panel-2);border:1px solid var(--line);
 }
-.explain-box.sev-high{border-left-color:var(--danger);}
-.explain-box.sev-med{border-left-color:var(--warn);}
-.explain-box.sev-low{border-left-color:var(--signal-dim);}
-.explain-box.sev-ok{border-left-color:var(--safe);}
-.explain-title{font-family:var(--sans);font-size:calc(13px * var(--fs-scale));text-transform:uppercase;letter-spacing:.05em;color:var(--text-dim);margin-bottom:6px;}
-.explain-box p{font-size:calc(15.5px * var(--fs-scale));line-height:1.6;margin:0 0 8px;color:var(--text);}
-.explain-box p:last-child{margin-bottom:0;}
-.explain-box .explain-extra{font-size:calc(14.5px * var(--fs-scale)) !important;color:var(--text-dim) !important;}
+.analyzed-subject-label{font-family:var(--sans);font-size:calc(11px * var(--fs-scale));text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);margin-bottom:3px;}
+.analyzed-subject-value{font-family:var(--mono);font-size:calc(14px * var(--fs-scale));color:var(--text);word-break:break-all;}
 
 .result-block{margin-top:18px;}
 .result-block h3{font-family:var(--sans);font-size:calc(13.5px * var(--fs-scale));color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin:0 0 10px;}
@@ -2875,13 +2885,11 @@ function scoreTier(score){
   if(score > 0)   return 'bajo';
   return 'ninguno';
 }
-function renderActionChecklist(score, moduleType, topReason){
+function renderActionChecklist(score, moduleType){
   const list = (ACTION_CHECKLISTS[moduleType] || ACTION_CHECKLISTS.url)[scoreTier(score)];
-  const heading = score >= 15 ? '✅ Qué hacer' : '💡 Recomendación';
-  const reasonLine = topReason ? `<p class="basic-top-reason">🔎 Motivo principal: ${escapeHtml(topReason)}</p>` : '';
+  const heading = score >= 15 ? '✅ Qué hacer ahora' : '💡 Recomendación';
   return `<div class="action-checklist only-basico">
     <h3 style="font-family:var(--sans);font-size:calc(12.5px * var(--fs-scale));color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin:0 0 8px;">${heading}</h3>
-    ${reasonLine}
     <ul class="action-list">${list.map(a=>`<li>${score>=15?'❌ ':'• '}${escapeHtml(a)}</li>`).join('')}</ul>
   </div>`;
 }
@@ -2892,19 +2900,49 @@ function renderActionChecklist(score, moduleType, topReason){
 // tercer nivel opcional (campo "eli5", con analogías) para quien necesita algo más
 // que lenguaje llano — de momento solo curado a mano para el módulo de URLs; el resto
 // cae en "basic" y, en último caso, en el título técnico.
-function renderFindingsBasic(findings){
-  const concerning = findings.filter(f=>f.sev!=='ok');
-  if(!concerning.length){
-    return `<div class="basic-findings only-basico"><p class="basic-safe">✅ No hemos encontrado señales preocupantes.</p></div>`;
+//
+// Segunda depuración UX (Word del experto, sobre v168): antes existían TRES bloques
+// distintos repitiendo la misma evidencia con palabras distintas — "En pocas palabras"
+// (con el texto TÉCNICO "desc", filtrando sin querer a ambos modos porque no estaba
+// marcado only-basico), "Motivo principal" dentro del checklist de acciones, y esta
+// misma lista otra vez en "¿Qué hemos encontrado?". El experto pidió una única sección
+// "¿Por qué?", con "una información → un lugar principal" (punto 14), y que se adapte
+// al número de señales en vez de mostrar siempre el mismo bloque grande (punto 10):
+// 1 señal → solo su explicación; 2-3 → esa explicación + los títulos breves del resto
+// (sin repetir su texto completo); 4+ → esa explicación + el resto oculto tras un
+// desplegable "Ver N señales más", para no entregar una lista larga a quien no la pide.
+function renderWhySection(findings){
+  const rank = {high:0, med:1, low:2};
+  const concerning = findings.filter(f=>f.sev!=='ok').slice().sort((a,b)=>(rank[a.sev]??3)-(rank[b.sev]??3));
+  if(concerning.length === 0){
+    return `<div class="why-box only-basico sev-ok">
+      <h3 class="why-heading">¿Por qué?</h3>
+      <p>No se ha detectado ningún patrón de riesgo relevante en este análisis. Aun así, ninguna herramienta automática sustituye el sentido común: desconfía si algo te pide prisa, datos personales o dinero de forma inesperada.</p>
+    </div>`;
   }
-  const n = concerning.length;
-  const items = concerning.map(f=>`<li>${escapeHtml(f.basic || f.title)}</li>`).join('');
+  const top = concerning[0];
+  const rest = concerning.slice(1);
+  const topText = escapeHtml(top.basic || top.title);
   const eli5Items = concerning.map(f=>`<li>${escapeHtml(f.eli5 || f.basic || f.title)}</li>`).join('');
-  return `<div class="basic-findings only-basico">
-    <p class="basic-count">Hemos encontrado ${n} señal${n===1?'':'es'} preocupante${n===1?'':'s'}.</p>
-    <ol class="basic-signal-list">${items}</ol>
+
+  let restHtml = '';
+  if(rest.length === 1 || rest.length === 2){
+    // 2-3 señales en total: se nombran las adicionales por su título breve, sin repetir
+    // su explicación completa (esa ya se cuenta, con más detalle, en Modo Técnico).
+    restHtml = `<ul class="why-extra-list">${rest.map(f=>`<li>${escapeHtml(f.title)}</li>`).join('')}</ul>`;
+  } else if(rest.length >= 3){
+    restHtml = `<details class="why-more-details">
+      <summary>Ver ${rest.length} señal${rest.length===1?'':'es'} más encontrada${rest.length===1?'':'s'}</summary>
+      <ul class="why-extra-list">${rest.map(f=>`<li>${escapeHtml(f.title)}</li>`).join('')}</ul>
+    </details>`;
+  }
+
+  return `<div class="why-box only-basico sev-${top.sev}">
+    <h3 class="why-heading">¿Por qué?</h3>
+    <p>${topText}</p>
+    ${restHtml}
     <details class="eli5-details">
-      <summary class="eli5-summary">🧑‍🏫 Explícamelo como si no supiera de ciberseguridad</summary>
+      <summary class="eli5-summary">🧑‍🏫 Explícamelo de forma sencilla</summary>
       <ul class="eli5-list">${eli5Items}</ul>
     </details>
   </div>`;
@@ -2936,11 +2974,34 @@ const VERDICT_COPY = {
   'Sin señales relevantes':{ range:'0 puntos',      sentence:'No hemos encontrado ninguna señal de alarma en este análisis.', action:'No hace falta ninguna acción especial. Ante cualquier duda futura, puedes volver a comprobarlo aquí.' }
 };
 
+/* Titular en 3 niveles (punto 4 del rediseño UX del experto): el "Riesgo alto/medio/bajo/crítico"
+   de VERDICT_COPY es preciso pero son 5 palabras técnicas distintas — demasiado grano para el
+   titular que debe leerse en 5-10 segundos. Se agrupan en 3 lecturas humanas (🟢/🟠/🔴), sin
+   perder la precisión de las 5: el label técnico completo sigue visible como subtítulo en Modo
+   Técnico (ver renderVerdict). El corte en score>0 y score>=35 reutiliza los mismos umbrales que
+   ya existían en scoreLabel/scoreTier — no son nuevos ni cambian el cálculo de riesgo, solo cómo
+   se agrupan 5 etiquetas ya existentes en 3 para el titular. */
+function simpleVerdictHeadline(score){
+  if(score >= 35) return {emoji:'🔴', text:'Hay señales de peligro'};
+  if(score > 0)   return {emoji:'🟠', text:'Conviene revisarlo'};
+  return {emoji:'🟢', text:'No vemos señales preocupantes'};
+}
+
 function renderVerdict(score, extraDesc){
   const {label,color,fill} = scoreLabel(score);
   const copy = VERDICT_COPY[label];
+  const simple = simpleVerdictHeadline(score);
   const r = 27, c = 2*Math.PI*r;
   const offset = c - (score/100)*c;
+  // Punto 3 del rediseño UX: el titular humano (🟠 Conviene revisarlo) debe ser lo primero y
+  // visualmente dominante — antes el número "26/100" competía en tamaño con el propio veredicto.
+  // La puntuación exacta se conserva (nunca se elimina información), pero ahora como línea
+  // secundaria más pequeña; el label técnico de 5 niveles ("Riesgo alto", con su rango de puntos)
+  // pasa a Modo Técnico como matiz adicional para quien lo quiera, en vez de ser lo primero que
+  // lee todo el mundo. El "Qué hacer ahora" de una sola frase que vivía siempre aquí se limita
+  // ahora a Modo Técnico, porque en Modo Sencillo ya aparece justo debajo, más desarrollado, en
+  // el checklist de renderActionChecklist — mostrarlo dos veces era la duplicidad que señalaba
+  // el propio experto (punto 11).
   return `
   <div class="verdict" style="border-color:${score>0?fill:'var(--line)'};background:${score>0?`color-mix(in srgb, ${fill} 10%, var(--panel))`:'var(--panel)'};">
     <div class="ring" aria-hidden="true">
@@ -2953,19 +3014,33 @@ function renderVerdict(score, extraDesc){
       <div class="score">${score}</div>
     </div>
     <div>
-      <div class="verdict-score-line">
-        <span class="verdict-score-num">${score}<span class="verdict-score-max">/100</span></span>
-        <span class="verdict-score-caption">Puntuación de riesgo</span>
+      <div class="verdict-headline" style="color:${color};">
+        <span class="verdict-headline-emoji" aria-hidden="true">${simple.emoji}</span>${simple.text}
       </div>
-      <div class="label" style="color:${color};"><span class="verdict-dot" style="background:${color};"></span>${label}</div>
-      <div class="verdict-range">${copy.range}</div>
       <div class="desc">${copy.sentence}</div>
-      ${extraDesc ? `<div class="desc" style="margin-top:6px;">${extraDesc}</div>` : ''}
-      <div class="verdict-action">
+      ${extraDesc ? `<div class="desc only-avanzado" style="margin-top:6px;">${extraDesc}</div>` : ''}
+      <div class="verdict-score-line">
+        <span class="verdict-score-secondary">Puntuación técnica: <b>${score}</b>/100</span>
+        <span class="label only-avanzado" style="color:${color};"><span class="verdict-dot" style="background:${color};"></span>${label} · ${copy.range}</span>
+      </div>
+      <div class="verdict-action only-avanzado">
         <b>Qué hacer ahora</b>
         <p>${copy.action}</p>
       </div>
     </div>
+  </div>`;
+}
+
+/* "Contenido analizado" (punto 6, segunda depuración UX del experto): el texto crudo que se
+   analiza (una URL, un correo, un archivo...) vivía sin etiquetar y, en el módulo de URLs,
+   ANTES del veredicto — separado del resultado que describe. Ahora se coloca justo debajo,
+   con una etiqueta clara de qué es, reutilizable por cualquier módulo. Aplicado por ahora al
+   módulo de URLs (el caso concreto que pedía el experto); ver informe de esta sesión sobre
+   por qué no se ha extendido todavía al resto de módulos. */
+function renderAnalyzedSubject(label, value){
+  return `<div class="analyzed-subject">
+    <div class="analyzed-subject-label">${escapeHtml(label)}</div>
+    <div class="analyzed-subject-value">${escapeHtml(value)}</div>
   </div>`;
 }
 
@@ -3063,27 +3138,6 @@ function renderFinding(f){
 
 /* Cuadro didáctico "En pocas palabras": explica en prosa llana el hallazgo
    más grave (o, si todo está limpio, un cierre tranquilizador breve). */
-function renderExplanation(findings){
-  const rank = {high:0, med:1, low:2};
-  const concerns = findings.filter(f=>f.sev!=='ok').slice().sort((a,b)=>(rank[a.sev]??3)-(rank[b.sev]??3));
-  if(concerns.length === 0){
-    return `<div class="explain-box sev-ok">
-      <div class="explain-title">💡 En pocas palabras</div>
-      <p>No se ha detectado ningún patrón de riesgo relevante en este análisis. Aun así, ninguna herramienta automática sustituye el sentido común: desconfía si algo te pide prisa, datos personales o dinero de forma inesperada.</p>
-    </div>`;
-  }
-  const top = concerns[0];
-  const extraCount = concerns.length - 1;
-  const extra = extraCount > 0
-    ? `<p class="explain-extra">Hay ${extraCount} factor${extraCount>1?'es':''} adicional${extraCount>1?'es':''} que también conviene revisar en la lista de señales, más abajo.</p>`
-    : '';
-  return `<div class="explain-box sev-${top.sev}">
-    <div class="explain-title">💡 En pocas palabras</div>
-    <p>${escapeHtml(top.desc)}</p>
-    ${extra}
-  </div>`;
-}
-
 /* Agrupa los hallazgos en tres bloques (✓ comprobado bien, ⚠ advertencias,
    ✗ crítico) y añade debajo la explicación didáctica del más relevante.
    Al vivir aquí, todos los módulos de Vigía heredan este formato enriquecido
@@ -3094,18 +3148,16 @@ function renderFindings(findings, moduleType){
   const bad  = findings.filter(f=>f.sev==='high');
   const bullets = [...good, ...warn, ...bad].map(renderFinding).join('');
   const score = computeScore(findings);
-  // El hallazgo más grave (high > med/low), en su versión en lenguaje llano si existe,
-  // para responder "¿por qué?" en el mismo bloque que "¿qué hago?" — sin esperar a que
-  // el usuario baje hasta la lista completa de señales, más abajo en la pantalla.
-  const topFinding = bad[0] || warn[0];
-  const topReason = topFinding ? (topFinding.basic || topFinding.title) : null;
-  // Orden pedido por el experto (punto 45): 1. Resultado (renderVerdict, antes de esto)
-  // 2. Qué significa ("En pocas palabras" — antes solo vivía en Técnico y al final de todo,
-  // tras la lista completa de factores; ahora es lo primero y se ve en ambos modos)
-  // 3. Qué hacer (+ "por qué": motivo principal, ya integrado ahí) 4. Señales 5. Técnico.
-  return renderExplanation(findings)
-    + renderActionChecklist(score, moduleType, topReason)
-    + renderFindingsBasic(findings)
+  // Segunda depuración UX (Word del experto, sobre v168): nueva jerarquía definitiva del
+  // Modo Sencillo (punto 2) — 1. Veredicto y 2. Contenido analizado viven FUERA de esta
+  // función, justo antes de llamarla; a partir de aquí: 3. Qué hacer ahora, 4. ¿Por qué?
+  // (fusiona lo que antes eran tres bloques distintos con la misma evidencia repetida —
+  // "En pocas palabras" + "Motivo principal" + "¿Qué hemos encontrado?" — en una única
+  // sección, ver renderWhySection), 5. Explícamelo (ya integrado dentro de "¿Por qué?"),
+  // 6. Detalles técnicos.
+  return renderActionChecklist(score, moduleType)
+    + renderWhySection(findings)
+    + `<h3 class="only-avanzado">Hallazgos (${findings.length})</h3>`
     + `<div class="factors-list only-avanzado">${bullets}</div>`
     + `<button type="button" class="btn ghost result-mode-quick-toggle mt">
          <span class="only-basico"><svg aria-hidden="true" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;vertical-align:-2px;margin-right:5px;"><use href="#icon-search"></use></svg>Ver detalles técnicos →</span>
@@ -5256,14 +5308,13 @@ function renderUrlResult(res){
     findings: res.findings,
   });
   return `<div class="card">
-    <div class="row" style="justify-content:space-between;align-items:flex-start;">
-      <div class="hint" style="font-family:var(--mono);margin-bottom:10px;word-break:break-all;flex:1;min-width:200px;">${escapeHtml(res.raw)}</div>
+    <div class="row" style="justify-content:flex-end;">
       ${exportButtonHtml(uid)}
     </div>
     ${renderVerdict(score, `Basado en el patrón del texto de la URL, no en si el dominio está activo ahora mismo. Para confirmarlo, ${getResultMode()==='avanzado' ? 'usa "Consultar DNS, ASN, WHOIS y si existe" más abajo' : 'activa "Ver detalles técnicos" más abajo'}.`)}
+    ${renderAnalyzedSubject('Enlace analizado', res.raw)}
     ${renderDimensionBars(computeDimensionScores(res.findings, 'url'))}
     <div class="result-block">
-      <h3>Hallazgos (${res.findings.length})</h3>
       ${renderFindings(res.findings, 'url')}
     </div>
     <div class="result-block only-avanzado">
@@ -5615,7 +5666,7 @@ function renderIpResult(res){
     </div>
     ${renderVerdict(score)}
     ${renderDimensionBars(computeDimensionScores(res.findings, 'url'))}
-    <div class="result-block"><h3>Hallazgos (${res.findings.length})</h3>${renderFindings(res.findings, 'url')}</div>
+    <div class="result-block">${renderFindings(res.findings, 'url')}</div>
     ${res.isV4 ? `<div class="result-block only-avanzado">
       <h3>Geolocalización, organización y contacto de abuso (opcional)</h3>
       <p class="hint">Con tu permiso, se consulta un servicio externo (ipapi.co) para ver el país, ciudad aproximada y el proveedor/organización asociados a esta IP.</p>
@@ -5794,7 +5845,7 @@ document.getElementById('webrtc-leak-btn').addEventListener('click', async ()=>{
       <div class="row" style="justify-content:flex-end;margin-bottom:4px;">${exportButtonHtml(uid)}</div>
       ${renderVerdict(score)}
       ${renderDimensionBars(computeDimensionScores(findings, 'ip'))}
-      <div class="result-block"><h3>Hallazgos (${findings.length})</h3>${renderFindings(findings, 'url')}</div>
+      <div class="result-block">${renderFindings(findings, 'url')}</div>
       <p class="disclaimer"><b>Alcance:</b> comprueba si tu videollamada revela tu IP real en este navegador <span class="only-avanzado">(vía WebRTC)</span> y la compara con tu IP pública vista por HTTP. No mide qué servidores DNS usa tu sistema. Para eso, usa la herramienta especializada de arriba.</p>
     </div>`;
     pulseSignal(score);
@@ -7054,7 +7105,7 @@ document.getElementById('eml-analyze-btn').addEventListener('click', ()=>{
     <div class="row" style="justify-content:flex-end;margin-bottom:4px;">${exportButtonHtml(uid)}</div>
     ${renderVerdict(score)}
     ${renderDimensionBars(computeDimensionScores(res.findings, 'email'))}
-    <div class="result-block"><h3>Hallazgos (${res.findings.length})</h3>${renderFindings(res.findings, 'email')}</div>
+    <div class="result-block">${renderFindings(res.findings, 'email')}</div>
   </div>${res.urlSection}
   <div class="card">${res.authSection}</div>
   <div class="card">${res.receivedSection}</div>
@@ -7142,7 +7193,7 @@ document.getElementById('sender-analyze-btn').addEventListener('click', ()=>{
     </div>
     ${renderVerdict(score)}
     ${renderDimensionBars(computeDimensionScores(findings, 'email'))}
-    <div class="result-block"><h3>Hallazgos (${findings.length})</h3>${renderFindings(findings, 'email')}</div>
+    <div class="result-block">${renderFindings(findings, 'email')}</div>
     ${domain ? `<div class="result-block">
       <h3>Comprobación de servidores de correo (MX)</h3>
       <p class="hint">Con tu permiso, se consulta un resolutor DNS público (Cloudflare) para ver si "${escapeHtml(domain)}" tiene servidores de correo configurados. Un dominio sin MX y sin web reales no puede recibir ni enviar correo de forma legítima, fuerte indicio de dominio inventado o inactivo.</p>
@@ -7355,7 +7406,7 @@ document.getElementById('shot-analyze-btn').addEventListener('click', async ()=>
       </div>
       ${renderVerdict(score, 'Basado en texto reconocido por OCR de una captura, sin encabezados técnicos reales — no hay SPF/DKIM/DMARC ni cadena de envío que verificar, así que el análisis de autenticidad del remitente es limitado.')}
       ${renderDimensionBars(computeDimensionScores(res.findings, 'email'))}
-      <div class="result-block"><h3>Hallazgos (${res.findings.length})</h3>${renderFindings(res.findings, 'email')}</div>
+      <div class="result-block">${renderFindings(res.findings, 'email')}</div>
       <div class="result-block"><h3>Texto reconocido</h3><textarea rows="5" readonly>${escapeHtml(text)}</textarea></div>
     </div>${res.urlSection}`;
     pulseSignal(score);
@@ -7557,7 +7608,7 @@ document.getElementById('app-analyze-btn').addEventListener('click', ()=>{
     <div class="row" style="justify-content:flex-end;margin-bottom:4px;">${exportButtonHtml(uid)}</div>
     ${renderVerdict(score)}
     ${renderDimensionBars(computeDimensionScores(findings, 'app'))}
-    <div class="result-block"><h3>Hallazgos (${findings.length})</h3>${renderFindings(findings, 'apps')}</div>
+    <div class="result-block">${renderFindings(findings, 'apps')}</div>
     <p class="disclaimer"><b>Recuerda:</b> este es un análisis heurístico de contexto declarado, pensado como <b>complemento</b> a tu solución MTD/EMM. No reemplaza el análisis estático/dinámico real del binario ni la telemetría de dispositivo.</p>
   </div>`;
   pulseSignal(score);
@@ -8945,7 +8996,7 @@ document.getElementById('appfile-analyze-btn').addEventListener('click', async (
       <div class="row" style="justify-content:flex-end;margin-bottom:4px;">${exportButtonHtml(uid)}</div>
       ${renderVerdict(score)}
       ${renderDimensionBars(computeDimensionScores(res.findings, 'app'))}
-      <div class="result-block"><h3>Hallazgos (${res.findings.length})</h3>${renderFindings(res.findings, 'apps')}</div>
+      <div class="result-block">${renderFindings(res.findings, 'apps')}</div>
       ${renderHashBlock(hash)}
       <p class="disclaimer"><b>Alcance:</b> extracción heurística de metadatos del paquete (${isApk?'APK':'IPA'}): permisos y permisos peligrosos, librerías/SDKs de terceros, trackers, SDKs de publicidad, Firebase, dominios embebidos, certificado de firma y detección de protectores/empaquetadores conocidos. No incluye análisis de código, comportamiento en ejecución, ni verificación criptográfica completa de la firma. Úsalo como apoyo, no como veredicto final de tu MTD.</p>
     </div>`;
@@ -9082,7 +9133,7 @@ function renderIosResult(app){
     </div>
     ${renderVerdict(score)}
     ${renderDimensionBars(computeDimensionScores(findings, 'app'))}
-    <div class="result-block"><h3>Hallazgos (${findings.length})</h3>${renderFindings(findings, 'apps')}</div>
+    <div class="result-block">${renderFindings(findings, 'apps')}</div>
     <div class="result-block">
       <h3>Dónde ver los permisos y el rastreo reales</h3>
       <p class="hint">Apple no publica los permisos/rastreadores por API. Ábrelo en la ficha oficial y revisa la sección "Privacidad de la app":</p>
@@ -9128,7 +9179,7 @@ function renderAndroidResult(parsed){
     </div>
     ${renderVerdict(score)}
     ${renderDimensionBars(computeDimensionScores(findings, 'app'))}
-    <div class="result-block"><h3>Hallazgos (${findings.length})</h3>${renderFindings(findings, 'apps')}</div>
+    <div class="result-block">${renderFindings(findings, 'apps')}</div>
     <div class="result-block">
       <h3>Dónde ver los permisos y rastreadores reales</h3>
       <p class="hint">Google no expone esta información por API pública. Consulta la sección "Seguridad de los datos" en la ficha oficial, y el informe independiente de εxodus (proyecto sin ánimo de lucro especializado en detectar rastreadores en apps Android):</p>
@@ -9772,7 +9823,7 @@ document.getElementById('sms-analyze-btn').addEventListener('click', ()=>{
     <div class="row" style="justify-content:flex-end;margin-bottom:4px;">${exportButtonHtml(uid)}</div>
     ${renderVerdict(score)}
     ${renderDimensionBars(computeDimensionScores(res.findings, 'sms'))}
-    <div class="result-block"><h3>Hallazgos (${res.findings.length})</h3>${renderFindings(res.findings, 'sms')}</div>
+    <div class="result-block">${renderFindings(res.findings, 'sms')}</div>
     <p class="disclaimer"><b>Recuerda:</b> nunca compartas un código de verificación recibido por SMS, ni siquiera con quien dice representar a tu banco.</p>
   </div>${res.urlSection}${res.binSection}`;
   pulseSignal(score);
@@ -9896,7 +9947,7 @@ document.getElementById('phone-analyze-btn').addEventListener('click', ()=>{
     </div>
     ${renderVerdict(score)}
     ${renderDimensionBars(computeDimensionScores(findings, 'sms'))}
-    <div class="result-block"><h3>Hallazgos (${findings.length})</h3>${renderFindings(findings, 'sms')}</div>
+    <div class="result-block">${renderFindings(findings, 'sms')}</div>
     <div class="result-block">
       <h3>Verificación manual recomendada</h3>
       <p class="hint">El formato no basta para confirmar si un número concreto está siendo usado para fraude ahora mismo. Contrástalo en directorios comunitarios:</p>
@@ -10574,7 +10625,7 @@ document.getElementById('image-analyze-btn').addEventListener('click', async ()=
       </div>
       ${renderVerdict(score)}
       ${renderDimensionBars(computeDimensionScores(res.findings, 'imagen'))}
-      <div class="result-block"><h3>Hallazgos (${res.findings.length})</h3>${renderFindings(res.findings, 'archivos')}</div>
+      <div class="result-block">${renderFindings(res.findings, 'archivos')}</div>
       ${renderHashBlock(hash)}
     </div>${renderFileHyperlinks(res.urls)}
     <p class="disclaimer">Análisis heurístico local: cabeceras, datos tras el final del archivo, metadatos EXIF y (en SVG) código fuente. No sustituye un antivirus ni una sandbox especializada en esteganografía.</p>`;
@@ -10617,7 +10668,7 @@ document.getElementById('doc-analyze-btn').addEventListener('click', async ()=>{
       </div>
       ${renderVerdict(score)}
       ${renderDimensionBars(computeDimensionScores(res.findings, 'documento'))}
-      <div class="result-block"><h3>Hallazgos (${res.findings.length})</h3>${renderFindings(res.findings, 'archivos')}</div>
+      <div class="result-block">${renderFindings(res.findings, 'archivos')}</div>
       ${renderHashBlock(hash)}
     </div>${renderFileHyperlinks(res.hyperlinks)}
     <p class="disclaimer">Análisis heurístico local: macros, acciones automáticas, plantillas/objetos remotos e hipervínculos. No sustituye un antivirus ni un sandbox de detonación de documentos. Trata con especial cautela cualquier documento con macros de origen desconocido.</p>`;
@@ -10955,7 +11006,7 @@ function renderQrOutcome(decodedText, imgLabel){
     <div class="hint" style="font-family:var(--mono);margin:8px 0 10px;word-break:break-all;padding:8px;background:var(--input-bg);border-radius:6px;">${escapeHtml(decodedText)}</div>
     ${renderVerdict(score)}
     ${renderDimensionBars(computeDimensionScores(findings, 'qr'))}
-    <div class="result-block"><h3>Hallazgos (${findings.length})</h3>${renderFindings(findings, 'archivos')}</div>
+    <div class="result-block">${renderFindings(findings, 'archivos')}</div>
   </div>${extraHtml}`;
 }
 
@@ -11310,7 +11361,7 @@ document.getElementById('exe-analyze-btn').addEventListener('click', async ()=>{
       </div>
       ${renderVerdict(score)}
       ${renderDimensionBars(computeDimensionScores(res.findings, 'ejecutable'))}
-      <div class="result-block"><h3>Hallazgos (${res.findings.length})</h3>${renderFindings(res.findings, 'archivos')}</div>
+      <div class="result-block">${renderFindings(res.findings, 'archivos')}</div>
       ${res.extraText ? `<div class="result-block"><h3>${escapeHtml(res.extraTitle)}</h3><textarea rows="4" readonly>${escapeHtml(res.extraText)}</textarea></div>` : ''}
       ${renderHashBlock(hash)}
     </div>${renderFileHyperlinks(res.urls)}
@@ -11543,7 +11594,7 @@ document.getElementById('archive-analyze-btn').addEventListener('click', async (
       </div>
       ${renderVerdict(score)}
       ${renderDimensionBars(computeDimensionScores(res.findings, 'comprimido'))}
-      <div class="result-block"><h3>Hallazgos (${res.findings.length})</h3>${renderFindings(res.findings, 'archivos')}</div>
+      <div class="result-block">${renderFindings(res.findings, 'archivos')}</div>
       ${renderHashBlock(hash)}
     </div>${renderArchiveListing(res.listing)}
     <p class="disclaimer">Análisis heurístico local del contenedor. Revisa individualmente cualquier archivo interno sospechoso en el sub-módulo correspondiente (imágenes, ejecutables/scripts, documentos) antes de abrirlo.</p>`;
