@@ -552,16 +552,15 @@ body.mode-avanzado .only-basico{display:none !important;}
 
 /* "¿Por qué?" (segunda depuración UX): fusiona lo que antes eran dos cajas visuales
    distintas ("En pocas palabras" + "¿Qué hemos encontrado?") en una sola, reutilizando
-   el borde izquierdo coloreado por severidad de la antigua .explain-box y la tipografía
-   legible de la antigua .basic-signal-list para las señales adicionales. */
+   la tipografía legible de la antigua .basic-signal-list para las señales adicionales.
+   Tercera depuración (punto 14): el borde lateral coloreado por severidad se retira — un
+   resultado naranja con una franja roja dentro de "¿Por qué?" podía leerse como un
+   segundo aviso de peligro independiente. El color de riesgo se concentra en el veredicto;
+   aquí queda una superficie neutra, sin border, apoyada solo en tipografía y espaciado
+   (punto 13: menos aspecto de caja/dashboard). */
 .why-box{
-  margin:14px 0;padding:12px 14px;border-radius:var(--radius);border-left:3px solid var(--line);
-  background:var(--panel-2);
+  margin:10px 0;padding:4px 2px;
 }
-.why-box.sev-high{border-left-color:var(--danger);}
-.why-box.sev-med{border-left-color:var(--warn);}
-.why-box.sev-low{border-left-color:var(--signal-dim);}
-.why-box.sev-ok{border-left-color:var(--safe);}
 .why-heading{font-family:var(--sans);font-size:calc(13px * var(--fs-scale));text-transform:uppercase;letter-spacing:.05em;color:var(--text-dim);margin:0 0 6px;}
 .why-box p{font-size:calc(15.5px * var(--fs-scale));line-height:1.6;margin:0 0 8px;color:var(--text);}
 .why-box p:last-child{margin-bottom:0;}
@@ -589,11 +588,13 @@ body.mode-avanzado .only-basico{display:none !important;}
   background:var(--panel-2);border-left:2px solid var(--signal-dim);
 }
 
+/* Punto 13 (tercera depuración UX): menos aspecto de caja — se retira el borde y el
+   degradado de fondo; la separación queda solo por espaciado y la cabecera en mayúsculas,
+   igual que el resto de la guía. */
 .action-checklist{
-  margin:8px 0 12px;padding:12px 14px;border-radius:var(--radius);
-  background:linear-gradient(180deg, var(--panel), var(--panel-2));border:1px solid var(--line);
+  margin:6px 0 8px;padding:2px;
 }
-.action-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px;}
+.action-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;}
 .action-list li{font-size:calc(16px * var(--fs-scale));color:var(--text);line-height:1.45;}
 
 .mode-switch{display:flex;gap:8px;margin:10px 0;}
@@ -698,12 +699,12 @@ body.mode-avanzado .only-basico{display:none !important;}
    colocada justo debajo del veredicto — reemplaza los .hint sin etiquetar que antes vivían
    sueltos por encima del resultado. */
 .analyzed-subject{
-  margin:10px 0;padding:10px 12px;border-radius:8px;background:var(--panel-2);border:1px solid var(--line);
+  margin:8px 0;padding:10px 12px;border-radius:8px;background:var(--panel-2);border:1px solid var(--line);
 }
 .analyzed-subject-label{font-family:var(--sans);font-size:calc(11px * var(--fs-scale));text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);margin-bottom:3px;}
-.analyzed-subject-value{font-family:var(--mono);font-size:calc(14px * var(--fs-scale));color:var(--text);word-break:break-all;}
+.analyzed-subject-value{font-family:var(--mono);font-size:calc(14px * var(--fs-scale));color:var(--text);word-break:break-all;overflow-wrap:anywhere;}
 
-.result-block{margin-top:18px;}
+.result-block{margin-top:14px;}
 .result-block h3{font-family:var(--sans);font-size:calc(13.5px * var(--fs-scale));color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;margin:0 0 10px;}
 
 .manual-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;}
@@ -2844,8 +2845,8 @@ document.querySelectorAll('.mode-switch-btn[data-textsize]').forEach(btn=>{
 const ACTION_CHECKLISTS = {
   url: {
     critico: ['No abras el enlace.', 'No introduzcas contraseñas.', 'No introduzcas datos bancarios.'],
-    alto:    ['Evita abrir el enlace hasta confirmarlo por otra vía.', 'No introduzcas contraseñas ni datos bancarios si llegas a abrirlo.'],
-    medio:   ['Verifica el origen del enlace antes de abrirlo.', 'Si lo abres, no introduzcas datos personales ni de pago.'],
+    alto:    ['Evita abrir el enlace hasta confirmarlo por otra vía.', 'No introduzcas contraseñas ni datos bancarios en ese enlace.'],
+    medio:   ['Verifica el origen del enlace antes de abrirlo.', 'No introduzcas datos personales ni de pago sin haber confirmado antes el origen.'],
     bajo:    ['No se han detectado señales graves, pero confirma el remitente antes de confiar del todo.'],
     ninguno: ['No se han detectado señales de riesgo en el propio texto del enlace. Aun así, comprueba que viene de quien dice venir antes de introducir datos.'],
   },
@@ -2888,9 +2889,22 @@ function scoreTier(score){
 function renderActionChecklist(score, moduleType){
   const list = (ACTION_CHECKLISTS[moduleType] || ACTION_CHECKLISTS.url)[scoreTier(score)];
   const heading = score >= 15 ? '✅ Qué hacer ahora' : '💡 Recomendación';
+  // Iconos con significado real (punto 5 del rediseño UX, cuarta depuración): ❌ en una
+  // prohibición secundaria ("No..."/"Evita..."), ✅ en una acción recomendada positiva, y
+  // 🔴 específicamente en la PRIMERA línea cuando es la advertencia principal (el "todavía
+  // no" que abre el checklist en niveles alto/crítico) — distinto de ❌ porque no es "nunca
+  // hagas esto", es "espera, antes de nada". En bajo/ninguno ninguna frase es una orden
+  // tajante, así que mantienen el punto neutro.
   return `<div class="action-checklist only-basico">
     <h3 style="font-family:var(--sans);font-size:calc(12.5px * var(--fs-scale));color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin:0 0 8px;">${heading}</h3>
-    <ul class="action-list">${list.map(a=>`<li>${score>=15?'❌ ':'• '}${escapeHtml(a)}</li>`).join('')}</ul>
+    <ul class="action-list">${list.map((a,i)=>{
+      let icon = '•';
+      if(score >= 15){
+        const isProhibition = /^(No |Evita )/i.test(a);
+        icon = (i === 0 && isProhibition) ? '🔴' : (isProhibition ? '❌' : '✅');
+      }
+      return `<li>${icon} ${escapeHtml(a)}</li>`;
+    }).join('')}</ul>
   </div>`;
 }
 // Lista de señales en lenguaje llano (Modo Sencillo): usa el texto "basic" que cada
@@ -2942,7 +2956,7 @@ function renderWhySection(findings){
     <p>${topText}</p>
     ${restHtml}
     <details class="eli5-details">
-      <summary class="eli5-summary">🧑‍🏫 Explícamelo de forma sencilla</summary>
+      <summary class="eli5-summary">💡 Explícamelo de forma sencilla</summary>
       <ul class="eli5-list">${eli5Items}</ul>
     </details>
   </div>`;
@@ -2974,6 +2988,24 @@ const VERDICT_COPY = {
   'Sin señales relevantes':{ range:'0 puntos',      sentence:'No hemos encontrado ninguna señal de alarma en este análisis.', action:'No hace falta ninguna acción especial. Ante cualquier duda futura, puedes volver a comprobarlo aquí.' }
 };
 
+/* Cuarta depuración UX (Word del experto, sobre v170, punto 2): la frase del veredicto debe
+   concretar la acción en juego en vez de un genérico "antes de continuar" — distinto según se
+   esté analizando un enlace, un mensaje, un correo o un archivo. Solo se toca la frase de
+   "Riesgo medio" (🟠), que es el único ejemplo textual que da el propio documento; el resto de
+   niveles ya tenían una redacción suficientemente concreta ("no continúes", "es un intento de
+   estafa") y no se han tocado para no inventar variantes sin un ejemplo de referencia. */
+const VERDICT_MODULE_PHRASE = {
+  url: 'de abrir el enlace',
+  email: 'de responder o seguir sus instrucciones',
+  sms: 'de responder o seguir sus instrucciones',
+  archivos: 'de abrirlo',
+  apps: 'de instalarla o seguir usándola',
+};
+function verdictMediumSentence(moduleType){
+  const phrase = VERDICT_MODULE_PHRASE[moduleType] || VERDICT_MODULE_PHRASE.url;
+  return `Hemos encontrado algunas señales que conviene revisar antes ${phrase}.`;
+}
+
 /* Titular en 3 niveles (punto 4 del rediseño UX del experto): el "Riesgo alto/medio/bajo/crítico"
    de VERDICT_COPY es preciso pero son 5 palabras técnicas distintas — demasiado grano para el
    titular que debe leerse en 5-10 segundos. Se agrupan en 3 lecturas humanas (🟢/🟠/🔴), sin
@@ -2987,24 +3019,23 @@ function simpleVerdictHeadline(score){
   return {emoji:'🟢', text:'No vemos señales preocupantes'};
 }
 
-function renderVerdict(score, extraDesc){
+function renderVerdict(score, extraDesc, moduleType){
   const {label,color,fill} = scoreLabel(score);
   const copy = VERDICT_COPY[label];
+  const sentence = label === 'Riesgo medio' ? verdictMediumSentence(moduleType) : copy.sentence;
   const simple = simpleVerdictHeadline(score);
   const r = 27, c = 2*Math.PI*r;
   const offset = c - (score/100)*c;
-  // Punto 3 del rediseño UX: el titular humano (🟠 Conviene revisarlo) debe ser lo primero y
-  // visualmente dominante — antes el número "26/100" competía en tamaño con el propio veredicto.
-  // La puntuación exacta se conserva (nunca se elimina información), pero ahora como línea
-  // secundaria más pequeña; el label técnico de 5 niveles ("Riesgo alto", con su rango de puntos)
-  // pasa a Modo Técnico como matiz adicional para quien lo quiera, en vez de ser lo primero que
-  // lee todo el mundo. El "Qué hacer ahora" de una sola frase que vivía siempre aquí se limita
-  // ahora a Modo Técnico, porque en Modo Sencillo ya aparece justo debajo, más desarrollado, en
-  // el checklist de renderActionChecklist — mostrarlo dos veces era la duplicidad que señalaba
-  // el propio experto (punto 11).
+  // Cuarta depuración UX (Word del experto, sobre v170, punto 1): en la v170 el círculo de
+  // puntuación seguía visible en Sencillo (aunque sin el número), y el experto lo describe como
+  // "parece un indicador de progreso/riesgo incompleto" — pide eliminarlo del todo en Sencillo,
+  // no solo ocultar la cifra. Ahora el anillo entero (SVG + número) es only-avanzado: en
+  // Sencillo el veredicto es solo el titular humano + su frase, sin ningún elemento gráfico de
+  // puntuación compitiendo por atención. La lógica y el valor de "score" NO se tocan — sigue
+  // calculándose igual y sigue disponible íntegro al cambiar a Modo Técnico.
   return `
   <div class="verdict" style="border-color:${score>0?fill:'var(--line)'};background:${score>0?`color-mix(in srgb, ${fill} 10%, var(--panel))`:'var(--panel)'};">
-    <div class="ring" aria-hidden="true">
+    <div class="ring only-avanzado" aria-hidden="true">
       <svg viewBox="0 0 64 64">
         <circle class="bg" cx="32" cy="32" r="${r}"></circle>
         <circle class="fg" cx="32" cy="32" r="${r}" stroke="${fill}"
@@ -3017,11 +3048,11 @@ function renderVerdict(score, extraDesc){
       <div class="verdict-headline" style="color:${color};">
         <span class="verdict-headline-emoji" aria-hidden="true">${simple.emoji}</span>${simple.text}
       </div>
-      <div class="desc">${copy.sentence}</div>
+      <div class="desc">${sentence}</div>
       ${extraDesc ? `<div class="desc only-avanzado" style="margin-top:6px;">${extraDesc}</div>` : ''}
-      <div class="verdict-score-line">
+      <div class="verdict-score-line only-avanzado">
         <span class="verdict-score-secondary">Puntuación técnica: <b>${score}</b>/100</span>
-        <span class="label only-avanzado" style="color:${color};"><span class="verdict-dot" style="background:${color};"></span>${label} · ${copy.range}</span>
+        <span class="label" style="color:${color};"><span class="verdict-dot" style="background:${color};"></span>${label} · ${copy.range}</span>
       </div>
       <div class="verdict-action only-avanzado">
         <b>Qué hacer ahora</b>
@@ -3034,9 +3065,9 @@ function renderVerdict(score, extraDesc){
 /* "Contenido analizado" (punto 6, segunda depuración UX del experto): el texto crudo que se
    analiza (una URL, un correo, un archivo...) vivía sin etiquetar y, en el módulo de URLs,
    ANTES del veredicto — separado del resultado que describe. Ahora se coloca justo debajo,
-   con una etiqueta clara de qué es, reutilizable por cualquier módulo. Aplicado por ahora al
-   módulo de URLs (el caso concreto que pedía el experto); ver informe de esta sesión sobre
-   por qué no se ha extendido todavía al resto de módulos. */
+   con una etiqueta clara de qué es, reutilizable por cualquier módulo. Extendida en v172 a
+   los 11 sitios de resultado restantes (correo x2, apps x2, SMS, teléfono, y los 5 submódulos
+   de archivos) que aún carecían de ella — antes solo estaba en URLs. */
 function renderAnalyzedSubject(label, value){
   return `<div class="analyzed-subject">
     <div class="analyzed-subject-label">${escapeHtml(label)}</div>
@@ -4651,7 +4682,7 @@ function analyzeCtProfile(domain, certs){
   }
   if(brandLikeNames.length){
     const brandsFound = [...new Set(brandLikeNames.map(b=>b.brand))];
-    findings.push({sev:'high', dim:'threat', id:'ct.brand_like_names_found', confidence:0.7, evidence:{items:brandLikeNames.slice(0,20)}, title:`${brandLikeNames.length} nombre(s) descubierto(s) que imitan una marca conocida`, basic:`Entre los nombres cubiertos por certificados de este dominio hay alguno que se parece a ${brandsFound.join(', ')}, sin ser esa marca.`, eli5:'Es como descubrir que, además de la puerta principal, este edificio tiene una puerta trasera con el cartel de otra empresa pegado encima.', desc: brandLikeNames.slice(0,10).map(b=>`"${b.name}" se parece a "${b.brand}"`).join('; ')});
+    findings.push({sev:'high', dim:'threat', id:'ct.brand_like_names_found', confidence:0.7, evidence:{items:brandLikeNames.slice(0,20)}, title:`${brandLikeNames.length} nombre(s) descubierto(s) que imitan una marca conocida`, basic:`Entre los nombres cubiertos por los certificados de esta web hay alguno que se parece a ${brandsFound.join(', ')}, sin ser esa marca.`, eli5:'Es como descubrir que, además de la puerta principal, este edificio tiene una puerta trasera con el cartel de otra empresa pegado encima.', desc: brandLikeNames.slice(0,10).map(b=>`"${b.name}" se parece a "${b.brand}"`).join('; ')});
   }
 
   return { findings, certs, allNames, subdomains };
@@ -4679,7 +4710,7 @@ function analyzeSiblingDomains(brand, siblings){
     return [{sev:'ok', dim:'authenticity', id:'ct.no_sibling_domains', confidence:0.5, evidence:{brand}, title:`Sin otros dominios con "${brand}" encontrados en Certificate Transparency`, desc:'No es una garantía (depende de qué certificados existan públicamente), pero no ha aparecido ningún otro dominio distinto que mencione esta marca.'}];
   }
   const uniqueRoots = [...new Set(siblings.map(s=>naiveRootDomain(s)))];
-  return [{sev:'high', dim:'threat', id:'ct.sibling_domains_found', confidence:0.6, evidence:{brand, count:uniqueRoots.length, samples:uniqueRoots.slice(0,25)}, title:`${uniqueRoots.length} dominio(s) distinto(s) mencionan "${brand}" en sus certificados`, basic:`Se han encontrado otros dominios, no relacionados con el oficial, que también incluyen "${brand}" en su nombre — un patrón típico de campañas de phishing que registran varias variantes de la misma marca a la vez.`, eli5:'Es como encontrar varias tiendas falsas distintas usando el mismo logo copiado — normalmente son obra del mismo grupo, no coincidencias sueltas.', desc: uniqueRoots.slice(0,15).join(', ') + (uniqueRoots.length>15?`, y ${uniqueRoots.length-15} más…`:'') + '. Esta lista puede incluir dominios legítimos que mencionan la marca con normalidad (afiliados, prensa, foros) junto a dominios de phishing reales — revísalos individualmente antes de sacar conclusiones.'}];
+  return [{sev:'high', dim:'threat', id:'ct.sibling_domains_found', confidence:0.6, evidence:{brand, count:uniqueRoots.length, samples:uniqueRoots.slice(0,25)}, title:`${uniqueRoots.length} dominio(s) distinto(s) mencionan "${brand}" en sus certificados`, basic:`Se han encontrado otras webs, no relacionadas con la oficial, que también incluyen "${brand}" en su nombre — un patrón típico de campañas de phishing que registran varias variantes de la misma marca a la vez.`, eli5:'Es como encontrar varias tiendas falsas distintas usando el mismo logo copiado — normalmente son obra del mismo grupo, no coincidencias sueltas.', desc: uniqueRoots.slice(0,15).join(', ') + (uniqueRoots.length>15?`, y ${uniqueRoots.length-15} más…`:'') + '. Esta lista puede incluir dominios legítimos que mencionan la marca con normalidad (afiliados, prensa, foros) junto a dominios de phishing reales — revísalos individualmente antes de sacar conclusiones.'}];
 }
 
 /* Auditoría del experto (URL, punto G): "reputación opcional realmente integrada", pero sin romper
@@ -4726,7 +4757,7 @@ function analyzeReputationEvidence(dnsblResults, urlscanData){
   const findings = [];
   dnsblResults.forEach(r=>{
     if(r.listed===true){
-      findings.push({sev:'high', dim:'threat', id:'reputation.dnsbl_listed', confidence:0.75, evidence:{list:r.list, codes:r.codes}, title:`Listado en ${r.list}`, basic:`Esta lista de bloqueo pública (${r.list}) tiene este ${DNSBL_LISTS.find(l=>l.name===r.list).type==='ip'?'IP':'dominio'} registrado en este momento.`, eli5:'Es como aparecer en la lista negra de un portero de discoteca: no dice exactamente por qué, pero confirma que alguien más ya lo marcó como problemático antes que tú.', desc:`Código(s) de retorno: ${r.codes.join(', ')}. El significado exacto varía según la lista (spam, phishing, malware, red de bots...); esto es evidencia EXTERNA de un tercero (${r.list}), no un patrón calculado por Vigía.`});
+      findings.push({sev:'high', dim:'threat', id:'reputation.dnsbl_listed', confidence:0.75, evidence:{list:r.list, codes:r.codes}, title:`Listado en ${r.list}`, basic:`Esta lista de bloqueo pública (${r.list}) tiene ${DNSBL_LISTS.find(l=>l.name===r.list).type==='ip'?'esta IP':'esta web'} registrada en este momento.`, eli5:'Es como aparecer en la lista negra de un portero de discoteca: no dice exactamente por qué, pero confirma que alguien más ya lo marcó como problemático antes que tú.', desc:`Código(s) de retorno: ${r.codes.join(', ')}. El significado exacto varía según la lista (spam, phishing, malware, red de bots...); esto es evidencia EXTERNA de un tercero (${r.list}), no un patrón calculado por Vigía.`});
     } else if(r.listed===false){
       findings.push({sev:'ok', dim:'threat', id:'reputation.dnsbl_clean', confidence:0.5, evidence:{list:r.list}, title:`Sin listar en ${r.list}`, desc:`No aparece en esta lista de bloqueo pública en este momento. No es una garantía de nada (las listas cambian constantemente y no todo lo malicioso llega a aparecer en ellas), solo evidencia externa puntual.`});
     } else {
@@ -4862,7 +4893,7 @@ document.addEventListener('click', async (e)=>{
       try{
         const geo = await lookupIpGeoInfo(aAnswers[0]);
         const netType = classifyNetworkType(geo.asn, geo.org);
-        findings.push({sev:'ok', dim:'authenticity', id:'dns.asn_org', confidence:1, evidence:{asn:geo.asn||null, org:geo.org||null, city:geo.city||null, country:geo.country_name||null, networkType:netType.type, networkProvider:netType.provider}, title:`ASN / organización: ${geo.asn||'desconocido'}${netType.type!=='unknown'?` (${netType.label})`:''}`, basic: netType.type!=='unknown' ? `Este dominio está alojado en infraestructura de tipo "${netType.label}"${netType.provider?` (${netType.provider})`:''}. No es lo mismo, por defecto, que una IP de un proveedor de hosting pequeño y desconocido — aunque tampoco es una garantía de nada por sí sola, ambos tipos pueden alojar tanto servicios legítimos como maliciosos.` : undefined, desc:`${geo.org||'Organización desconocida'}${(geo.city||geo.country_name) ? `, ${[geo.city,geo.country_name].filter(Boolean).join(', ')}` : ''}.${netType.type!=='unknown'?` Clasificación heurística del tipo de red a partir del ASN/organización conocidos (no un dato oficial de ipapi.co): ${netType.label}.`:''}`});
+        findings.push({sev:'ok', dim:'authenticity', id:'dns.asn_org', confidence:1, evidence:{asn:geo.asn||null, org:geo.org||null, city:geo.city||null, country:geo.country_name||null, networkType:netType.type, networkProvider:netType.provider}, title:`ASN / organización: ${geo.asn||'desconocido'}${netType.type!=='unknown'?` (${netType.label})`:''}`, basic: netType.type!=='unknown' ? `Esta web está alojada en infraestructura de tipo "${netType.label}"${netType.provider?` (${netType.provider})`:''}. No es lo mismo, por defecto, que una IP de un proveedor de hosting pequeño y desconocido — aunque tampoco es una garantía de nada por sí sola, ambos tipos pueden alojar tanto servicios legítimos como maliciosos.` : undefined, desc:`${geo.org||'Organización desconocida'}${(geo.city||geo.country_name) ? `, ${[geo.city,geo.country_name].filter(Boolean).join(', ')}` : ''}.${netType.type!=='unknown'?` Clasificación heurística del tipo de red a partir del ASN/organización conocidos (no un dato oficial de ipapi.co): ${netType.label}.`:''}`});
       }catch(err){}
     } else {
       findings.push({sev:'med', dim:'authenticity', id:'dns.no_a_records', confidence:1, evidence:{domain}, title:'El dominio existe pero no tiene registros A', desc:'El DNS confirma que el dominio está registrado (no es NXDOMAIN), pero no resuelve a ninguna IPv4 en este momento. Puede depender solo de otros tipos de registro, o estar mal configurado.'});
@@ -4882,7 +4913,7 @@ document.addEventListener('click', async (e)=>{
       if(cnameAnswers.length){
         const cnameTarget = cnameAnswers[0];
         const cnameRootDiffers = naiveRootDomain(cnameTarget) !== naiveRootDomain(domain);
-        findings.push({sev: cnameRootDiffers?'low':'ok', dim:'authenticity', id:'dns.cname_record', confidence:1, evidence:{domain, target:cnameTarget, rootDiffers:cnameRootDiffers}, title:`Es un alias (CNAME) hacia "${cnameTarget}"`, basic: cnameRootDiffers ? `Este nombre no tiene su propia infraestructura: en realidad apunta a un dominio de otra organización ("${cnameTarget}").` : 'Este nombre es un alias hacia otro nombre dentro del mismo dominio.', eli5: cnameRootDiffers ? 'Es como un cartel con una flecha: quien lo puso no tiene el edificio, solo te redirige al edificio real de otra empresa.' : 'Es un simple apodo interno hacia otra dirección de la misma casa.', desc: cnameRootDiffers ? `"${domain}" es un alias (CNAME) que apunta a "${cnameTarget}", de una organización distinta. Es habitual y legítimo con CDN/balanceadores de terceros, pero también es la técnica de "CNAME cloaking" que usan algunos rastreadores para parecer parte del sitio que visitas. No es una prueba de nada por sí sola.` : `"${domain}" es un alias (CNAME) hacia "${cnameTarget}", dentro del mismo dominio.`});
+        findings.push({sev: cnameRootDiffers?'low':'ok', dim:'authenticity', id:'dns.cname_record', confidence:1, evidence:{domain, target:cnameTarget, rootDiffers:cnameRootDiffers}, title:`Es un alias (CNAME) hacia "${cnameTarget}"`, basic: cnameRootDiffers ? `Este nombre no tiene su propia infraestructura: en realidad apunta a la web de otra organización ("${cnameTarget}").` : 'Este nombre es un alias hacia otro nombre dentro de la misma web.', eli5: cnameRootDiffers ? 'Es como un cartel con una flecha: quien lo puso no tiene el edificio, solo te redirige al edificio real de otra empresa.' : 'Es un simple apodo interno hacia otra dirección de la misma casa.', desc: cnameRootDiffers ? `"${domain}" es un alias (CNAME) que apunta a "${cnameTarget}", de una organización distinta. Es habitual y legítimo con CDN/balanceadores de terceros, pero también es la técnica de "CNAME cloaking" que usan algunos rastreadores para parecer parte del sitio que visitas. No es una prueba de nada por sí sola.` : `"${domain}" es un alias (CNAME) hacia "${cnameTarget}", dentro del mismo dominio.`});
       }
 
       // MX: quién recibe el correo de este dominio. Puramente informativo (no hay una lectura de
@@ -4906,7 +4937,7 @@ document.addEventListener('click', async (e)=>{
       // el propio servidor receptor es la fuente de verdad para SPF/DKIM/DMARC en Correo.
       const dnssecValidated = !!(dnskeyRes && dnskeyRes.AD === true);
       if(dsAnswers.length || dnskeyAnswers.length){
-        findings.push({sev:'ok', dim:'authenticity', id:'dns.dnssec_present', confidence:1, evidence:{hasDS:dsAnswers.length>0, hasDNSKEY:dnskeyAnswers.length>0, validated:dnssecValidated}, title:`DNSSEC configurado${dnssecValidated?' y validado por el resolutor':''}`, basic:'El dominio firma criptográficamente sus respuestas DNS para evitar manipulaciones.', desc:`Se han encontrado registros ${dsAnswers.length?'DS':''}${dsAnswers.length&&dnskeyAnswers.length?' y ':''}${dnskeyAnswers.length?'DNSKEY':''} para este dominio.${dnssecValidated?' El resolutor DNS consultado confirma que la firma es válida (bandera AD).':' No se ha podido confirmar si la firma es válida, solo que existen los registros.'}`});
+        findings.push({sev:'ok', dim:'authenticity', id:'dns.dnssec_present', confidence:1, evidence:{hasDS:dsAnswers.length>0, hasDNSKEY:dnskeyAnswers.length>0, validated:dnssecValidated}, title:`DNSSEC configurado${dnssecValidated?' y validado por el resolutor':''}`, basic:'Esta web firma criptográficamente sus respuestas DNS para evitar manipulaciones.', desc:`Se han encontrado registros ${dsAnswers.length?'DS':''}${dsAnswers.length&&dnskeyAnswers.length?' y ':''}${dnskeyAnswers.length?'DNSKEY':''} para este dominio.${dnssecValidated?' El resolutor DNS consultado confirma que la firma es válida (bandera AD).':' No se ha podido confirmar si la firma es válida, solo que existen los registros.'}`});
       } else {
         findings.push({sev:'low', dim:'authenticity', id:'dns.dnssec_absent', confidence:1, evidence:{}, title:'Sin DNSSEC', desc:'El dominio no firma sus respuestas DNS. Es la situación de la inmensa mayoría de dominios hoy en día; no es, por sí sola, una señal de riesgo.'});
       }
@@ -5048,7 +5079,7 @@ function analyzeEffectiveUrl(u, findings){
   if(/%(2F|3A|40|2E)/i.test(rawPathAndQuery)){
     const decoded = safeDecode(rawPathAndQuery);
     if(decoded !== rawPathAndQuery && (/:\/\//i.test(decoded) || /[a-z0-9-]+\.[a-z]{2,}@/i.test(decoded))){
-      findings.push({sev:'high', dim:'threat', id:'url.encoded_content_hidden', confidence:0.85, evidence:{decodedSample:decoded.slice(0,200)}, title:'Contenido codificado que oculta otra URL o un patrón "@"', basic:'Parte del enlace está codificado de una forma que, al descifrarla, esconde otra dirección web completa o un truco tipo "usuario@dominio".', eli5:'Es como un mensaje escrito con un código sencillo: a simple vista no se lee nada raro, pero si lo descifras aparece otra dirección completamente distinta escondida dentro.', desc:`Al decodificar el percent-encoding (%2F=/, %3A=:, %40=@, %2E=.) de la ruta o los parámetros, aparece: "${escapeHtml(decoded.slice(0,200))}". Esta técnica se usa tanto para evadir filtros simples como para confundir visualmente a quien lee la URL.`});
+      findings.push({sev:'high', dim:'threat', id:'url.encoded_content_hidden', confidence:0.85, evidence:{decodedSample:decoded.slice(0,200)}, title:'Contenido codificado que oculta otra URL o un patrón "@"', basic:'Parte del enlace está codificado de una forma que, al descifrarla, esconde otra dirección web completa, o usa el símbolo "@" para camuflar la dirección real.', eli5:'Es como un mensaje escrito con un código sencillo: a simple vista no se lee nada raro, pero si lo descifras aparece otra dirección completamente distinta escondida dentro.', desc:`Al decodificar el percent-encoding (%2F=/, %3A=:, %40=@, %2E=.) de la ruta o los parámetros, aparece: "${escapeHtml(decoded.slice(0,200))}". Esta técnica se usa tanto para evadir filtros simples como para confundir visualmente a quien lee la URL.`});
     }
   }
 
@@ -5056,7 +5087,7 @@ function analyzeEffectiveUrl(u, findings){
   // técnica que en un dominio, pero oculta donde el aviso de homógrafos del dominio no llega.
   const decodedFull = safeDecode(rawPathAndQuery);
   if(decodedFull !== rawPathAndQuery && hasMixedScripts(decodedFull)){
-    findings.push({sev:'high', dim:'threat', id:'url.encoded_mixed_scripts', confidence:0.9, evidence:{decodedSample:decodedFull.slice(0,200)}, title:'Alfabetos mezclados ocultos tras codificación en la ruta o los parámetros', basic:'Al descifrar parte del enlace aparecen letras de alfabetos distintos mezcladas, un truco visual clásico.', eli5:'Es la misma trampa de "letras que se parecen pero no son las mismas" que en un dominio, solo que aquí viene escondida dentro de otra parte del enlace que primero hay que descifrar para verla.', desc:'Tras decodificar el percent-encoding de la ruta o los parámetros, aparecen caracteres de distintos alfabetos (por ejemplo latín y cirílico) mezclados entre sí: la misma técnica de suplantación visual (homógrafos) que en un nombre de dominio, pero oculta en otra parte de la URL.'});
+    findings.push({sev:'high', dim:'threat', id:'url.encoded_mixed_scripts', confidence:0.9, evidence:{decodedSample:decodedFull.slice(0,200)}, title:'Alfabetos mezclados ocultos tras codificación en la ruta o los parámetros', basic:'Al descifrar parte del enlace aparecen letras de alfabetos distintos mezcladas, un truco visual clásico.', eli5:'Es la misma trampa de "letras que se parecen pero no son las mismas" que en el nombre de una web, solo que aquí viene escondida dentro de otra parte del enlace que primero hay que descifrar para verla.', desc:'Tras decodificar el percent-encoding de la ruta o los parámetros, aparecen caracteres de distintos alfabetos (por ejemplo latín y cirílico) mezclados entre sí: la misma técnica de suplantación visual (homógrafos) que en un nombre de dominio, pero oculta en otra parte de la URL.'});
   }
 
   // Nota: se descartó a propósito comprobar la normalización NFKC del propio dominio (u.hostname)
@@ -5099,7 +5130,7 @@ function analyzeSingleUrl(raw, depth=0){
   // 2. Host como dirección IP literal
   const isIpHost = /^(\d{1,3}\.){3}\d{1,3}$/.test(host) || (/^\[?[0-9a-f:]+\]?$/i.test(host) && host.includes(':'));
   if(isIpHost){
-    findings.push({sev:'high', id:'url.host_is_ip', confidence:1, evidence:{host}, title:'El dominio es una dirección IP', basic:'El enlace usa una dirección numérica en vez de un nombre de dominio, algo muy raro en un sitio legítimo.', eli5:'Es como si alguien te diera solo un número de teléfono suelto, sin nombre en la agenda, en vez de decirte quién es. Los sitios de confianza casi siempre usan un nombre, no un número pelado.', desc:'Los enlaces legítimos casi nunca usan una IP directa en vez de un nombre de dominio. Es una técnica común para evadir listas de bloqueo.'});
+    findings.push({sev:'high', id:'url.host_is_ip', confidence:1, evidence:{host}, title:'El dominio es una dirección IP', basic:'El enlace usa una dirección numérica en vez de un nombre de web, algo muy raro en un sitio legítimo.', eli5:'Es como si alguien te diera solo un número de teléfono suelto, sin nombre en la agenda, en vez de decirte quién es. Los sitios de confianza casi siempre usan un nombre, no un número pelado.', desc:'Los enlaces legítimos casi nunca usan una IP directa en vez de un nombre de dominio. Es una técnica común para evadir listas de bloqueo.'});
   } else {
     findings.push({sev:'ok', id:'url.host_is_domain', confidence:1, evidence:{host}, title:'Usa un nombre de dominio, no una IP directa', desc:'Los enlaces que ocultan una IP literal en vez de un dominio son mucho más frecuentes en tráfico malicioso.'});
   }
@@ -5127,10 +5158,10 @@ function analyzeSingleUrl(raw, depth=0){
   if(hasPunycode){
     const brandCorrelated = brandRel && (brandRel.state==='THIRD_PARTY_DOMAIN' || brandRel.state==='LOOKALIKE_DOMAIN' || brandRel.state==='CONFUSABLE_SKELETON_MATCH');
     const punySev = brandCorrelated ? 'high' : (hasMixed ? 'med' : 'low');
-    findings.push({sev:punySev, dim:'threat', id:'url.punycode_domain', confidence: brandCorrelated?0.85:0.4, evidence:{host, decodedHost, brandCorrelated: !!brandCorrelated, brand: brandCorrelated?brandRel.brand:null}, title: brandCorrelated ? `Dominio internacionalizado (punycode) que imita a "${brandRel.brand}"` : 'Dominio internacionalizado (punycode)', basic: brandCorrelated ? `El dominio usa codificación punycode Y su texto visual real se parece o coincide con "${brandRel.brand}" — la combinación que de verdad importa.` : 'El dominio usa una codificación especial (punycode) para representar caracteres no latinos. Un dominio internacionalizado legítimo (de una empresa o persona que usa su propio idioma/alfabeto) también usa esta codificación, así que no es sospechoso por sí solo.', eli5: brandCorrelated ? 'El dominio usa letras que se ven casi iguales a las de una marca conocida — no es una casualidad de idioma, es un disfraz.' : 'Muchos idiomas usan letras que no están en el teclado inglés básico (acentos, cirílico, chino...), y los navegadores necesitan codificarlas de una forma especial para que funcionen en internet. Eso por sí solo no significa nada malo — como una web en japonés de verdad.', desc:`El dominio usa codificación punycode (xn--).${decodedHost!==host?` Texto visual real: "${decodedHost}".`:''} ${brandCorrelated?`Este texto coincide o se parece a la marca "${brandRel.brand}" (ver el hallazgo de marca correspondiente más abajo), que es la combinación realmente preocupante.`:'Sin ninguna coincidencia con las marcas de referencia conocidas, un dominio internacionalizado por sí solo no es una señal de phishing — muchísimos dominios legítimos en idiomas no ingleses usan exactamente esta codificación.'}`});
+    findings.push({sev:punySev, dim:'threat', id:'url.punycode_domain', confidence: brandCorrelated?0.85:0.4, evidence:{host, decodedHost, brandCorrelated: !!brandCorrelated, brand: brandCorrelated?brandRel.brand:null}, title: brandCorrelated ? `Dominio internacionalizado (punycode) que imita a "${brandRel.brand}"` : 'Dominio internacionalizado (punycode)', basic: brandCorrelated ? `Esta web usa codificación punycode Y su texto visual real se parece o coincide con "${brandRel.brand}" — la combinación que de verdad importa.` : 'Esta web usa una codificación especial (punycode) para representar caracteres no latinos. Una web internacionalizada legítima (de una empresa o persona que usa su propio idioma/alfabeto) también usa esta codificación, así que no es sospechoso por sí solo.', eli5: brandCorrelated ? 'Esta web usa letras que se ven casi iguales a las de una marca conocida — no es una casualidad de idioma, es un disfraz.' : 'Muchos idiomas usan letras que no están en el teclado inglés básico (acentos, cirílico, chino...), y los navegadores necesitan codificarlas de una forma especial para que funcionen en internet. Eso por sí solo no significa nada malo — como una web en japonés de verdad.', desc:`El dominio usa codificación punycode (xn--).${decodedHost!==host?` Texto visual real: "${decodedHost}".`:''} ${brandCorrelated?`Este texto coincide o se parece a la marca "${brandRel.brand}" (ver el hallazgo de marca correspondiente más abajo), que es la combinación realmente preocupante.`:'Sin ninguna coincidencia con las marcas de referencia conocidas, un dominio internacionalizado por sí solo no es una señal de phishing — muchísimos dominios legítimos en idiomas no ingleses usan exactamente esta codificación.'}`});
   }
   if(hasMixed){
-    findings.push({sev:'high', dim:'threat', id:'url.mixed_scripts_domain', confidence:0.9, evidence:{host, decodedHost}, title:'Mezcla de alfabetos en el dominio', basic:'El nombre del dominio mezcla letras de alfabetos distintos para parecerse a otro dominio conocido.', eli5:'Mezcla letras de dos alfabetos distintos que se ven casi iguales en pantalla, como confundir una letra "o" normal con un cero, pero puesto ahí a propósito para despistar.', desc:`El nombre de dominio combina caracteres de distintos sistemas de escritura${decodedHost!==host?` ("${decodedHost}")`:''}, un patrón típico de suplantación visual (homógrafos).`});
+    findings.push({sev:'high', dim:'threat', id:'url.mixed_scripts_domain', confidence:0.9, evidence:{host, decodedHost}, title:'Mezcla de alfabetos en el dominio', basic:'El nombre de la web mezcla letras de alfabetos distintos para parecerse a otra web conocida.', eli5:'Mezcla letras de dos alfabetos distintos que se ven casi iguales en pantalla, como confundir una letra "o" normal con un cero, pero puesto ahí a propósito para despistar.', desc:`El nombre de dominio combina caracteres de distintos sistemas de escritura${decodedHost!==host?` ("${decodedHost}")`:''}, un patrón típico de suplantación visual (homógrafos).`});
   }
   if(!hasPunycode && !hasMixed){
     findings.push({sev:'ok', dim:'threat', id:'url.no_homoglyphs', confidence:1, evidence:{host}, title:'Sin homógrafos ni codificación punycode', desc:'El dominio no combina alfabetos distintos ni usa codificación internacionalizada. Descarta la técnica de suplantación visual más habitual.'});
@@ -5158,7 +5189,7 @@ function analyzeSingleUrl(raw, depth=0){
   // 7. TLD sospechoso
   const tld = host.split('.').pop();
   if(SUSPICIOUS_TLDS.includes(tld)){
-    findings.push({sev:'med', id:'url.risky_tld', confidence:0.8, evidence:{tld}, title:`Dominio de nivel superior de riesgo elevado (.${tld})`, basic:`Usa una extensión de dominio (.${tld}) muy asociada a campañas de phishing.`, eli5:'Algunas terminaciones de dominio son casi gratis y muy fáciles de conseguir sin dar ningún dato real, así que son las favoritas de quien monta una web falsa y la abandona a los pocos días.', desc:'Este TLD es gratuito o muy barato de registrar y se usa desproporcionadamente en campañas de phishing. No es una prueba definitiva, pero suma sospecha.'});
+    findings.push({sev:'med', id:'url.risky_tld', confidence:0.8, evidence:{tld}, title:`Dominio de nivel superior de riesgo elevado (.${tld})`, basic:`Usa una terminación de dirección web (.${tld}) muy asociada a campañas de phishing.`, eli5:'Algunas terminaciones de dirección web son casi gratis y muy fáciles de conseguir sin dar ningún dato real, así que son las favoritas de quien monta una web falsa y la abandona a los pocos días.', desc:'Este TLD es gratuito o muy barato de registrar y se usa desproporcionadamente en campañas de phishing. No es una prueba definitiva, pero suma sospecha.'});
   } else {
     findings.push({sev:'ok', id:'url.common_tld', confidence:1, evidence:{tld}, title:`Extensión de dominio habitual (.${tld})`, desc:'Este TLD no está en nuestra lista de extensiones desproporcionadamente asociadas a phishing masivo.'});
   }
@@ -5166,13 +5197,13 @@ function analyzeSingleUrl(raw, depth=0){
   // 8. Subdominios excesivos
   const subCount = host.split('.').length - 2;
   if(subCount >= 3){
-    findings.push({sev:'med', id:'url.excessive_subdomains', confidence:0.8, evidence:{host, levels:subCount+2}, title:'Número inusual de subdominios', basic:'Tiene un número inusual de partes en el dominio, una técnica para camuflar el dominio real.', eli5:'El dominio tiene tantas partes seguidas que es fácil perderse — el nombre en el que confías puede estar escondido en medio, no al final, que es la parte que realmente importa.', desc:`El host tiene ${subCount+2} niveles (${host}). Se usa a veces para simular una marca en un subdominio mientras el dominio real queda escondido al final.`});
+    findings.push({sev:'med', id:'url.excessive_subdomains', confidence:0.8, evidence:{host, levels:subCount+2}, title:'Número inusual de subdominios', basic:'Tiene un número inusual de partes en la dirección web, una técnica para camuflar la dirección real.', eli5:'La dirección tiene tantas partes seguidas que es fácil perderse — el nombre en el que confías puede estar escondido en medio, no al final, que es la parte que realmente importa.', desc:`El host tiene ${subCount+2} niveles (${host}). Se usa a veces para simular una marca en un subdominio mientras el dominio real queda escondido al final.`});
   }
 
   // 9. Guiones múltiples
   const hyphens = (host.match(/-/g)||[]).length;
   if(hyphens >= 3){
-    findings.push({sev:'low', id:'url.many_hyphens', confidence:0.75, evidence:{host}, title:'Muchos guiones en el dominio', basic:'El dominio tiene muchos guiones seguidos, típico de generación automática masiva.', eli5:'Tantos guiones seguidos no los escribe una persona a mano: son típicos de programas que generan automáticamente cientos de dominios parecidos de golpe.', desc:'Los dominios con varios guiones seguidos suelen generarse automáticamente para campañas de phishing masivo.'});
+    findings.push({sev:'low', id:'url.many_hyphens', confidence:0.75, evidence:{host}, title:'Muchos guiones en el dominio', basic:'La dirección web tiene muchos guiones seguidos, típico de generación automática masiva.', eli5:'Tantos guiones seguidos no los escribe una persona a mano: son típicos de programas que generan automáticamente cientos de direcciones parecidas de golpe.', desc:'Los dominios con varios guiones seguidos suelen generarse automáticamente para campañas de phishing masivo.'});
   }
 
   // 10. Typosquatting y mención de marca contra las 35 marcas de referencia — mismo criterio que
@@ -5191,7 +5222,7 @@ function analyzeSingleUrl(raw, depth=0){
   }
   // Marca mencionada literalmente pero en un dominio que no le pertenece
   if(brandRel && brandRel.state==='THIRD_PARTY_DOMAIN'){
-    findings.push({sev:'high', dim:'threat', id:'url.brand_in_foreign_domain', confidence:0.75, indicatorType:'domain', indicatorValue:host, context:'url_destination', evidence:{host, decodedHost, brand:brandRel.brand}, title:`Nombre de marca "${brandRel.brand}" dentro de un dominio ajeno`, basic:`El dominio utilizado es diferente del oficial de "${brandRel.brand}", aunque incluya su nombre.`, eli5:`El nombre "${brandRel.brand}" está ahí, pero metido en una dirección que no le pertenece — como si alguien pusiera el logo de tu banco en la puerta de una tienda que no tiene nada que ver con él.`, desc:`El dominio "${decodedHost}"${decodedHost!==host?` (codificado como "${host}")`:''} incluye el nombre "${brandRel.brand}" pero no es su dominio oficial. Es habitual meter el nombre de la marca en un subdominio o como palabra suelta para generar confianza falsa.`});
+    findings.push({sev:'high', dim:'threat', id:'url.brand_in_foreign_domain', confidence:0.75, indicatorType:'domain', indicatorValue:host, context:'url_destination', evidence:{host, decodedHost, brand:brandRel.brand}, title:`Nombre de marca "${brandRel.brand}" dentro de un dominio ajeno`, basic:`El enlace parece de "${brandRel.brand}", pero la dirección no es la oficial de "${brandRel.brand}".`, eli5:`El nombre "${brandRel.brand}" está ahí, pero metido en una dirección que no le pertenece — como si alguien pusiera el logo de tu banco en la puerta de una tienda que no tiene nada que ver con él.`, desc:`El dominio "${decodedHost}"${decodedHost!==host?` (codificado como "${host}")`:''} incluye el nombre "${brandRel.brand}" pero no es su dominio oficial. Es habitual meter el nombre de la marca en un subdominio o como palabra suelta para generar confianza falsa.`});
     brandMismatchFound = true;
   }
   if(!brandMismatchFound){
@@ -5203,7 +5234,7 @@ function analyzeSingleUrl(raw, depth=0){
   const hostAndPath = (hostNoTld + ' ' + u.pathname).toLowerCase();
   const bankingHit = bankingWords.filter(w=>hostAndPath.includes(w));
   if(bankingHit.length){
-    findings.push({sev:'low', id:'url.banking_keywords', confidence:0.6, evidence:{matches:bankingHit}, title:'Contiene palabras asociadas a banca', basic:'Incluye palabras relacionadas con banca o pagos en el propio dominio o dirección.', eli5:'Menciona dinero, cuentas o pagos sin ser necesariamente la web de un banco — como un cartel en la calle que dice "oferta bancaria" sin que haya ningún banco real detrás.', desc:`Incluye términos como "${bankingHit.join(', ')}". No es sospechoso por sí solo, pero combinado con otras señales (como imitar una marca, ya contabilizada aparte) es un patrón muy propio del phishing bancario.`});
+    findings.push({sev:'low', id:'url.banking_keywords', confidence:0.6, evidence:{matches:bankingHit}, title:'Contiene palabras asociadas a banca', basic:'Incluye palabras relacionadas con banca o pagos en la propia dirección web.', eli5:'Menciona dinero, cuentas o pagos sin ser necesariamente la web de un banco — como un cartel en la calle que dice "oferta bancaria" sin que haya ningún banco real detrás.', desc:`Incluye términos como "${bankingHit.join(', ')}". No es sospechoso por sí solo, pero combinado con otras señales (como imitar una marca, ya contabilizada aparte) es un patrón muy propio del phishing bancario.`});
   }
 
   // 11. Palabras de urgencia/credenciales combinadas con marca en la ruta
@@ -5216,7 +5247,7 @@ function analyzeSingleUrl(raw, depth=0){
 
   // 12. Longitud y parámetros excesivos
   if(fullUrl.length > 120){
-    findings.push({sev:'low', id:'url.excessive_length', confidence:0.6, evidence:{length:fullUrl.length}, title:'URL inusualmente larga', basic:'Es una dirección inusualmente larga, a veces usada para ocultar el dominio real.', eli5:'Una dirección tan larga es difícil de leer entera, sobre todo en el móvil — y eso es precisamente lo que se busca: que no llegues a ver la parte que delataría el engaño.', desc:'Las URLs muy largas a veces se usan para ocultar el dominio real al principio de una barra de direcciones truncada en móvil.'});
+    findings.push({sev:'low', id:'url.excessive_length', confidence:0.6, evidence:{length:fullUrl.length}, title:'URL inusualmente larga', basic:'Es una dirección inusualmente larga, a veces usada para ocultar la dirección real.', eli5:'Una dirección tan larga es difícil de leer entera, sobre todo en el móvil — y eso es precisamente lo que se busca: que no llegues a ver la parte que delataría el engaño.', desc:'Las URLs muy largas a veces se usan para ocultar el dominio real al principio de una barra de direcciones truncada en móvil.'});
   }
   const paramCount = [...u.searchParams].length;
   if(paramCount >= 7){
@@ -5225,7 +5256,7 @@ function analyzeSingleUrl(raw, depth=0){
 
   // 13. Doble extensión / TLD falso en subdominio
   if(/\.(com|net|org|es|gov|edu|mx|ar|co)[-.]/.test(host) && !host.startsWith('www.')){
-    findings.push({sev:'med', id:'url.fake_tld_embedded', confidence:0.7, evidence:{host}, title:'Posible TLD falso incrustado', basic:'El dominio imita el patrón de una extensión conocida (como ".com") en mitad del nombre.', eli5:'Incluye algo como ".com" en mitad del nombre, no al final — como poner un sello oficial falso en un sitio que no lo es, para que lo veas de reojo y te fíes sin mirar dos veces.', desc:'El dominio contiene una extensión conocida (p. ej. ".com-") en medio del nombre, una técnica para aparentar un dominio legítimo seguido de texto adicional real.'});
+    findings.push({sev:'med', id:'url.fake_tld_embedded', confidence:0.7, evidence:{host}, title:'Posible TLD falso incrustado', basic:'La dirección web imita el patrón de una extensión conocida (como ".com") en mitad del nombre.', eli5:'Incluye algo como ".com" en mitad del nombre, no al final — como poner un sello oficial falso en un sitio que no lo es, para que lo veas de reojo y te fíes sin mirar dos veces.', desc:'El dominio contiene una extensión conocida (p. ej. ".com-") en medio del nombre, una técnica para aparentar un dominio legítimo seguido de texto adicional real.'});
   }
 
   if(findings.length === 0){
@@ -5235,7 +5266,7 @@ function analyzeSingleUrl(raw, depth=0){
   // 14. Entropía del dominio (detección de dominios generados algorítmicamente, tipo DGA)
   const domainEntropy = shannonEntropy(new TextEncoder().encode(hostFlat));
   if(hostFlat.length >= 8 && domainEntropy >= 3.6){
-    findings.push({sev:'med', id:'url.high_entropy_domain', confidence:0.65, evidence:{host:hostFlat, entropy:domainEntropy}, title:`Entropía elevada en el nombre de dominio (${domainEntropy.toFixed(2)} bits/carácter)`, basic:'El nombre del dominio parece generado automáticamente, sin relación con una palabra reconocible.', eli5:'El nombre del dominio parece un conjunto de letras al azar, sin ninguna palabra real detrás — muy típico de programas que generan dominios nuevos automáticamente cada pocas horas.', desc:'Un nombre con distribución de caracteres muy uniforme (poco "pronunciable") es típico de dominios generados algorítmicamente (DGA), usados por malware y campañas automatizadas para esquivar listas de bloqueo.'});
+    findings.push({sev:'med', id:'url.high_entropy_domain', confidence:0.65, evidence:{host:hostFlat, entropy:domainEntropy}, title:`Entropía elevada en el nombre de dominio (${domainEntropy.toFixed(2)} bits/carácter)`, basic:'El nombre de la web parece generado automáticamente, sin relación con una palabra reconocible.', eli5:'El nombre de la web parece un conjunto de letras al azar, sin ninguna palabra real detrás — muy típico de programas que generan direcciones nuevas automáticamente cada pocas horas.', desc:'Un nombre con distribución de caracteres muy uniforme (poco "pronunciable") es típico de dominios generados algorítmicamente (DGA), usados por malware y campañas automatizadas para esquivar listas de bloqueo.'});
   }
 
   // 15b. URL anidada en parámetros de redirección (open redirect / phishing encapsulado).
@@ -5258,7 +5289,7 @@ function analyzeSingleUrl(raw, depth=0){
           : `Parámetro "${hit.param}" contiene una URL a otro dominio (${hit.nestedUrl.hostname})`,
         basic: sameHost
           ? 'Este enlace lleva a otra dirección dentro del propio sitio tras pasar por aquí.'
-          : `Este enlace, tras pasar por aquí, en realidad te lleva a un dominio distinto: ${hit.nestedUrl.hostname}.`,
+          : `Este enlace, tras pasar por aquí, en realidad te lleva a una web distinta: ${hit.nestedUrl.hostname}.`,
         eli5: sameHost
           ? 'Es una parada intermedia hacia otra página del mismo sitio, algo habitual y normalmente sin problema.'
           : 'Es como una carta con el remitente de un sitio de confianza, pero que en realidad te reenvía a otra dirección completamente distinta en cuanto la abres — el sitio que ves primero no es el que te llevará al final.',
@@ -5308,14 +5339,14 @@ function renderUrlResult(res){
     findings: res.findings,
   });
   return `<div class="card">
-    <div class="row" style="justify-content:flex-end;">
-      ${exportButtonHtml(uid)}
-    </div>
-    ${renderVerdict(score, `Basado en el patrón del texto de la URL, no en si el dominio está activo ahora mismo. Para confirmarlo, ${getResultMode()==='avanzado' ? 'usa "Consultar DNS, ASN, WHOIS y si existe" más abajo' : 'activa "Ver detalles técnicos" más abajo'}.`)}
+    ${renderVerdict(score, `Basado en el patrón del texto de la URL, no en si el dominio está activo ahora mismo. Para confirmarlo, ${getResultMode()==='avanzado' ? 'usa "Consultar DNS, ASN, WHOIS y si existe" más abajo' : 'activa "Ver detalles técnicos" más abajo'}.`, 'url')}
     ${renderAnalyzedSubject('Enlace analizado', res.raw)}
     ${renderDimensionBars(computeDimensionScores(res.findings, 'url'))}
     <div class="result-block">
       ${renderFindings(res.findings, 'url')}
+    </div>
+    <div class="row mt" style="justify-content:flex-end;">
+      ${exportButtonHtml(uid)}
     </div>
     <div class="result-block only-avanzado">
       <h3>${isShortener ? '⚠ Enlace acortado: dirección final' : 'Dirección final y saltos de redirección'}</h3>
@@ -5664,7 +5695,7 @@ function renderIpResult(res){
       <div class="hint" style="font-family:var(--mono);margin-bottom:10px;word-break:break-all;flex:1;min-width:150px;">${escapeHtml(res.ip)}</div>
       ${exportButtonHtml(uid)}
     </div>
-    ${renderVerdict(score)}
+    ${renderVerdict(score, null, 'url')}
     ${renderDimensionBars(computeDimensionScores(res.findings, 'url'))}
     <div class="result-block">${renderFindings(res.findings, 'url')}</div>
     ${res.isV4 ? `<div class="result-block only-avanzado">
@@ -5843,7 +5874,7 @@ document.getElementById('webrtc-leak-btn').addEventListener('click', async ()=>{
     });
     box.innerHTML = `<div class="card">
       <div class="row" style="justify-content:flex-end;margin-bottom:4px;">${exportButtonHtml(uid)}</div>
-      ${renderVerdict(score)}
+      ${renderVerdict(score, null, 'url')}
       ${renderDimensionBars(computeDimensionScores(findings, 'ip'))}
       <div class="result-block">${renderFindings(findings, 'url')}</div>
       <p class="disclaimer"><b>Alcance:</b> comprueba si tu videollamada revela tu IP real en este navegador <span class="only-avanzado">(vía WebRTC)</span> y la compara con tu IP pública vista por HTTP. No mide qué servidores DNS usa tu sistema. Para eso, usa la herramienta especializada de arriba.</p>
@@ -6031,7 +6062,7 @@ function analyzeReceivedChainAnomalies(hops){
       const fromHost = hop.from.replace(/[()[\]]/g,'').toLowerCase();
       const hostnameShape = /^[a-z0-9.-]+\.[a-z]{2,}$/;
       if(hostnameShape.test(byHost) && hostnameShape.test(fromHost) && naiveRootDomain(byHost)!==naiveRootDomain(fromHost)){
-        findings.push({sev:'low', dim:'authenticity', id:'email.received_hostname_discontinuity', confidence:0.4, evidence:{hopIndex:i, by:byHost, from:fromHost}, title:`Salto ${i+1}: el servidor que entregó y el que envía no parecen la misma organización`, basic:`El salto ${i} lo recibió "${byHost}" y el salto ${i+1} dice enviarlo "${fromHost}" — dominios de organización distintos. Ocurre en reenvíos legítimos entre proveedores, pero conviene saberlo.`, eli5:'Es como si un paquete lo recibiera una empresa de mensajería y, en el siguiente sello, apareciera enviado por una empresa de mensajería totalmente distinta sin explicación — puede ser normal (un cambio de transportista a mitad de ruta), pero merece un vistazo.', desc:`"by" del salto ${i}: ${escapeHtml(byHost)}. "from" del salto ${i+1}: ${escapeHtml(fromHost)}. Dominios raíz distintos (comparación simplificada, últimas dos etiquetas). Informativo: los reenvíos legítimos entre organizaciones producen exactamente este patrón, así que no es prueba de manipulación por sí sola.`});
+        findings.push({sev:'low', dim:'authenticity', id:'email.received_hostname_discontinuity', confidence:0.4, evidence:{hopIndex:i, by:byHost, from:fromHost}, title:`Salto ${i+1}: el servidor que entregó y el que envía no parecen la misma organización`, basic:`El salto ${i} lo recibió "${byHost}" y el salto ${i+1} dice enviarlo "${fromHost}" — direcciones de organización distintas. Ocurre en reenvíos legítimos entre proveedores, pero conviene saberlo.`, eli5:'Es como si un paquete lo recibiera una empresa de mensajería y, en el siguiente sello, apareciera enviado por una empresa de mensajería totalmente distinta sin explicación — puede ser normal (un cambio de transportista a mitad de ruta), pero merece un vistazo.', desc:`"by" del salto ${i}: ${escapeHtml(byHost)}. "from" del salto ${i+1}: ${escapeHtml(fromHost)}. Dominios raíz distintos (comparación simplificada, últimas dos etiquetas). Informativo: los reenvíos legítimos entre organizaciones producen exactamente este patrón, así que no es prueba de manipulación por sí sola.`});
       }
     }
 
@@ -6346,7 +6377,7 @@ async function runFullEmailAuthCheck(uid){
     const anyAligned = spfAligned || dkimAligned;
     const dmarcLabel = ar.dmarc ? ar.dmarc.toUpperCase() : 'no disponible';
     const alignedMechs = [spfAligned&&'SPF', dkimAligned&&'DKIM'].filter(Boolean).join(' y ');
-    out.findings.push({sev: ar.dmarc==='fail' ? 'high' : (anyAligned ? 'ok' : 'low'), dim:'authenticity', id:'email.dmarc_alignment', confidence:0.85, evidence:{fromDomain, spfDomain: ar.spfDomain, dkimDomain: ar.dkimDomain, spfAligned, dkimAligned, dmarc: ar.dmarc}, title: anyAligned ? `El remitente visible ("${fromDomain}") coincide con la identidad autenticada (${alignedMechs})` : `El remitente visible ("${fromDomain}") no coincide con la identidad realmente autenticada`, basic: anyAligned ? `Al menos un mecanismo (${alignedMechs}) autenticó exactamente el dominio que ves en el remitente.` : `Ni SPF (${ar.spfDomain||'sin dominio detectado'}) ni DKIM (${ar.dkimDomain||'sin dominio detectado'}) autenticaron el dominio que ves en el remitente ("${fromDomain}") — pasaron, si acaso, para otro dominio distinto.`, eli5: anyAligned ? 'Es como comprobar que el sello del sobre pertenece al mismo remitente que firma la carta por dentro: aquí coinciden.' : 'Es como un sobre que por fuera dice "Tu Banco" pero cuyo sello de correos pertenece a una empresa completamente distinta: el nombre que ves y quien realmente lo autenticó no son la misma entidad.', desc:`From visible: "${escapeHtml(fromDomain)}". SPF autenticó: "${escapeHtml(ar.spfDomain||'—')}" (${spfAligned?'coincide':'no coincide'}). DKIM firmó como (d=): "${escapeHtml(ar.dkimDomain||'—')}" (${dkimAligned?'coincide':'no coincide'}). Resultado DMARC declarado por el servidor receptor: ${dmarcLabel}. Comparación de dominios simplificada (últimas dos etiquetas, sin lista pública de sufijos), a título orientativo.`});
+    out.findings.push({sev: ar.dmarc==='fail' ? 'high' : (anyAligned ? 'ok' : 'low'), dim:'authenticity', id:'email.dmarc_alignment', confidence:0.85, evidence:{fromDomain, spfDomain: ar.spfDomain, dkimDomain: ar.dkimDomain, spfAligned, dkimAligned, dmarc: ar.dmarc}, title: anyAligned ? `El remitente visible ("${fromDomain}") coincide con la identidad autenticada (${alignedMechs})` : `El remitente visible ("${fromDomain}") no coincide con la identidad realmente autenticada`, basic: anyAligned ? `Al menos un mecanismo (${alignedMechs}) autenticó exactamente la dirección que ves en el remitente.` : `Ni SPF (${ar.spfDomain||'sin dirección detectada'}) ni DKIM (${ar.dkimDomain||'sin dirección detectada'}) autenticaron la dirección que ves en el remitente ("${fromDomain}") — pasaron, si acaso, para otra dirección distinta.`, eli5: anyAligned ? 'Es como comprobar que el sello del sobre pertenece al mismo remitente que firma la carta por dentro: aquí coinciden.' : 'Es como un sobre que por fuera dice "Tu Banco" pero cuyo sello de correos pertenece a una empresa completamente distinta: el nombre que ves y quien realmente lo autenticó no son la misma entidad.', desc:`From visible: "${escapeHtml(fromDomain)}". SPF autenticó: "${escapeHtml(ar.spfDomain||'—')}" (${spfAligned?'coincide':'no coincide'}). DKIM firmó como (d=): "${escapeHtml(ar.dkimDomain||'—')}" (${dkimAligned?'coincide':'no coincide'}). Resultado DMARC declarado por el servidor receptor: ${dmarcLabel}. Comparación de dominios simplificada (últimas dos etiquetas, sin lista pública de sufijos), a título orientativo.`});
 
     out.extraHtml += `<div class="result-block"><h3>Identidad autenticada vs. remitente visible</h3><div class="headers-table">
       <div class="hdr-row"><span class="hdr-name">From (visible)</span><span class="hdr-val">${escapeHtml(fromDomain)}</span></div>
@@ -6750,11 +6781,11 @@ function analyzeEmailSource(source){
   if(fromDomain){
     const domRel = classifyDomainBrandRelationship(fromDomain);
     if(domRel && domRel.state==='CONFUSABLE_SKELETON_MATCH'){
-      findings.push({sev:'high', dim:'threat', id:'email.sender_domain_confusable_skeleton', confidence:CORRELATION_CONFIDENCE.CONFUSABLE_SKELETON, indicatorType:'domain', indicatorValue:fromDomain, context:'email_sender_domain', evidence:{fromDomain, brand:domRel.brand, token:domRel.token}, title:`El dominio del remitente es visualmente idéntico a "${domRel.brand}" (caracteres confundibles)`, basic:`El dominio no está escrito con las mismas letras que "${domRel.brand}", pero al leerlo es indistinguible: usa caracteres de otro alfabeto o similares que se ven igual.`, eli5:`Es como firmar con el nombre de tu banco cambiando alguna letra por otra que se ve exactamente igual en pantalla — no hay forma humana de notar la diferencia a simple vista.`, desc:`"${fromDomain}" no es idéntico carácter a carácter a "${domRel.brand}", pero su esqueleto visual (plegando caracteres confundibles a su forma latina más simple) coincide exactamente. Ataque de homógrafos real en el dominio del remitente.`});
+      findings.push({sev:'high', dim:'threat', id:'email.sender_domain_confusable_skeleton', confidence:CORRELATION_CONFIDENCE.CONFUSABLE_SKELETON, indicatorType:'domain', indicatorValue:fromDomain, context:'email_sender_domain', evidence:{fromDomain, brand:domRel.brand, token:domRel.token}, title:`El dominio del remitente es visualmente idéntico a "${domRel.brand}" (caracteres confundibles)`, basic:`La dirección del remitente no está escrita con las mismas letras que "${domRel.brand}", pero al leerla es indistinguible: usa caracteres de otro alfabeto que se ven igual.`, eli5:`Es como firmar con el nombre de tu banco cambiando alguna letra por otra que se ve exactamente igual en pantalla — no hay forma humana de notar la diferencia a simple vista.`, desc:`"${fromDomain}" no es idéntico carácter a carácter a "${domRel.brand}", pero su esqueleto visual (plegando caracteres confundibles a su forma latina más simple) coincide exactamente. Ataque de homógrafos real en el dominio del remitente.`});
     } else if(domRel && domRel.state==='LOOKALIKE_DOMAIN'){
-      findings.push({sev:'high', dim:'threat', id:'email.sender_domain_typosquat', confidence:CORRELATION_CONFIDENCE.DOMAIN_LOOKALIKE, indicatorType:'domain', indicatorValue:fromDomain, context:'email_sender_domain', evidence:{fromDomain, brand:domRel.brand, distance:domRel.distance}, title:`El dominio del remitente imita a "${domRel.brand}"`, basic:`El dominio del remitente se parece mucho a "${domRel.brand}" pero no es exactamente el mismo.`, eli5:`Es parecido a escribir "${domRel.brand}" pero cambiar una letra por otra para que a simple vista pase desapercibido, como cambiar una "o" por un cero.`, desc:`"${fromDomain}" se parece mucho a "${domRel.brand}" (distancia ${domRel.distance}). Revisa letra por letra antes de confiar en este remitente.`});
+      findings.push({sev:'high', dim:'threat', id:'email.sender_domain_typosquat', confidence:CORRELATION_CONFIDENCE.DOMAIN_LOOKALIKE, indicatorType:'domain', indicatorValue:fromDomain, context:'email_sender_domain', evidence:{fromDomain, brand:domRel.brand, distance:domRel.distance}, title:`El dominio del remitente imita a "${domRel.brand}"`, basic:`El remitente se parece mucho a "${domRel.brand}", pero su dirección no es exactamente la misma.`, eli5:`Es parecido a escribir "${domRel.brand}" pero cambiar una letra por otra para que a simple vista pase desapercibido, como cambiar una "o" por un cero.`, desc:`"${fromDomain}" se parece mucho a "${domRel.brand}" (distancia ${domRel.distance}). Revisa letra por letra antes de confiar en este remitente.`});
     } else if(domRel && domRel.state==='THIRD_PARTY_DOMAIN'){
-      findings.push({sev:'high', dim:'threat', id:'email.brand_in_foreign_sender_domain', confidence:CORRELATION_CONFIDENCE.THIRD_PARTY_DOMAIN, indicatorType:'domain', indicatorValue:fromDomain, context:'email_sender_domain', evidence:{fromDomain, brand:domRel.brand}, title:`El dominio del remitente contiene el nombre de "${domRel.brand}" sin ser su dominio oficial`, basic:`El dominio incluye el nombre de "${domRel.brand}", pero no es un dominio que le pertenezca.`, eli5:`El nombre "${domRel.brand}" está ahí, pero metido en una dirección que no le pertenece — como si alguien pusiera el logo de tu banco en la puerta de una tienda que no tiene nada que ver con él.`, desc:`"${fromDomain}" incluye el nombre "${domRel.brand}" pero no es su dominio oficial ni uno de sus subdominios. Es habitual meter el nombre de la marca en un dominio de apariencia oficial para generar confianza falsa.`});
+      findings.push({sev:'high', dim:'threat', id:'email.brand_in_foreign_sender_domain', confidence:CORRELATION_CONFIDENCE.THIRD_PARTY_DOMAIN, indicatorType:'domain', indicatorValue:fromDomain, context:'email_sender_domain', evidence:{fromDomain, brand:domRel.brand}, title:`El dominio del remitente contiene el nombre de "${domRel.brand}" sin ser su dominio oficial`, basic:`El remitente parece de "${domRel.brand}", pero su dirección no es la oficial de "${domRel.brand}".`, eli5:`El nombre "${domRel.brand}" está ahí, pero metido en una dirección que no le pertenece — como si alguien pusiera el logo de tu banco en la puerta de una tienda que no tiene nada que ver con él.`, desc:`"${fromDomain}" incluye el nombre "${domRel.brand}" pero no es su dominio oficial ni uno de sus subdominios. Es habitual meter el nombre de la marca en un dominio de apariencia oficial para generar confianza falsa.`});
     }
   }
 
@@ -7103,7 +7134,8 @@ document.getElementById('eml-analyze-btn').addEventListener('click', ()=>{
   });
   out.innerHTML = `<div class="card">
     <div class="row" style="justify-content:flex-end;margin-bottom:4px;">${exportButtonHtml(uid)}</div>
-    ${renderVerdict(score)}
+    ${renderVerdict(score, null, 'email')}
+    ${renderAnalyzedSubject('Correo analizado', res.subject || 'sin asunto')}
     ${renderDimensionBars(computeDimensionScores(res.findings, 'email'))}
     <div class="result-block">${renderFindings(res.findings, 'email')}</div>
   </div>${res.urlSection}
@@ -7150,7 +7182,7 @@ function analyzeSenderAddress(addr){
   if(FREE_WEBMAIL_DOMAINS.includes(domain)){
     const mention = classifyBrandMention(local.toLowerCase().replace(/[._-]/g,''));
     if(mention){
-      findings.push({sev:'high', dim:'threat', id:'email.brand_in_free_provider', confidence:CORRELATION_CONFIDENCE.BRAND_IMPERSONATION_LOW, indicatorType:'brand_mention', indicatorValue:mention.brand, context:'email_local_part', evidence:{domain, brand:mention.brand}, title:`Nombre de marca "${mention.brand}" en un correo gratuito genérico`, basic:`El nombre de usuario incluye "${mention.brand}", pero se envía desde una cuenta gratuita como cualquiera puede crear, no desde el dominio real de esa empresa.`, eli5:`Es como si alguien se hiciera una tarjeta de visita gratis con el logo de una empresa conocida pegado encima: cualquiera puede poner ese nombre en la parte visible, pero la empresa real no reparte tarjetas así.`, desc:`La dirección usa un proveedor gratuito (${domain}) pero el nombre de usuario imita a "${mention.brand}". Las empresas legítimas prácticamente nunca contactan de forma oficial desde una cuenta @${domain}.`});
+      findings.push({sev:'high', dim:'threat', id:'email.brand_in_free_provider', confidence:CORRELATION_CONFIDENCE.BRAND_IMPERSONATION_LOW, indicatorType:'brand_mention', indicatorValue:mention.brand, context:'email_local_part', evidence:{domain, brand:mention.brand}, title:`Nombre de marca "${mention.brand}" en un correo gratuito genérico`, basic:`El nombre de usuario incluye "${mention.brand}", pero se envía desde una cuenta gratuita como cualquiera puede crear, no desde la dirección real de esa empresa.`, eli5:`Es como si alguien se hiciera una tarjeta de visita gratis con el logo de una empresa conocida pegado encima: cualquiera puede poner ese nombre en la parte visible, pero la empresa real no reparte tarjetas así.`, desc:`La dirección usa un proveedor gratuito (${domain}) pero el nombre de usuario imita a "${mention.brand}". Las empresas legítimas prácticamente nunca contactan de forma oficial desde una cuenta @${domain}.`});
     }
   }
 
@@ -7191,7 +7223,7 @@ document.getElementById('sender-analyze-btn').addEventListener('click', ()=>{
       <div class="hint" style="font-family:var(--mono);margin-bottom:10px;word-break:break-all;flex:1;min-width:200px;">${escapeHtml(addr.trim())}</div>
       ${exportButtonHtml(pdfUid)}
     </div>
-    ${renderVerdict(score)}
+    ${renderVerdict(score, null, 'email')}
     ${renderDimensionBars(computeDimensionScores(findings, 'email'))}
     <div class="result-block">${renderFindings(findings, 'email')}</div>
     ${domain ? `<div class="result-block">
@@ -7404,7 +7436,8 @@ document.getElementById('shot-analyze-btn').addEventListener('click', async ()=>
         <span class="status-chip" style="font-size:calc(11px * var(--fs-scale));">📷 Fuente: captura analizada mediante OCR</span>
         ${exportButtonHtml(uid)}
       </div>
-      ${renderVerdict(score, 'Basado en texto reconocido por OCR de una captura, sin encabezados técnicos reales — no hay SPF/DKIM/DMARC ni cadena de envío que verificar, así que el análisis de autenticidad del remitente es limitado.')}
+      ${renderVerdict(score, 'Basado en texto reconocido por OCR de una captura, sin encabezados técnicos reales — no hay SPF/DKIM/DMARC ni cadena de envío que verificar, así que el análisis de autenticidad del remitente es limitado.', 'email')}
+      ${renderAnalyzedSubject('Correo analizado (vía OCR)', res.subject || 'sin asunto detectado')}
       ${renderDimensionBars(computeDimensionScores(res.findings, 'email'))}
       <div class="result-block">${renderFindings(res.findings, 'email')}</div>
       <div class="result-block"><h3>Texto reconocido</h3><textarea rows="5" readonly>${escapeHtml(text)}</textarea></div>
@@ -7606,7 +7639,8 @@ document.getElementById('app-analyze-btn').addEventListener('click', ()=>{
   });
   out.innerHTML = `<div class="card">
     <div class="row" style="justify-content:flex-end;margin-bottom:4px;">${exportButtonHtml(uid)}</div>
-    ${renderVerdict(score)}
+    ${renderVerdict(score, null, 'apps')}
+    ${renderAnalyzedSubject('App analizada', name || id)}
     ${renderDimensionBars(computeDimensionScores(findings, 'app'))}
     <div class="result-block">${renderFindings(findings, 'apps')}</div>
     <p class="disclaimer"><b>Recuerda:</b> este es un análisis heurístico de contexto declarado, pensado como <b>complemento</b> a tu solución MTD/EMM. No reemplaza el análisis estático/dinámico real del binario ni la telemetría de dispositivo.</p>
@@ -7911,7 +7945,7 @@ function buildNetworkSecurityConfigFindings(nsc){
     if(nsc.baseConfig.cleartextTrafficPermitted === true){
       findings.push({sev:'med', dim:'threat', id:'manifest.nsc_base_cleartext_permitted', confidence:0.8,
         title:'Network Security Config: cleartext HTTP permitido por defecto para toda la app',
-        basic:'La configuración de red personalizada de la app permite explícitamente tráfico sin cifrar (HTTP) por defecto, salvo que un dominio concreto lo restrinja aparte.',
+        basic:'La configuración de red personalizada de la app permite explícitamente tráfico sin cifrar (HTTP) por defecto, salvo que una web concreta lo restrinja aparte.',
         eli5:'Es como una empresa que, por norma general, permite mandar la correspondencia sin sobre — algunos departamentos concretos pueden exigir sobre cerrado, pero la política de base es la postal abierta.',
         desc:'android:cleartextTrafficPermitted="true" en <base-config>. Se aplica a cualquier dominio no cubierto por un <domain-config> más específico.'});
     }
@@ -7938,7 +7972,7 @@ function buildNetworkSecurityConfigFindings(nsc){
         evidence:{domains:dc.domains.map(d=>d.name)},
         title:`Network Security Config: confía en certificados de usuario para ${domainList}`,
         basic:`Para el tráfico hacia "${domainList}" en concreto, esta app confía en certificados instalados manualmente por el usuario, no solo en las autoridades del sistema.`,
-        eli5:'Igual que antes, pero limitado a un destino concreto: si alguien logra colar su propio "sello" en el dispositivo, esta app se lo creerá solo para ese destino — a menudo justo el dominio más sensible de la app (banco, login...).',
+        eli5:'Igual que antes, pero limitado a un destino concreto: si alguien logra colar su propio "sello" en el dispositivo, esta app se lo creerá solo para ese destino — a menudo justo la web más sensible de la app (banco, login...).',
         desc:`<domain-config><trust-anchors><certificates src="user"/> para: ${domainList}. Mismo riesgo de intermediario (MITM) que la versión global, pero acotado a este dominio.`});
     }
   }
@@ -8150,7 +8184,7 @@ function axmlBuildDeepLinkFindings(components){
           findings.push({sev:'high', dim:'threat', id:'manifest.deeplink_wildcard_host', confidence:0.75,
             evidence:{component:spec.component},
             title:`Intent-filter con host comodín "*": ${spec.component}`,
-            basic:'Esta actividad acepta enlaces web de CUALQUIER dominio, no de uno concreto.',
+            basic:'Esta actividad acepta enlaces web de CUALQUIER web, no de una concreta.',
             eli5:'Es como dejar que entre a tu casa cualquiera que diga cualquier dirección, en vez de solo quien de verdad vive en la de al lado — casi nunca es necesario y amplía mucho quién puede activar esa pantalla desde fuera.',
             desc:`Actividad ${exportedTxt}. android:host="*" acepta el esquema web desde cualquier dominio externo. Salvo un caso de uso muy deliberado (visor genérico de enlaces), suele ser una configuración demasiado permisiva y una superficie de ataque innecesaria.`});
           continue;
@@ -8165,8 +8199,8 @@ function axmlBuildDeepLinkFindings(components){
           findings.push({sev:'low', dim:'threat', id:'manifest.deeplink_unverified_web', confidence:0.4,
             evidence:{component:spec.component, host},
             title:`Deep link web sin verificar (sin autoVerify): ${host} → ${spec.component}`,
-            basic:`La app responde a enlaces de "${host}" pero sin pedirle a Android que verifique que de verdad es la dueña de ese dominio.`,
-            eli5:'Es como decir "yo represento a esta empresa" sin enseñar ninguna credencial que lo confirme — Android, al no poder comprobarlo, puede acabar preguntando al usuario qué app usar cada vez, y otra app podría intentar hacerse pasar por el mismo dominio.',
+            basic:`La app responde a enlaces de "${host}" pero sin pedirle a Android que verifique que de verdad es la dueña de esa web.`,
+            eli5:'Es como decir "yo represento a esta empresa" sin enseñar ninguna credencial que lo confirme — Android, al no poder comprobarlo, puede acabar preguntando al usuario qué app usar cada vez, y otra app podría intentar hacerse pasar por la misma web.',
             desc:`Actividad ${exportedTxt}. Sin android:autoVerify="true" (y sin que ${host} publique un assetlinks.json válido para este paquete), Android no puede confirmar la propiedad del dominio: el enlace puede quedar ambiguo (selector de apps) o, en algunas configuraciones, ser reclamado por otra app.${cl.hasSensitivePath?' Incluye además una ruta de aspecto sensible (auth/callback/token).':''}`});
         }
       }
@@ -8819,9 +8853,9 @@ async function analyzeApkFile(file){
         if(r.status === 'verified'){
           findings.push({sev:'ok', dim:'authenticity', id:'manifest.applink_assetlinks_verified', confidence:0.9, evidence:{host}, title:`App Link confirmado con ${host}`, desc:`El dominio publica un /.well-known/assetlinks.json que autoriza explícitamente a "${packageName}" con la huella de certificado de este APK. La relación dominio↔paquete↔certificado queda verificada.`});
         } else if(r.status === 'fingerprint-mismatch'){
-          findings.push({sev:'high', dim:'authenticity', id:'manifest.applink_assetlinks_fp_mismatch', confidence:0.7, evidence:{host}, title:`App Link con huella de certificado que NO coincide: ${host}`, basic:`El dominio "${host}" autoriza a la app "${packageName}", pero con la huella de OTRO certificado distinto al de este APK concreto.`, eli5:'Es como una lista de invitados que sí incluye tu nombre, pero exige un carné distinto al que llevas encima — puede ser un simple desajuste de versión de compilación, o puede ser una app republicada con otra firma haciéndose pasar por la original.', desc:'Con esta discrepancia, Android NO habría verificado este App Link (fallback a selector de apps o rechazo). Revisar si este APK concreto procede de un canal de distribución distinto al oficial (firma de release distinta a la registrada en el assetlinks.json del dominio).'});
+          findings.push({sev:'high', dim:'authenticity', id:'manifest.applink_assetlinks_fp_mismatch', confidence:0.7, evidence:{host}, title:`App Link con huella de certificado que NO coincide: ${host}`, basic:`La web "${host}" autoriza a la app "${packageName}", pero con la huella de OTRO certificado distinto al de este APK concreto.`, eli5:'Es como una lista de invitados que sí incluye tu nombre, pero exige un carné distinto al que llevas encima — puede ser un simple desajuste de versión de compilación, o puede ser una app republicada con otra firma haciéndose pasar por la original.', desc:'Con esta discrepancia, Android NO habría verificado este App Link (fallback a selector de apps o rechazo). Revisar si este APK concreto procede de un canal de distribución distinto al oficial (firma de release distinta a la registrada en el assetlinks.json del dominio).'});
         } else if(r.status === 'package-not-listed'){
-          findings.push({sev:'high', dim:'authenticity', id:'manifest.applink_assetlinks_pkg_missing', confidence:0.65, evidence:{host}, title:`App Link declarado, pero "${packageName}" no aparece en assetlinks.json de ${host}`, basic:`La app pide que Android verifique la propiedad de "${host}", pero ese dominio no autoriza a este paquete en absoluto.`, eli5:'Es como presentarte en la puerta diciendo que trabajas allí, pero tu nombre no está en ninguna lista de personal — Android tampoco lo aceptaría, y esta discrepancia por sí sola merece revisión.', desc:'El android:autoVerify de este intent-filter fallaría en un dispositivo real: Android no otorga el App Link si el dominio no lista este package_name. Puede deberse a un manifiesto desactualizado, un paquete de pruebas, o una app que reclama un dominio que no le pertenece.'});
+          findings.push({sev:'high', dim:'authenticity', id:'manifest.applink_assetlinks_pkg_missing', confidence:0.65, evidence:{host}, title:`App Link declarado, pero "${packageName}" no aparece en assetlinks.json de ${host}`, basic:`La app pide que Android verifique la propiedad de "${host}", pero esa web no autoriza a este paquete en absoluto.`, eli5:'Es como presentarte en la puerta diciendo que trabajas allí, pero tu nombre no está en ninguna lista de personal — Android tampoco lo aceptaría, y esta discrepancia por sí sola merece revisión.', desc:'El android:autoVerify de este intent-filter fallaría en un dispositivo real: Android no otorga el App Link si el dominio no lista este package_name. Puede deberse a un manifiesto desactualizado, un paquete de pruebas, o una app que reclama un dominio que no le pertenece.'});
         } else if(r.status === 'http-error'){
           findings.push({sev:'low', title:`No se pudo obtener assetlinks.json de ${host}`, desc:`Código HTTP: ${r.code ?? 'desconocido'}. El dominio no publica el archivo en la ruta estándar, o no es accesible ahora mismo — esto por sí solo no es una señal de nada, solo indica que Vigía no ha podido completar esta comprobación concreta.`});
         } else if(r.status === 'network-error' || r.status === 'parse-error'){
@@ -8994,7 +9028,8 @@ document.getElementById('appfile-analyze-btn').addEventListener('click', async (
     });
     out.innerHTML = `<div class="card">
       <div class="row" style="justify-content:flex-end;margin-bottom:4px;">${exportButtonHtml(uid)}</div>
-      ${renderVerdict(score)}
+      ${renderVerdict(score, null, 'apps')}
+      ${renderAnalyzedSubject('Paquete analizado', res.subject)}
       ${renderDimensionBars(computeDimensionScores(res.findings, 'app'))}
       <div class="result-block">${renderFindings(res.findings, 'apps')}</div>
       ${renderHashBlock(hash)}
@@ -9131,7 +9166,7 @@ function renderIosResult(app){
       </div>
       ${exportButtonHtml(uid)}
     </div>
-    ${renderVerdict(score)}
+    ${renderVerdict(score, null, 'apps')}
     ${renderDimensionBars(computeDimensionScores(findings, 'app'))}
     <div class="result-block">${renderFindings(findings, 'apps')}</div>
     <div class="result-block">
@@ -9177,7 +9212,7 @@ function renderAndroidResult(parsed){
       <div class="hint" style="flex:1;min-width:220px;">${pkg ? `Paquete: <span style="font-family:var(--mono);color:var(--text);">${escapeHtml(pkg)}</span>` : `Búsqueda: <b style="color:var(--text);">${escapeHtml(parsed.term||'')}</b>`}</div>
       ${exportButtonHtml(uid)}
     </div>
-    ${renderVerdict(score)}
+    ${renderVerdict(score, null, 'apps')}
     ${renderDimensionBars(computeDimensionScores(findings, 'app'))}
     <div class="result-block">${renderFindings(findings, 'apps')}</div>
     <div class="result-block">
@@ -9522,7 +9557,7 @@ document.getElementById('netlog-analyze-btn').addEventListener('click', ()=>{
       <div class="hint" style="flex:1;min-width:220px;">${appName?`App: <b style="color:var(--text);">${escapeHtml(appName)}</b> · `:''}${summary.uniqueConnections} conexión(es) única(s)${summary.totalConnections!==summary.uniqueConnections?` (${summary.totalConnections} en total)`:''} · ${trackerCount} rastreador(es) conocido(s)</div>
       ${exportButtonHtml(uid)}
     </div>
-    ${renderVerdict(score)}
+    ${renderVerdict(score, null, 'apps')}
     ${renderDimensionBars(computeDimensionScores(allFindings, 'app'))}
     <div class="result-block">
       <h3>Patrón de comunicaciones</h3>
@@ -9821,7 +9856,8 @@ document.getElementById('sms-analyze-btn').addEventListener('click', ()=>{
   });
   out.innerHTML = `<div class="card">
     <div class="row" style="justify-content:flex-end;margin-bottom:4px;">${exportButtonHtml(uid)}</div>
-    ${renderVerdict(score)}
+    ${renderVerdict(score, null, 'sms')}
+    ${renderAnalyzedSubject('SMS analizado', (sender ? sender + ' · ' : '') + text)}
     ${renderDimensionBars(computeDimensionScores(res.findings, 'sms'))}
     <div class="result-block">${renderFindings(res.findings, 'sms')}</div>
     <p class="disclaimer"><b>Recuerda:</b> nunca compartas un código de verificación recibido por SMS, ni siquiera con quien dice representar a tu banco.</p>
@@ -9941,11 +9977,9 @@ document.getElementById('phone-analyze-btn').addEventListener('click', ()=>{
     disclaimer: 'El identificador de llamada/SMS puede falsificarse ("spoofing"); ningún análisis de formato puede confirmar con certeza quién marcó realmente.'
   });
   out.innerHTML = `<div class="card">
-    <div class="row" style="justify-content:space-between;align-items:flex-start;">
-      <div class="hint" style="font-family:var(--mono);margin-bottom:10px;flex:1;min-width:150px;">${escapeHtml(raw.trim())}</div>
-      ${exportButtonHtml(uid)}
-    </div>
-    ${renderVerdict(score)}
+    <div class="row" style="justify-content:flex-end;margin-bottom:4px;">${exportButtonHtml(uid)}</div>
+    ${renderVerdict(score, null, 'sms')}
+    ${renderAnalyzedSubject('Número analizado', raw.trim())}
     ${renderDimensionBars(computeDimensionScores(findings, 'sms'))}
     <div class="result-block">${renderFindings(findings, 'sms')}</div>
     <div class="result-block">
@@ -10619,11 +10653,9 @@ document.getElementById('image-analyze-btn').addEventListener('click', async ()=
       disclaimer:'Análisis heurístico de cabeceras, final de archivo y metadatos. No sustituye un escáner antivirus ni una sandbox de análisis de esteganografía avanzada.'
     });
     out.innerHTML = `<div class="card">
-      <div class="row" style="justify-content:space-between;align-items:flex-start;">
-        <div class="hint" style="font-family:var(--mono);margin-bottom:10px;word-break:break-all;flex:1;min-width:200px;">${escapeHtml(f.name)}: ${escapeHtml(res.sig.label)}, ${res.sizeKB} KB</div>
-        ${exportButtonHtml(uid)}
-      </div>
-      ${renderVerdict(score)}
+      <div class="row" style="justify-content:flex-end;margin-bottom:4px;">${exportButtonHtml(uid)}</div>
+      ${renderVerdict(score, null, 'archivos')}
+      ${renderAnalyzedSubject('Archivo analizado', `${f.name} (${res.sig.label}, ${res.sizeKB} KB)`)}
       ${renderDimensionBars(computeDimensionScores(res.findings, 'imagen'))}
       <div class="result-block">${renderFindings(res.findings, 'archivos')}</div>
       ${renderHashBlock(hash)}
@@ -10662,11 +10694,9 @@ document.getElementById('doc-analyze-btn').addEventListener('click', async ()=>{
       disclaimer:'Análisis heurístico de macros, acciones automáticas, relaciones externas e hipervínculos. No sustituye un antivirus ni un sandbox de detonación de documentos.'
     });
     out.innerHTML = `<div class="card">
-      <div class="row" style="justify-content:space-between;align-items:flex-start;">
-        <div class="hint" style="font-family:var(--mono);margin-bottom:10px;word-break:break-all;flex:1;min-width:200px;">${escapeHtml(f.name)}: ${escapeHtml(res.sig.label)}, ${res.sizeKB} KB</div>
-        ${exportButtonHtml(uid)}
-      </div>
-      ${renderVerdict(score)}
+      <div class="row" style="justify-content:flex-end;margin-bottom:4px;">${exportButtonHtml(uid)}</div>
+      ${renderVerdict(score, null, 'archivos')}
+      ${renderAnalyzedSubject('Archivo analizado', `${f.name} (${res.sig.label}, ${res.sizeKB} KB)`)}
       ${renderDimensionBars(computeDimensionScores(res.findings, 'documento'))}
       <div class="result-block">${renderFindings(res.findings, 'archivos')}</div>
       ${renderHashBlock(hash)}
@@ -11003,8 +11033,8 @@ function renderQrOutcome(decodedText, imgLabel){
       <div class="hint" style="flex:1;min-width:200px;">${imgLabel?escapeHtml(imgLabel)+': ':''}Tipo detectado: <b style="color:var(--text);">${escapeHtml(subType)}</b></div>
       ${exportButtonHtml(uid)}
     </div>
-    <div class="hint" style="font-family:var(--mono);margin:8px 0 10px;word-break:break-all;padding:8px;background:var(--input-bg);border-radius:6px;">${escapeHtml(decodedText)}</div>
-    ${renderVerdict(score)}
+    ${renderVerdict(score, null, 'archivos')}
+    ${renderAnalyzedSubject('Contenido del QR analizado', decodedText)}
     ${renderDimensionBars(computeDimensionScores(findings, 'qr'))}
     <div class="result-block">${renderFindings(findings, 'archivos')}</div>
   </div>${extraHtml}`;
@@ -11355,11 +11385,9 @@ document.getElementById('exe-analyze-btn').addEventListener('click', async ()=>{
       disclaimer:'Análisis estático heurístico (cabeceras, entropía, patrones de texto). No ejecuta el archivo ni sustituye un antivirus o una sandbox de análisis dinámico.'
     });
     out.innerHTML = `<div class="card">
-      <div class="row" style="justify-content:space-between;align-items:flex-start;">
-        <div class="hint" style="font-family:var(--mono);margin-bottom:10px;word-break:break-all;flex:1;min-width:200px;">${escapeHtml(f.name)}: ${escapeHtml(res.sig.label)}, ${res.sizeKB} KB</div>
-        ${exportButtonHtml(uid)}
-      </div>
-      ${renderVerdict(score)}
+      <div class="row" style="justify-content:flex-end;margin-bottom:4px;">${exportButtonHtml(uid)}</div>
+      ${renderVerdict(score, null, 'archivos')}
+      ${renderAnalyzedSubject('Archivo analizado', `${f.name} (${res.sig.label}, ${res.sizeKB} KB)`)}
       ${renderDimensionBars(computeDimensionScores(res.findings, 'ejecutable'))}
       <div class="result-block">${renderFindings(res.findings, 'archivos')}</div>
       ${res.extraText ? `<div class="result-block"><h3>${escapeHtml(res.extraTitle)}</h3><textarea rows="4" readonly>${escapeHtml(res.extraText)}</textarea></div>` : ''}
@@ -11588,11 +11616,9 @@ document.getElementById('archive-analyze-btn').addEventListener('click', async (
       disclaimer:'Análisis heurístico del contenedor (listado, rutas, extensiones, cifrado). No sustituye escanear cada archivo interno individualmente con un antivirus.'
     });
     out.innerHTML = `<div class="card">
-      <div class="row" style="justify-content:space-between;align-items:flex-start;">
-        <div class="hint" style="font-family:var(--mono);margin-bottom:10px;word-break:break-all;flex:1;min-width:200px;">${escapeHtml(f.name)}: ${escapeHtml(res.sig.label)}, ${res.sizeKB} KB ${res.meta?'· '+escapeHtml(res.meta):''}</div>
-        ${exportButtonHtml(uid)}
-      </div>
-      ${renderVerdict(score)}
+      <div class="row" style="justify-content:flex-end;margin-bottom:4px;">${exportButtonHtml(uid)}</div>
+      ${renderVerdict(score, null, 'archivos')}
+      ${renderAnalyzedSubject('Archivo analizado', `${f.name} (${res.sig.label}, ${res.sizeKB} KB${res.meta?', '+res.meta:''})`)}
       ${renderDimensionBars(computeDimensionScores(res.findings, 'comprimido'))}
       <div class="result-block">${renderFindings(res.findings, 'archivos')}</div>
       ${renderHashBlock(hash)}
